@@ -22,6 +22,6 @@
   // (This is a public id, not a secret.) SESSION_SECRET is made by the server itself and kept in its database.
   "vars": {
     "OWNER_EMAIL": "ana.wolfish@gmail.com",
-    "GOOGLE_CLIENT_ID": "645170568120-mgc91cv8d0fikkjpcri6cs2uimdq6i5t.apps.googleusercontent.com"
+    "GOOGLE_CLIENT_ID": ""
   }
 }

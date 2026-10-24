@@ -1038,6 +1038,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     if (can) {
       if (!S.drew) hint = 'لازم تسحب ورقة من الكومة الأول، وبعدها تلعب.';
       else if (S.sel < 0) hint = 'اختار كارت من إيدك تلعبه.';
+      else if (S.decl < 0 && cd(h[S.sel]).df) hint = cd(h[S.sel]).name + ' كارت دفاع: بيتلعب وقت الدفاع بس. ترميه دلوقتي؟ اختار قوة تانية تقول إنك لعبتها (بلف).';
       else if (S.decl !== h[S.sel]) hint = 'بتكدب! لو حد اتحداك هتخسر نقطة نفوذ.';
       else hint = 'دي قوة الكارت اللي معاك. لو عايز تكدب اختار قوة تانية.';
     }

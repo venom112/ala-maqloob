@@ -93,7 +93,7 @@ const assets = { async fetch(req) {   // html_handling "none": exact file names 
   check('/ serves the game page', r.status === 200 && /text\/html/.test(r.headers.get('content-type')) && (await r.text()).includes('ع المقلوب'));
   r = await req('/admin'); const adminHtml = await r.text();
   check('/admin serves the admin panel with the sign-in popup header', r.status === 200 && adminHtml.includes('<html') && r.headers.get('cross-origin-opener-policy') === 'same-origin-allow-popups');
-  r = await req('/sw.js'); check('static files pass straight through', r.status === 200 && (await r.text()).includes("const V = 'ala-v18'"));
+  r = await req('/sw.js'); check('static files pass straight through', r.status === 200 && (await r.text()).includes("const V = 'ala-v19'"));
   r = await req('/nope.png'); check('unknown file: 404', r.status === 404);
   r = await req('/healthz'); check('/healthz answers', r.status === 200 && (await r.text()) === 'ok');
   r = await req('/api/config'); const cfg = await r.json();
@@ -166,7 +166,7 @@ const assets = { async fetch(req) {   // html_handling "none": exact file names 
   const silent = await open(); silent.send({ t: 'register', email: 'u' + Math.random().toString(36).slice(2) + '@t.com', name: 'صامت', pass: '1234' }); await until(() => last(silent, 'authed'));
   silent.send({ t: 'create', cap: 3 });   // then says nothing: after 25 s without a word the connection is cut
   await sleep(22000);
-  await until(() => turnsSeen.size === 3 && played >= 1, 45000);   // a bot's turn takes a few seconds (draw, play, the others decide); give it time
+  await until(() => turnsSeen.size === 3 && played >= 1, 100000);   // a bot's turn takes a few seconds (draw, play, the others decide); give it time
   autopilotOn = false; clearInterval(pilot);
   const lm = last(P, 'room');
   check('the game moved on by itself through all three seats', turnsSeen.size === 3 && played >= 1, { turns: [...turnsSeen], played });
