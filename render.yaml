@@ -1,0 +1,18 @@
+# Render.com blueprint: one web service. The accounts live in an external PostgreSQL database (for example a free Neon one):
+# Render asks for its connection string (DATABASE_URL) when you create the service.
+# (Render's own free Postgres is deleted 30 days after it is created, so it is not used here.)
+services:
+  - type: web
+    name: ala-maqloob
+    runtime: docker
+    plan: free
+    healthCheckPath: /healthz
+    envVars:
+      - key: DATABASE_URL          # رابط قاعدة Postgres خارجية (شوف README)
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: GOOGLE_CLIENT_ID      # لوحة الأدمن: انسخ الـ Client ID هنا (شوف README)
+        sync: false
+      - key: OWNER_EMAIL
+        value: ana.wolfish@gmail.com

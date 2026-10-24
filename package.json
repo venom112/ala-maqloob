@@ -1,0 +1,23 @@
+{
+  "name": "ala-maqloob",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ع المقلوب - لعبة كروت جماعية أونلاين",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/rules.js && node test/admin.js",
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
+  },
+  "engines": {
+    "node": ">=22.5"
+  },
+  "dependencies": {
+    "pg": "^8.13.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

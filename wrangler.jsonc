@@ -1,0 +1,27 @@
+{
+  // Cloudflare Workers (free plan). The Worker name must match the name of the project you create on Cloudflare.
+  "name": "ala-maqloob",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-06-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // the pages, pictures and icons in ./public are served straight from Cloudflare's network (free, not counted as requests);
+  // only these paths go through the Worker
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "html_handling": "none",
+    "run_worker_first": ["/", "/admin", "/admin/", "/ws", "/healthz", "/api/*", "/a/*"]
+  },
+
+  // the whole game server: one Durable Object with its own SQLite database (free plan supports SQLite-backed ones)
+  "durable_objects": { "bindings": [{ "name": "HUB", "class_name": "Hub" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Hub"] }],
+
+  // settings. OWNER_EMAIL: the owner of the admin panel. GOOGLE_CLIENT_ID: needed for the admin panel and for "continue with Google" (see README). Paste the id between the quotes below.
+  // (This is a public id, not a secret.) SESSION_SECRET is made by the server itself and kept in its database.
+  "vars": {
+    "OWNER_EMAIL": "ana.wolfish@gmail.com",
+    "GOOGLE_CLIENT_ID": ""
+  }
+}
