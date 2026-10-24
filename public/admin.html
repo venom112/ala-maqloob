@@ -202,7 +202,19 @@ ol { padding-inline-start: 20px; text-align: right; }
     };
     var find = function () { pq = qi.value.trim(); pp = 0; load(); };
     qi.onkeydown = function (e) { if (e.key === 'Enter') find(); };
-    v.append(h('div', { class: 'bar' }, qi, h('button', { class: 'primary', onclick: find }, 'بحث')), body); load();
+    var tools = null;
+    if (ME && ME.owner) {
+      var fi = h('input', { type: 'file', accept: 'application/json,.json', style: 'display:none' });
+      fi.onchange = function () {
+        var f = fi.files[0]; if (!f) return;
+        f.text().then(function (t) { var j; try { j = JSON.parse(t); } catch (e) { toast('الملف مش مظبوط.', true); return; } return act(api('POST', 'restore', j)).then(function (r) { toast('اتضاف ' + r.added + ' حساب، وتخطّينا ' + r.skipped + ' (موجودين).'); load(); }); });
+        fi.value = '';
+      };
+      tools = h('div', { class: 'bar' },
+        h('button', { onclick: function () { act(api('GET', 'backup')).then(function (j) { var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(j)], { type: 'application/json' })); a.download = 'ala-maqloob-accounts-' + new Date().toISOString().slice(0, 10) + '.json'; document.body.append(a); a.click(); a.remove(); toast('نزلت نسخة من ' + j.users.length + ' حساب.'); }); } }, '⬇ نسخة احتياطية للحسابات'),
+        h('button', { onclick: function () { fi.click(); } }, '⬆ استرجاع حسابات من نسخة'), fi);
+    }
+    v.append(h('div', { class: 'bar' }, qi, h('button', { class: 'primary', onclick: find }, 'بحث')), tools || '', body); load();
   }
 
   /* ---------- cards ---------- */

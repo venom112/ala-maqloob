@@ -55,7 +55,7 @@ async function until(f, ms = 15000) { const t0 = Date.now(); while (Date.now() -
     const lst = (ws, t) => ws.msgs.filter(m => m.t === t).pop();
     const w = await o2(); const cred = fake.token({ email: 'gamer@gmail.com', name: 'Gamer Person' });
     w.send(JSON.stringify({ t: 'google', cred }));
-    check('google: a new e-mail is asked for a player name', await until(() => lst(w, 'gname')) && lst(w, 'gname').suggest === 'Gamer Pers');
+    check('google: a new e-mail is asked for a player name', await until(() => lst(w, 'gname')) && lst(w, 'gname').suggest === 'Gamer Person');
     w.send(JSON.stringify({ t: 'google', cred, name: 'نجم' }));
     check('google: chosen name creates the account', await until(() => lst(w, 'authed')) && lst(w, 'authed').name === 'نجم' && lst(w, 'authed').admin === false);
     const w2 = await o2(); w2.send(JSON.stringify({ t: 'google', cred: fake.token({ email: 'gamer@gmail.com' }) }));
@@ -128,6 +128,20 @@ async function until(f, ms = 15000) { const t0 = Date.now(); while (Date.now() -
   const ids = (await call('GET', 'cards', undefined, OWN)).j.cards.map(c => c.id).reverse();
   check('reorder', (await call('POST', 'cards/reorder', { ids }, OWN)).s === 200 && (await call('GET', 'cards', undefined, OWN)).j.cards[0].id === ids[0]);
   await call('POST', 'cards/reorder', { ids: ids.slice().reverse() }, OWN);
+
+  /* ---- accounts backup and restore ---- */
+  {
+    { const bb = await call('GET', 'backup', undefined, BOB); check('a limited admin cannot take the backup', bb.s === 403 || bb.s === 401, bb.s); }
+    const bk = await call('GET', 'backup', undefined, OWN);
+    check('the owner gets every account with its salted hash', bk.s === 200 && bk.j.users.length >= 1 && bk.j.users.every(u => u.name && u.name_key && u.salt && u.hash), bk.s);
+    const n0 = bk.j.users.length, again = await call('POST', 'restore', bk.j, OWN);
+    check('restoring a copy over the same accounts changes nothing', again.s === 200 && again.j.added === 0 && again.j.skipped === n0, again.j);
+    const lst = await call('GET', 'players', undefined, OWN), victim = lst.j.rows[lst.j.rows.length - 1];
+    check('a deleted account is removed', (await call('DELETE', 'players/' + victim.id, undefined, OWN)).s === 200);
+    const back = await call('POST', 'restore', bk.j, OWN);
+    check('the restore brings back exactly the missing one', back.s === 200 && back.j.added === 1 && back.j.skipped === n0 - 1, back.j);
+    check('a limited admin cannot restore, bad files are refused', [401, 403].includes((await call('POST', 'restore', bk.j, BOB)).s) && (await call('POST', 'restore', { users: 5 }, OWN)).s === 400);
+  }
 
   /* ---- pictures ---- */
   const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/q842iQAAAABJRU5ErkJggg==', 'base64');

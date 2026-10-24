@@ -236,6 +236,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 @keyframes dropin { from { opacity: 0; translate: 0 -5cqw; scale: 1.5; } }
 .stage:not(.live) .inf { visibility: hidden; }
 .slot.out .av { filter: grayscale(1); opacity: .5; }
+.slot .nm { max-width: 9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .slot.out .nm { opacity: .6; text-decoration: line-through; text-decoration-thickness: 1px; }
 .slot.out small { color: #e5737c; }
 .slot.boss small { color: var(--brass); font-weight: 600; }
@@ -476,10 +477,10 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       <button class="back" id="nameBack" type="button"><span aria-hidden="true">→</span>رجوع</button>
       <h2 class="q" id="nameQ">ادخل حسابك</h2>
       <label class="msg" for="emailIn" hidden>للدخول: اكتب الإيميل وكلمة السر. لحساب جديد: اكتب الإيميل والاسم (بيظهر قدام اللاعيبة) وكلمة سر جديدة، وبعدها دوس "عمل حساب جديد".</label>
-      <input class="field txt" id="emailIn" type="email" dir="ltr" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="الإيميل">
-      <input class="field txt" id="nameIn" type="text" maxlength="10" autocomplete="nickname" autocapitalize="off" spellcheck="false" placeholder="اسمك (للحساب الجديد)">
+      <input class="field txt" id="emailIn" type="text" inputmode="email" dir="ltr" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="الإيميل (أو الاسم للحسابات القديمة)">
+      <input class="field txt" id="nameIn" type="text" autocomplete="nickname" autocapitalize="off" spellcheck="false" placeholder="اسمك (للحساب الجديد)">
       <input class="field txt" id="passIn" type="password" autocomplete="current-password" placeholder="كلمة السر">
-      <p class="msg" id="nameMsg" aria-live="polite">الاسم من ٢ لـ١٠ حروف. كلمة السر من غير قيود.</p>
+      <p class="msg" id="nameMsg" aria-live="polite">الاسم حرفين على الأقل، ومفيش حد أقصى. كلمة السر من غير قيود.</p>
       <button class="btn primary" id="loginBtn" type="button">دخول</button>
       <button class="btn ghost" id="regBtn" type="button">عمل حساب جديد</button>
       <div id="gbtn" style="display:flex;justify-content:center;min-height:44px"></div>
@@ -488,7 +489,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     <section class="step" id="st-gname" hidden>
       <h2 class="q">اختار اسم اللاعب</h2>
       <p class="msg">الاسم ده بيظهر قدام كل اللاعيبة. تقدر تغيّره عن اسم حساب جوجل.</p>
-      <input class="field txt" id="gnameIn" type="text" maxlength="10" autocomplete="nickname" spellcheck="false" placeholder="اسمك">
+      <input class="field txt" id="gnameIn" type="text" autocomplete="nickname" spellcheck="false" placeholder="اسمك">
       <p class="msg" id="gnameMsg" aria-live="polite"></p>
       <button class="btn primary" id="gnameBtn" type="button">كمّل</button>
       <button class="btn ghost" id="gnameBack" type="button">رجوع</button>
@@ -720,17 +721,18 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   function validName(v) {
     var len = Array.from(v).length;
     if (len < 2) return 'الاسم لازم يكون حرفين على الأقل.';
-    if (len > 10) return 'الاسم أطول من ١٠ حروف.';
+    if (len > 100) return 'الاسم أطول من ١٠٠ حرف.';
     if (!/[\p{L}\p{N}]/u.test(v)) return 'اكتب اسم بحروف أو أرقام.';
     return '';
   }
   function nameErr(m) { $('nameMsg').textContent = m; $('nameMsg').className = 'msg err'; }
   function nameInfo(m, cls) { $('nameMsg').textContent = m; $('nameMsg').className = 'msg' + (cls ? ' ' + cls : ''); }
-  var HINT = 'الاسم من ٢ لـ١٠ حروف. كلمة السر من غير قيود.', pendingJoin = false;
+  var HINT = 'الاسم حرفين على الأقل، ومفيش حد أقصى. كلمة السر من غير قيود.', pendingJoin = false;
   function proceedAfterName() { if (pendingJoin) { pendingJoin = false; show('join'); } else show('home'); }
   function authBusy(b) { $('loginBtn').disabled = b; $('regBtn').disabled = b; }
   function auth(kind) {
     var em = $('emailIn').value.trim(), v = norm($('nameIn').value), pass = $('passIn').value;
+    if (kind === 'login' && em && em.indexOf('@') < 0) { v = norm(em); em = ''; }   // old accounts made before e-mails sign in by name
     if (kind === 'register') {
       if (!/^[^\s@]{1,64}@[^\s@]+\.[^\s@]{2,}$/.test(em)) { nameErr('اكتب إيميل صحيح.'); return; }
       var bad = validName(v); if (bad) { nameErr(bad); return; }

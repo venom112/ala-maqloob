@@ -92,6 +92,19 @@ function install(ctx) {
         return json(res, 200, out), true;
       }
 
+      /* ---- accounts backup: the owner downloads every account and can put them back after a wipe ---- */
+      if (route[0] === 'backup' && m === 'GET') {
+        if (!me.owner) return fail(res, 403, 'النسخة الاحتياطية للمالك بس.'), true;
+        const users = await store.backupUsers(); await store.log(actor(me), 'users.backup', String(users.length), null);
+        return json(res, 200, { app: 'ala-maqloob', at: Date.now(), users }), true;
+      }
+      if (route[0] === 'restore' && m === 'POST') {
+        if (!me.owner) return fail(res, 403, 'الاسترجاع للمالك بس.'), true;
+        const b = await readBody(req, 8 * 1024 * 1024);
+        if (!b || !Array.isArray(b.users) || b.users.length > 50000) return fail(res, 400, 'ملف النسخة الاحتياطية مش مظبوط.'), true;
+        const r = await store.restoreUsers(b.users); await store.log(actor(me), 'users.restore', null, r);
+        return json(res, 200, r), true;
+      }
       /* ---- players ---- */
       if (route[0] === 'players') {
         if (route.length === 1 && m === 'GET') {

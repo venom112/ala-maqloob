@@ -20,8 +20,8 @@ if(!window.__drv) window.__drv=setInterval(function(){
   var dp=$('drawPile'); if(dp && !dp.disabled){dp.click();return;}
   var hc=document.querySelectorAll('#handRow .hc:not([disabled])'), pb=$('playBtn');
   if(hc.length && !$('myHand').hidden){
-    if(pb.disabled){ hc[Math.floor(Math.random()*hc.length)].click(); return; }
-    if(Math.random()<.7){ var d=document.querySelectorAll('#declRow .c4:not([disabled])'); if(d.length) d[Math.floor(Math.random()*d.length)].click(); }
+    if(pb.disabled){ var sel=document.querySelector('#handRow .hc.sel'); if(sel){ var dd=[...document.querySelectorAll('#declRow .c4:not([disabled])')].filter(function(e){return !e.hidden}); if(dd.length){ dd[Math.floor(Math.random()*dd.length)].click(); return; } } hc[Math.floor(Math.random()*hc.length)].click(); return; }
+    if(Math.random()<.7){ var d=[...document.querySelectorAll('#declRow .c4:not([disabled])')].filter(function(e){return !e.hidden}); if(d.length) d[Math.floor(Math.random()*d.length)].click(); }
     pb.click(); return;
   }
   var cb=$('cBtns'); if(!$('claimBox').hidden && !cb.hidden){ (Math.random()<.55?$('chBtn'):$('passBtn')).click(); return; }
@@ -96,10 +96,12 @@ try:
     check('guest reload returns to the same room with his cards',B.locator('#handRow .hc').count()==3 and latin(B.inner_text('#roomCode'))=='' or B.locator('#handRow .hc').count()==3)
     for p in (A,B,C): p.evaluate(DRIVER)
     t0=time.time(); done=False
-    while time.time()-t0<300:
+    while time.time()-t0<330:
         time.sleep(4)
         if all(boss(p) for p in (A,B,C)): done=True;break
     check('full game finished on all three screens',done,str(round(time.time()-t0))+'s')
+    if not done:
+        for u,p in (('a',A),('b',B),('c',C)): print('DBG',u,p.evaluate("[...document.querySelectorAll('.modal,.claimbox')].filter(e=>!e.hidden&&e.offsetParent).map(e=>e.id).join(',')+' | '+document.getElementById('playMsg').textContent+' | '+document.getElementById('stage').innerText.replace(/\\n/g,' ').slice(0,200)"),flush=True)
     for u,p in (('a',A),('b',B),('c',C)): print(u,'|',p.inner_text('#ovText'),'|',p.locator('#ovActions button').all_inner_texts())
     for p in (A,B,C): p.evaluate('window.__stop=true')
     # --- rematch, then a player leaves: seat stays empty and the room waits

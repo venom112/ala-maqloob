@@ -29,7 +29,7 @@ function nameKey(s) {
 function validName(v) {
   const len = Array.from(v).length;
   if (len < 2) return 'الاسم لازم يكون حرفين على الأقل.';
-  if (len > 10) return 'الاسم أطول من ١٠ حروف.';
+  if (len > 100) return 'الاسم أطول من ١٠٠ حرف.';
   if (!/[\p{L}\p{N}]/u.test(v)) return 'اكتب اسم بحروف أو أرقام.';
   if (/[<>&"'`\\]/.test(v)) return 'الاسم فيه رموز مش مسموحة.';
   if (nameKey(v) === nameKey('أنا')) return 'اختار اسم تاني غير "أنا".';
@@ -126,6 +126,19 @@ async function makeStore(db) {
       catch (e) { await db.run('DELETE FROM users WHERE id=?', [uid(u.id)]); if (/UNIQUE|23505|duplicate/i.test(String(e.message) + String(e.code))) return { taken: 'email' }; throw e; }
       return { user: u };
     },
+    /* a copy of every account (names, e-mails and the salted password hashes, never the passwords) and putting it back */
+    async backupUsers() { return db.all('SELECT u.name AS name, u.name_key AS name_key, u.salt AS salt, u.hash AS hash, u.created AS created, e.email AS email, e.email_key AS email_key FROM users u LEFT JOIN user_email e ON e.uid=u.id ORDER BY u.id'); },
+    async restoreUsers(list) {
+      let added = 0, skipped = 0;
+      for (const r of list) {
+        if (!r || typeof r.name !== 'string' || typeof r.name_key !== 'string' || typeof r.salt !== 'string' || typeof r.hash !== 'string') { skipped++; continue; }
+        if (await db.get('SELECT id FROM users WHERE name_key=?', [r.name_key]) || (r.email_key && await db.get('SELECT uid FROM user_email WHERE email_key=?', [r.email_key]))) { skipped++; continue; }
+        const id = await db.insert('INSERT INTO users(name,name_key,salt,hash,created) VALUES(?,?,?,?,?)', [r.name, r.name_key, r.salt, r.hash, Number(r.created) || Date.now()]);
+        if (r.email && r.email_key) await db.run('INSERT INTO user_email(uid,email,email_key) VALUES(?,?,?)', [id, r.email, r.email_key]);
+        added++;
+      }
+      return { added, skipped };
+    },
     async count() { return (await db.get('SELECT COUNT(*) c FROM users')).c; },
     async touchLogin(id) { await db.run('INSERT INTO user_meta(uid,last_login,tv) VALUES(?,?,0) ON CONFLICT(uid) DO UPDATE SET last_login=excluded.last_login', [uid(id), Date.now()]); },
     async tokenVersion(id) { const r = await db.get('SELECT tv FROM user_meta WHERE uid=?', [uid(id)]); return r ? r.tv : 0; },
@@ -149,7 +162,7 @@ async function makeStore(db) {
     async setPassword(id, salt, hash) { await db.run('UPDATE users SET salt=?, hash=? WHERE id=?', [salt, hash, uid(id)]); await this.bumpTokens(id); },
     async deleteUser(id) {
       const n = uid(id);
-      await db.run('DELETE FROM bans WHERE uid=?', [n]); await db.run('DELETE FROM user_meta WHERE uid=?', [n]);
+      await db.run('DELETE FROM bans WHERE uid=?', [n]); await db.run('DELETE FROM user_meta WHERE uid=?', [n]); await db.run('DELETE FROM user_email WHERE uid=?', [n]);
       return (await db.run('DELETE FROM users WHERE id=?', [n])).changes > 0;
     },
     async countBanned() { return (await db.get('SELECT COUNT(*) c FROM bans WHERE until IS NULL OR until > ?', [Date.now()])).c; },

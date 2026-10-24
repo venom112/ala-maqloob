@@ -114,7 +114,7 @@ async function createCore(store) {
           const ekey = S.emailKey(g.email), ex = await store.byEmailKey(ekey);
           if (ex) return signedIn({ id: ex.id, name: ex.name });
           const name = S.norm(m.name || '');
-          if (!name) return send({ t: 'gname', suggest: Array.from(S.norm(g.name || g.email.split('@')[0])).slice(0, 10).join('') });
+          if (!name) return send({ t: 'gname', suggest: Array.from(S.norm(g.name || g.email.split('@')[0])).slice(0, 100).join('') });
           const bad = S.validName(name); if (bad) return send({ t: 'gname', suggest: name, msg: bad });
           const h = await S.newHash(S.randomHex(24));
           const r = await store.createWithEmail(name, S.nameKey(name), h.salt, h.hash, g.email, ekey);
