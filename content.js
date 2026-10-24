@@ -88,7 +88,7 @@ const CITYKEY = { name: 'مفتاح المدينة', symbol: '', color: '#b8892b
   power: [{ op: 'victory', n: 10, target: 'self' }], penalty: { loss: 0, drop: 0, gift: 0, skip: 0, reveal: 0 }, defaultImg: '/img/citykey.jpg' };
 const JUDGE = { name: 'القاضي', symbol: '', color: '#1f4e79', cnt: 5, descr: 'العبه في أي وقت ضد أي أكشن عادي على الترابيزة عشان تلغيه (مش كروت الدفاع ولا الكروت المكشوفة).', penDescr: 'يخسر نقطة نفوذ وقوة الكارت بتتلغي',
   power: [{ op: 'judge', n: 1, target: 'self' }], penalty: { loss: 1, drop: 0, gift: 0, skip: 0, reveal: 0 }, defaultImg: '/img/judge.jpg' };
-const ELDER = { name: 'العجوز', symbol: '', color: '#6b2d1a', cnt: 4, descr: 'دفاع: بيلغي أي هجوم عليك (سرقة أو تبديل) وبعدها تسحب نقطة من أي لاعب تختاره.', penDescr: 'يخسر نقطتين نفوذ وقوة الكارت بتتلغي',
+const ELDER = { name: 'العجوز', symbol: '', color: '#6b2d1a', cnt: 4, descr: 'دفاع: بيلغي أي هجوم عليك (سرقة أو تبديل أو نشل) وبعدها تسحب نقطة من أي لاعب تختاره.', penDescr: 'يخسر نقطتين نفوذ وقوة الكارت بتتلغي',
   power: [{ op: 'elder', n: 1, target: 'self' }], penalty: { loss: 2, drop: 0, gift: 0, skip: 0, reveal: 0 }, defaultImg: '/img/elder.jpg' };
 // zero-copy filler cards: NOT part of the game. Only the rules tests use them (Content.fixed) so their card numbers stay put.
 const TEST_FILLERS = [

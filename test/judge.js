@@ -62,11 +62,12 @@ const settle = r => until(() => r.phase === 'act' && r.turn !== 0 && r.claim ===
   }
   {
     // defenders cannot be played under their own name on your own turn, but can be thrown away as another card
-    const r = mk([JG, 4, 6], [1, 2, 3], [1, 2, 3]);
-    r.act('a', { a: 'play', k: 0, d: JG }); check('judge cannot be declared as itself on your turn', r.phase === 'act' && r.hands[0].length === 3);
-    r.act('a', { a: 'play', k: 1, d: 4 }); check('lawyer cannot be declared on your turn', r.phase === 'act' && r.hands[0].length === 3);
-    r.act('a', { a: 'play', k: 2, d: 6 }); check('officer cannot be declared on your turn', r.phase === 'act' && r.hands[0].length === 3);
-    r.act('a', { a: 'play', k: 0, d: 0 }); check('but the judge can be thrown away claiming another card', r.phase === 'claim' && r.claim.c === 0 && r.hands[0].length === 2);
+    const r = mk([JG, 4, 6], [1, 2, 3], [1, 2, 3]); r.hands[0].push(17);
+    r.act('a', { a: 'play', k: 0, d: JG }); check('judge cannot be declared as itself on your turn', r.phase === 'act' && r.hands[0].length === 4);
+    r.act('a', { a: 'play', k: 1, d: 4 }); check('lawyer cannot be declared on your turn', r.phase === 'act' && r.hands[0].length === 4);
+    r.act('a', { a: 'play', k: 2, d: 6 }); check('officer cannot be declared on your turn', r.phase === 'act' && r.hands[0].length === 4);
+    r.act('a', { a: 'play', k: 3, d: 17 }); check('elder cannot be declared on your turn', r.phase === 'act' && r.hands[0].length === 4);
+    r.act('a', { a: 'play', k: 0, d: 0 }); check('but the judge can be thrown away claiming another card', r.phase === 'claim' && r.claim.c === 0 && r.hands[0].length === 3);
     r.close();
   }
   {

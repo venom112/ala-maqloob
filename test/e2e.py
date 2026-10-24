@@ -16,6 +16,7 @@ if(!window.__drv) window.__drv=setInterval(function(){
   var ov=$('ov'); if(!ov.hidden){ var b=$('ovActions').firstChild; if(ov.className.indexOf('victim')>=0 && b) b.click(); return; }
   if($('room').hidden) return;
   var gb=$('giveBox'); if(!gb.hidden){ var gs=document.querySelectorAll('#giveRow .hc'); if(gs.length){ gs[0].click(); $('givePlay').click(); } return; }
+  var db=$('defendBox'); if(!db.hidden){ $('defSkip').click(); return; }
   var dp=$('drawPile'); if(dp && !dp.disabled){dp.click();return;}
   var hc=document.querySelectorAll('#handRow .hc:not([disabled])'), pb=$('playBtn');
   if(hc.length && !$('myHand').hidden){
@@ -121,9 +122,9 @@ try:
     for p in (A,B): p.evaluate('window.__stop=false'); p.evaluate(DRIVER)
     t0=time.time()
     while time.time()-t0<330:
-        time.sleep(4)
+        time.sleep(.3)
         if any(boss(p) for p in (A,B)): break
-    check('two players finish the game',any(boss(p) for p in (A,B)),B.inner_text('#ovText'))
+    check('two players finish the game',any(boss(p) for p in (A,B)),[round(time.time()-t0),[p.evaluate("[document.getElementById('ov').hidden,document.getElementById('ov').className,document.getElementById('playMsg').textContent,document.getElementById('panelPlay').hidden].join('|')") for p in (A,B)]])
     for p in (A,B): p.evaluate('window.__stop=true')
     time.sleep(1)
     A.evaluate("var b=document.querySelector('#ovActions .primary'); if(b) b.click()"); time.sleep(2.5)

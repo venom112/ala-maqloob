@@ -1135,7 +1135,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     if (!on) { S.dsel = -1; S.dbarId = 0; S.dsig = ''; return; }
     var h = S.hands[0] || [], sig = h.join(',') + '|' + S.dsel;
     if (S.dbarId !== df.id) { S.dbarId = df.id; S.dsel = -1; sig = h.join(',') + '|' + S.dsel; S.dsig = '\u0000'; var b = $('defendBar'); b.style.animation = 'none'; void b.offsetWidth; b.style.animation = 'drain ' + (DECIDE_MS / 1000) + 's linear forwards'; }
-    $('defendTxt').innerHTML = '<strong>' + esc(nm(df.P)) + '</strong> ' + (df.kind === 'swap' ? 'بيحاول يبدّل كارت من إيدك!' : 'بيهاجمك!') + ' اختار أي كارت من إيدك والعبه مقلوب وقول إنه ' + (df.opts || [df.c]).map(function (o) { return '<strong>' + esc(lab(o)) + '</strong>'; }).join(' أو ') + ' عشان تصد الهجوم' + (df.kind === 'swap' ? '' : ' (المحامي بيرجعه على اللي هاجمك، والعجوز بيلغيه وتسحب نقطة من أي لاعب)') + '. ممكن تكون صادق أو بتكدب؛ لو كدبت وإتحداك حد هتخسر نقطة والهجوم هيتنفذ عليك.';
+    $('defendTxt').innerHTML = '<strong>' + esc(nm(df.P)) + '</strong> ' + (df.kind === 'swap' ? 'بيحاول يبدّل كارت من إيدك!' : 'بيهاجمك!') + ' اختار أي كارت من إيدك والعبه مقلوب وقول إنه ' + (df.opts || [df.c]).map(function (o) { return '<strong>' + esc(lab(o)) + '</strong>'; }).join(' أو ') + ' عشان تصد الهجوم' + (df.kind === 'swap' ? '' : df.kind === 'take' ? ' (العجوز بيلغيه وتسحب نقطة من أي لاعب)' : ' (المحامي بيرجعه على اللي هاجمك، والعجوز بيلغيه وتسحب نقطة من أي لاعب)') + '. ممكن تكون صادق أو بتكدب؛ لو كدبت وإتحداك حد هتخسر نقطة والهجوم هيتنفذ عليك.';
     if (sig !== S.dsig) {
       S.dsig = sig;
       $('defRow').innerHTML = h.map(function (t, k) { return '<button type="button" class="hc' + (cd(t).img ? ' art' : '') + (k === S.dsel ? ' sel' : '') + '" style="color:' + esc(cd(t).color) + '" data-k="' + k + '" aria-label="' + esc(pw(t)) + '">' + faceHtml(t) + '</button>'; }).join('') || '<span class="msg">إيدك فاضية.</span>';
@@ -1661,7 +1661,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     'المُزوِّر': 'بينسخ قدرة آخر كارت اتلعب مقلوب وينفذها. مبينسخش مزوّر ولا كارت مكشوف ولا كارت اتمسك بيكدب.',
     'مفتاح المدينة': 'بيتلعب مكشوف ومفيش حاجة توقفه. لو معاك ١٠ نقط أو أكتر لحظة لعبه بتفوز على طول. لو معاك أقل بيفضل في إيدك مقفول لحد ما تجمّعهم.',
     'القاضي': 'بتلعبه في دور غيرك، وقت التحدي، ضد أي أكشن عادي عشان تلغيه. مبيلغيش كروت الدفاع ولا الكروت المكشوفة. مينفعش تلعبه في دورك باسمه.',
-    'العجوز': 'دفاع بس: بيلغي أي هجوم عليك (سرقة أو تبديل)، وبعدها بتسحب نقطة من أي لاعب تختاره. مفيش حاجة توقفه غير التحدي. مينفعش تلعبه في دورك باسمه.'
+    'العجوز': 'دفاع بس: بيلغي أي هجوم عليك (سرقة أو تبديل أو نشل)، وبعدها بتسحب نقطة من أي لاعب تختاره. مفيش حاجة توقفه غير التحدي. مينفعش تلعبه في دورك باسمه.'
   };
   function fillRules() {
     var cs = (GC.cards && GC.cards.length ? GC.cards : (CFG && CFG.cards) || []).filter(function (c) { return c.cnt == null || c.cnt > 0; });

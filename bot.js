@@ -262,7 +262,7 @@ const smart = {
     const df = ctx.defend, me = ctx.me, mine = ctx.mine;
     for (const o of (df.opts || [df.c]).slice().reverse()) { const x = mine.indexOf(o); if (x >= 0) return { play: x, claim: o }; }
     if (!mine.length) return { decline: true };
-    const steal = df.kind !== 'swap', n = df.n || 1;
+    const steal = df.kind === 'steal', n = df.n || 1;
     const hit = steal ? 1.5 * n : .35;                    // what the attack costs me (my point + his gain), in points
     const lethal = steal && ctx.inf[me] <= n;             // it would put me out
     const pen = ctx.cards[df.c].penalty, penV = pen.loss + .3 * pen.drop + pen.gift;

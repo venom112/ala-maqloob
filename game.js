@@ -346,9 +346,9 @@ class Room {
   }
   /* Cards that defend. An attack is a power step aimed at a victim: a steal is answered by the card with a 'reflect' step
      (the lawyer: the steal goes back to the attacker), a swap by the card with a 'guard' step (the corrupt officer: the swap is blocked). */
-  defCard(kind) { const op = kind === 'swap' ? 'guard' : 'reflect'; return this.cfg.cards.findIndex(c => c.power.some(o => o.op === op)); }
+  defCard(kind) { const op = kind === 'swap' ? 'guard' : kind === 'take' ? 'elder' : 'reflect'; return this.cfg.cards.findIndex(c => c.power.some(o => o.op === op)); }
   // every card that may be claimed against this kind of attack: its own defender and the elder (who stops any attack)
-  defCards(kind) { const op = kind === 'swap' ? 'guard' : 'reflect', r = []; this.cfg.cards.forEach((c, i) => { if (c.power.some(o => o.op === op || o.op === 'elder')) r.push(i); }); return r; }
+  defCards(kind) { const op = kind === 'swap' ? 'guard' : kind === 'take' ? 'elder' : 'reflect', r = []; this.cfg.cards.forEach((c, i) => { if (c.power.some(o => o.op === op || o.op === 'elder')) r.push(i); }); return r; }
   // defenders (lawyer, officer, judge, elder) are only played in their own moment, never on your own turn under their name
   isDefCard(c) { const cd = this.cfg.cards[c]; return !!cd && cd.power.some(o => o.op === 'reflect' || o.op === 'guard' || o.op === 'judge' || o.op === 'elder'); }
   // P's attack has T as its victim. T may play a card face down and say it is the defender.
@@ -443,7 +443,7 @@ class Room {
             if (!q.length || this.over >= 0) return steps(idx + 1);
             const T = q.shift();
             if (this.out[T]) return nextV();
-            const atk = p.op === 'steal' || (p.op === 'swap' && this.hands[P].length > 0);
+            const atk = p.op === 'steal' || (p.op === 'swap' && this.hands[P].length > 0) || p.op === 'take';
             if (atk && this.hands[T] && this.hands[T].length && this.defCards(p.op).length) {
               if (p.op === 'swap') {
                 return this.defense(P, T, cl, blocked => {
@@ -451,6 +451,13 @@ class Room {
                   else { const ok = this.applyStep({ op: 'swap', n: 1, k: p.k, T: [T] }, P); execd.push({ op: 'swap', n: 1, T: [T], P, fail: ok === false }); }
                   this.touch(); this.later(nextV, 900);
                 }, 'swap');
+              }
+              if (p.op === 'take') {   // the pickpocket: only the elder stops it
+                return this.defense(P, T, cl, blocked => {
+                  if (blocked) execd.push({ op: 'take', n: 1, T: [], P, blocked: true });
+                  else { const ok = this.applyStep({ op: 'take', n: 1, k: p.k, T: [T] }, P); execd.push({ op: 'take', n: 1, T: [T], P, fail: ok === false }); }
+                  this.touch(); this.later(nextV, 900);
+                }, 'take');
               }
               return this.defense(P, T, cl, (blocked, how) => {
                 if (blocked && how === 'elder') execd.push({ op: 'steal', n: p.n, T: [], P, blocked: true });

@@ -74,5 +74,21 @@ async function attack(r, card) {
     check('and the game goes on', await settle(r) && r.inf[1] === 4 && r.inf[0] + r.inf[2] === 5, r.inf);
     r.close();
   }
+  {
+    const PICK = 7, r = mk([PICK, 1, 2], [EL, 1, 2], [1, 2, 3]);
+    check('only the elder is offered against the pickpocket', await attack(r, PICK) && r.defend.opts.join() === String(EL), r.defend && r.defend.opts);
+    r.act('b', { a: 'defend', k: 0, c: EL, cid: r.defend.id });
+    check('nobody can judge the elder (a defence)', r.phase === 'claim' && !!r.claim.def && !r.canJudge(0) && !r.canJudge(2));
+    r.decide(0, 'pass'); r.decide(2, 'pass');
+    await until(() => r.phase === 'target'); r.act('b', { a: 'pick', tg: 2, cid: r.claim.id });
+    check('pickpocket cancelled: B keeps his hand and takes a point', await settle(r) && r.inf.join() === '3,4,2' && r.hands[1].length === 2 && r.hands[0].length === 2, { inf: r.inf, h: [r.hands[0], r.hands[1]] });
+    r.close();
+  }
+  {
+    const PICK = 7, r = mk([PICK, 1, 2], [1, 2, 3], [1, 2, 3]);
+    await attack(r, PICK); r.act('b', { a: 'defend', k: -1, cid: r.defend.id });
+    check('no defence: the pickpocket takes a card as before', await settle(r) && r.hands[0].length === 3 && r.hands[1].length === 2, { a: r.hands[0].length, b: r.hands[1].length });
+    r.close();
+  }
   console.log(bad ? bad + ' FAILED' : 'ALL PASS'); process.exit(bad ? 1 : 0);
 })();
