@@ -300,10 +300,9 @@ ol { padding-inline-start: 20px; text-align: right; }
       var inp = {}, g = h('div', { class: 'grid' });
       Object.keys(r.range).forEach(function (k) { inp[k] = h('input', { type: 'number', min: r.range[k][0], max: r.range[k][1], value: r.settings[k] }); g.append(h('label', {}, SLABEL[k] + ' (' + r.range[k][0] + '–' + r.range[k][1] + ')', inp[k])); });
       var bots = h('textarea', { rows: 8 }); bots.value = r.settings.botNames.join('\n');
-      var hint = h('textarea', { rows: 4, maxlength: 400 }); hint.value = r.settings.hint;
-      v.append(h('div', { class: 'card' }, g, h('label', { style: 'margin-top:12px' }, 'أسماء البوتات (اسم في كل سطر، ٨ على الأقل)', bots), h('label', { style: 'margin-top:12px' }, 'نص التلميح اللي بيظهر في الغرفة', hint),
+      v.append(h('div', { class: 'card' }, g, h('label', { style: 'margin-top:12px' }, 'أسماء البوتات (اسم في كل سطر، ٨ على الأقل)', bots),
         h('div', { class: 'bar' }, h('button', { class: 'primary', onclick: function () {
-          var o = { botNames: bots.value.split('\n').map(function (x) { return x.trim(); }).filter(Boolean), hint: hint.value };
+          var o = { botNames: bots.value.split('\n').map(function (x) { return x.trim(); }).filter(Boolean) };
           Object.keys(inp).forEach(function (k) { o[k] = Number(inp[k].value); });
           act(api('PUT', 'settings', o), 'اتحفظت الإعدادات. بتبدأ من اللعبة الجاية.').catch(function () {});
         } }, 'حفظ'))), h('p', { class: 'mute' }, 'عدد اللاعبين ثابت من ٣ لـ٨. الأصوات متولّدة جوه اللعبة ومش قابلة للتعديل من هنا.'));

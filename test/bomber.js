@@ -26,7 +26,7 @@ function mk(o) {
   {
     const r = mk({ a: [1, 2, 2, 5] }); r.doPlay(0, 0, BM); r.decide(2, 'challenge');
     await until(() => r.phase === 'act' && r.turn !== 0 && r.claim === null);
-    check('lie caught: A loses a point and a card, nobody else is touched', r.inf[0] === 2 && r.hands[0].length === 2 && r.hands[1].join() === '1,1,1' && r.hands[2].join() === '2,2,2', { inf: r.inf, h: r.hands });
+    check('lie caught: A loses a card but no point (no new card either), nobody else is touched', r.inf[0] === 3 && r.hands[0].length === 2 && r.hands[1].join() === '1,1,1' && r.hands[2].join() === '2,2,2', { inf: r.inf, h: r.hands });
     r.close();
   }
   console.log(bad ? bad + ' FAILED' : 'ALL PASS'); process.exit(bad ? 1 : 0);

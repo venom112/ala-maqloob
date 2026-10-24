@@ -36,7 +36,7 @@ function mk(o) {
   {
     const r = mk({ a: [1, 2, 2] }); r.doPlay(0, 0, SM); r.decide(2, 'challenge');
     await until(() => r.phase === 'act' && r.turn !== 0 && r.claim === null);
-    check('lie caught: a point lost, no double draw', r.inf[0] === 2 && !r.bonus.has(0), { inf: r.inf });
+    check('lie caught: no point lost, no double draw', r.inf[0] === 3 && !r.bonus.has(0), { inf: r.inf });
     // turns go 1, 2, then skip A
     r.turn = 2; r.drew = true; r.phase = 'act'; r.doPlay(2, 0, 2); r.decide(0, 'pass'); r.decide(1, 'pass');
     await until(() => r.phase === 'act' && r.claim === null && r.turn !== 2);

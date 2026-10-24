@@ -568,7 +568,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     </section>
 
     <section class="panel" id="panelPlay" hidden>
-      <p class="msg" id="playMsg" aria-live="polite"></p>
+      <p class="msg sr-only" id="playMsg" aria-live="polite"></p>
       <p class="msg ev" id="evMsg" aria-live="polite" hidden></p>
 
       <div class="claimbox" id="claimBox" hidden>
@@ -635,8 +635,6 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
           <button class="btn pass" id="declCancel" type="button">إلغاء</button>
         </div>
       </div></div>
-
-      <p class="hint" id="hintLine">في كل دور لازم تسحب ورقة واحدة بس من الكومة، وبعدها تلعب كارت مقلوب وتعلن قوته. الرقم والعملات جنب الاسم هم نقاط النفوذ: ٥ نقط عملة فضية و١٠ نقط عملة دهبية.</p>
     </section>
   </main>
 
@@ -924,7 +922,6 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   function loadConfig() {
     fetch('/api/config', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (c) {
       if (!c || c.v === cfgV) return; cfgV = c.v; GC = c; applyImages(c.images || {}); setupGoogle();
-      if ($('hintLine')) $('hintLine').textContent = c.hint || '';
     }).catch(function () {});
   }
   function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), x = a[i]; a[i] = a[j]; a[j] = x; } return a; }
@@ -1087,7 +1084,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   function renderPeek() {
     var pk = S.peekMem, on = !!pk && live() && S.over < 0;
     $('peekBox').hidden = !(on && S.peekOpen);
-    $('peekMini').hidden = !(on && !S.peekOpen);
+    $('peekMini').hidden = true;   // no reminder button after the box is closed
     if (!on) return;
     var who = nmR(pk.of);
     $('peekMini').textContent = 'افتكر كروت ' + who;

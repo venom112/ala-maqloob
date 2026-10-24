@@ -54,11 +54,11 @@ const slotOk = s => IMAGE_SLOTS[s] || /^card-\d{1,9}$/.test(s);
 const DEFAULT_SETTINGS = {
   startCards: 3,      // cards dealt to each player
   startInf: 3,        // influence points each player starts with
-  decideSec: 9,       // seconds the others get to challenge or pass
-  pickSec: 12,        // seconds to choose a target
+  decideSec: 15,      // seconds the others get to challenge or pass
+  pickSec: 15,        // seconds to choose a target
   botAfterSec: 25,    // a player cut off this long is replaced by a bot until he is back
   botNames: ['كريم', 'نورا', 'مصطفى', 'سلمى', 'عمر', 'هبة', 'ياسين', 'ليلى'],
-  hint: 'في كل دور لازم تسحب ورقة واحدة بس من الكومة، وبعدها تلعب كارت مقلوب وتعلن قوته. الرقم والعملات جنب الاسم هم نقاط النفوذ: ٥ نقط عملة فضية و١٠ نقط عملة دهبية.'
+  hint: '',
 };
 const SETTING_RANGE = { startCards: [1, 5], startInf: [1, 10], decideSec: [3, 30], pickSec: [5, 60], botAfterSec: [10, 120] };
 
@@ -76,10 +76,10 @@ const ACCOUNTANT = { name: 'المحاسب', symbol: '', color: '#2e6b4f', cnt: 
   power: [{ op: 'regain', n: 1, target: 'self' }], penalty: { loss: 1, drop: 0, gift: 0 }, defaultImg: '/img/accountant.jpg' };
 const DOCTOR = { name: 'طبيب العصابة', symbol: '', color: '#8f9aa3', cnt: 5, descr: 'استرد نقطتين نفوذ من البنك.', penDescr: 'يخسر نقطة نفوذ وقوة الكارت بتتلغي',
   power: [{ op: 'inf_gain', n: 2, target: 'self' }], penalty: { loss: 1, drop: 0, gift: 0 }, defaultImg: '/img/doctor.jpg' };
-const SMUGGLER = { name: 'المُهرِّب', symbol: '', color: '#5b6b3a', cnt: 4, descr: 'في دورك الجاي هتسحب كارتين بدل كارت. مينفعش تلعبه غير مرة كل ٣ أدوار.', penDescr: 'يخسر نقطة نفوذ وقوة الكارت بتتلغي ويخسر دوره الجاي',
-  power: [{ op: 'smuggle', n: 1, target: 'self' }], penalty: { loss: 1, drop: 0, gift: 0, skip: 1 }, defaultImg: '/img/smuggler.jpg' };
-const BOMBER = { name: 'المُفجِّر', symbol: '', color: '#3f7a2a', cnt: 4, descr: 'أجبر كل اللاعيبة ما عداك على رمي كارت وسحب غيره.', penDescr: 'يخسر نقطة نفوذ وقوة الكارت بتتلغي ويرمي كارت من إيده',
-  power: [{ op: 'recycle', n: 1, target: 'all_others' }], penalty: { loss: 1, drop: 1, gift: 0, skip: 0 }, defaultImg: '/img/bomber.jpg' };
+const SMUGGLER = { name: 'المُهرِّب', symbol: '', color: '#5b6b3a', cnt: 4, descr: 'في دورك الجاي هتسحب كارتين بدل كارت. مينفعش تلعبه غير مرة كل ٣ أدوار.', penDescr: 'يخسر دوره الجاي',
+  power: [{ op: 'smuggle', n: 1, target: 'self' }], penalty: { loss: 0, drop: 0, gift: 0, skip: 1 }, defaultImg: '/img/smuggler.jpg' };
+const BOMBER = { name: 'المُفجِّر', symbol: '', color: '#3f7a2a', cnt: 4, descr: 'أجبر كل اللاعيبة ما عداك على رمي كارت وسحب غيره.', penDescr: 'يرمي كارت من إيده من غير ما يسحب غيره',
+  power: [{ op: 'recycle', n: 1, target: 'all_others' }], penalty: { loss: 0, drop: 1, gift: 0, skip: 0 }, defaultImg: '/img/bomber.jpg' };
 const POLITICIAN = { name: 'السياسي', symbol: '', color: '#2f5d6b', cnt: 4, descr: 'بيتلعب مكشوف (مفيش تحدي) وبيديك حصانة ضد كل الهجمات لمدة دورين.', penDescr: 'مفيش عقوبة: بيتلعب مكشوف فمفيش كدب',
   power: [{ op: 'immune', n: 2, target: 'self' }], penalty: { loss: 0, drop: 0, gift: 0, skip: 0 }, defaultImg: '/img/politician.jpg' };
 const FORGER = { name: 'المُزوِّر', symbol: '', color: '#2b6d6a', cnt: 6, descr: 'انسخ قدرة آخر كارت اتلعب مقلوب ونفّذها كأنها الأصلية.', penDescr: 'قوة الكارت بتتلغي وكروت إيده بتتكشف لكل اللاعيبة',
@@ -100,7 +100,7 @@ const TEST_FILLERS = [
     power: [], penalty: { loss: 1, drop: 0, gift: 1 } }
 ];
 const SEED_CARDS = [
-  { name: 'الفتوّة', symbol: '', color: '#c8a24b', cnt: 8, descr: 'اسرق نقطة نفوذ واحدة من أي لاعب.', penDescr: 'يخسر نقطة نفوذ',
+  { name: 'الفتوّة', symbol: '', color: '#c8a24b', cnt: 8, descr: 'اسرق نقطة نفوذ واحدة من أي لاعب.', penDescr: 'يخسر نقطة نفوذ وقوة الكارت بتتلغي',
     power: [{ op: 'steal', n: 1, target: 'pick' }], penalty: { loss: 1, drop: 0, gift: 0 }, defaultImg: '/img/fatwa.jpg' },
   LAWYER,
   SHADOW,
@@ -348,6 +348,22 @@ class Content {
     if (!(await st.getSetting('seed_nofiller'))) {   // the placeholder cards are gone from the game
       await st.run("UPDATE cards SET deleted=1, active=0 WHERE name IN (?,?,?)", ['تجريبي ١', 'تجريبي ٢', 'تجريبي ٣']);
       await st.setSetting('seed_nofiller', '1');
+    }
+    if (!(await st.getSetting('seed_rules2'))) {   // penalties of three cards, the two waiting times, and no hint text
+      const fix = async (name, was, now, txt) => {
+        const row = await st.get('SELECT id, penalty FROM cards WHERE name=? AND deleted=0', [name]); if (!row) return;
+        let p = {}; try { p = JSON.parse(row.penalty); } catch (e) {}
+        if (['loss', 'drop', 'gift', 'skip', 'reveal'].every(k => (p[k] || 0) === (was[k] || 0))) await st.run('UPDATE cards SET penalty=?, pen_descr=? WHERE id=?', [JSON.stringify(now), txt, row.id]);
+      };
+      await fix('الفتوّة', { loss: 1 }, { loss: 1, drop: 0, gift: 0 }, 'يخسر نقطة نفوذ وقوة الكارت بتتلغي');
+      await fix(SMUGGLER.name, { loss: 1, skip: 1 }, SMUGGLER.penalty, SMUGGLER.penDescr);
+      await fix(BOMBER.name, { loss: 1, drop: 1 }, BOMBER.penalty, BOMBER.penDescr);
+      let s = {}; try { s = JSON.parse((await st.getSetting('cfg')) || '{}'); } catch (e) {}
+      if (s.decideSec === 9) s.decideSec = 15;
+      if (s.pickSec === 12) s.pickSec = 15;
+      if (s.hint !== undefined) s.hint = '';
+      await st.setSetting('cfg', JSON.stringify(s));
+      await st.setSetting('seed_rules2', '1');
     }
     await this.reload();
     return this;

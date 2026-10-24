@@ -93,7 +93,7 @@ const assets = { async fetch(req) {   // html_handling "none": exact file names 
   check('/ serves the game page', r.status === 200 && /text\/html/.test(r.headers.get('content-type')) && (await r.text()).includes('ع المقلوب'));
   r = await req('/admin'); const adminHtml = await r.text();
   check('/admin serves the admin panel with the sign-in popup header', r.status === 200 && adminHtml.includes('<html') && r.headers.get('cross-origin-opener-policy') === 'same-origin-allow-popups');
-  r = await req('/sw.js'); check('static files pass straight through', r.status === 200 && (await r.text()).includes("const V = 'ala-v17'"));
+  r = await req('/sw.js'); check('static files pass straight through', r.status === 200 && (await r.text()).includes("const V = 'ala-v18'"));
   r = await req('/nope.png'); check('unknown file: 404', r.status === 404);
   r = await req('/healthz'); check('/healthz answers', r.status === 200 && (await r.text()) === 'ok');
   r = await req('/api/config'); const cfg = await r.json();
