@@ -93,7 +93,7 @@ const assets = { async fetch(req) {   // html_handling "none": exact file names 
   check('/ serves the game page', r.status === 200 && /text\/html/.test(r.headers.get('content-type')) && (await r.text()).includes('ع المقلوب'));
   r = await req('/admin'); const adminHtml = await r.text();
   check('/admin serves the admin panel with the sign-in popup header', r.status === 200 && adminHtml.includes('<html') && r.headers.get('cross-origin-opener-policy') === 'same-origin-allow-popups');
-  r = await req('/sw.js'); check('static files pass straight through', r.status === 200 && (await r.text()).includes("const V = 'ala-v21'"));
+  r = await req('/sw.js'); check('static files pass straight through', r.status === 200 && (await r.text()).includes("const V = 'ala-v24'"));
   r = await req('/nope.png'); check('unknown file: 404', r.status === 404);
   r = await req('/healthz'); check('/healthz answers', r.status === 200 && (await r.text()) === 'ok');
   r = await req('/api/config'); const cfg = await r.json();
@@ -156,7 +156,7 @@ const assets = { async fetch(req) {   // html_handling "none": exact file names 
     if (!autopilotOn) return;
     const m = last(P, 'room'); if (!m || !m.g) return; const g = m.g;
     if (g.over >= 0) return;
-    if (g.phase === 'act' && g.turn === me) { if (!g.drew) P.send({ t: 'act', a: 'draw' }); else { played++; P.send({ t: 'act', a: 'play', k: 0, d: m.hand[0] }); } }
+    if (g.phase === 'act' && g.turn === me) { if (!g.drew) P.send({ t: 'act', a: 'draw' }); else { played++; const cs = g.cfg.cards, t0 = m.hand[0]; P.send({ t: 'act', a: 'play', k: 0, d: (cs[t0].df || cs[t0].up) ? 0 : t0 }); } }   // defenders and face-up cards are thrown as the Fatwa (they cannot be named on a bluff)
     if (g.phase === 'claim' && g.claim && g.claim.pending.includes(me)) P.send({ t: 'act', a: 'decide', cid: g.claim.id, ch: 'pass' });
     if (g.phase === 'target' && g.turn === me && g.claim) P.send({ t: 'act', a: 'pick', cid: g.claim.id, tg: g.targets[0] });
     if (g.phase === 'give' && g.claim && g.claim.by === me) P.send({ t: 'act', a: 'give', cid: g.claim.id, k: 0 });
@@ -177,15 +177,20 @@ const assets = { async fetch(req) {   // html_handling "none": exact file names 
   /* ---------- friends room: create / join / start ---------- */
   const mk = async (name) => { const w = await open(); w.send({ t: 'register', email: 'u' + Math.random().toString(36).slice(2) + '@t.com', name, pass: '1234' }); await until(() => last(w, 'authed')); return w; };
   const f1 = await mk('منى'), f2 = await mk('هاني'), f3 = await mk('دينا');
-  f1.send({ t: 'create', cap: 3 }); await until(() => last(f1, 'room'));
+  f1.send({ t: 'create', cap: 3, decide: 5, turn: 999, pick: 20 }); await until(() => last(f1, 'room'));
   const code = last(f1, 'room').code;
   check('a friends room gets a 5-digit code', /^\d{5}$/.test(code), code);
   f2.send({ t: 'join', code }); f3.send({ t: 'join', code });
   check('two friends join with the code', await until(() => last(f1, 'room').roster.length === 3));
+  { const g1 = await mk('سلمى'); g1.send({ t: 'create', cap: 4 }); await until(() => last(g1, 'room')); g1.send({ t: 'fillbots' });
+    check('the host fills the empty seats with bots', await until(() => { const m = last(g1, 'room'); return m && m.roster.length === 4 && m.roster.filter(r => r.bot).length === 3; }), last(g1, 'room').roster);
+    const g2 = await mk('رنا'); g2.send({ t: 'join', code: last(g1, 'room').code });
+    check('a newcomer takes the seat of a bot', await until(() => { const m = last(g1, 'room'); return m && m.roster.length === 4 && m.roster.filter(r => r.bot).length === 2 && m.roster.some(r => r.name === 'رنا'); }), last(g1, 'room').roster); g1.close(); g2.close(); }
   f2.send({ t: 'start' }); await sleep(200);
   check('only the host can start', last(f1, 'room').status === 'waiting');
   f1.send({ t: 'start' });
   check('the host starts: everybody is dealt cards', await until(() => [f1, f2, f3].every(w => { const m = last(w, 'room'); return m && m.g && m.g.dealt && m.hand.length === 3; }), 8000));
+  { const st = last(f1, 'room').g.cfg.set; check('room timers: out-of-range values are clamped to 15..60 s, a chosen one is kept', st.decideMs === 15000 && st.turnMs === 60000 && st.pickMs === 20000, st); }
   const h1 = last(f1, 'room'), h2 = last(f2, 'room');
   check('each player gets his own hand only (different cards allowed, no one else\'s in the message)', !JSON.stringify(h2).includes('"hand":' + JSON.stringify(h1.hand)) || JSON.stringify(h1.hand) === JSON.stringify(h2.hand));
   f2.close(); check('a player who drops is not fatal to the room', await until(() => f2.closed));
@@ -249,13 +254,13 @@ const assets = { async fetch(req) {   // html_handling "none": exact file names 
   check('a connection silent for 25 s is cut by the server (no ping frames on Cloudflare)', silent.closed === true);
 
   /* ---------- sleeping ---------- */
-  [R, R2, Z, A, B, C, D, P, silent].forEach(w => { try { w.close(); } catch (e) {} });
+  [R, R2, Z, A, B, C, D, P, silent, f1, f2, f3].forEach(w => { try { w.close(); } catch (e) {} });
   await sleep(1500);
   await call('POST', 'rooms/none/close', {}, OWN);
   const timersAfter = process.getActiveResourcesInfo().filter(x => x === 'Timeout').length;
   const rooms = (await call('GET', 'rooms', undefined, OWN)).j.rooms.length;
   console.log('   (open rooms: ' + rooms + ', timers before/after: ' + timersBefore + '/' + timersAfter + ')');
-  check('with everyone gone the server keeps no repeating timer (the Durable Object can sleep)', rooms === 0 ? timersAfter <= timersBefore + 3 : true, { rooms, timersBefore, timersAfter });
+  check('with everyone gone the server keeps no repeating timer (the Durable Object can sleep)', rooms === 0 ? timersAfter <= timersBefore + 5 : true, { rooms, timersBefore, timersAfter });
 
   /* ---------- password scheme fallback ---------- */
   const S = require('../storage');

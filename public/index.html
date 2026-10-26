@@ -207,6 +207,11 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .actions.one { grid-template-columns: 1fr; }
 
 /* influence pips, eliminated and winner states */
+.immb { display: inline-flex; align-items: center; gap: .8cqw; padding: .2cqw 1.2cqw .2cqw .3cqw; border: 1px solid var(--brass); border-radius: 99px; background: rgba(200,162,75,.16); color: var(--brass); font-size: clamp(8px, 2.3cqw, 11px); }
+.immb img { width: 4.6cqw; height: 4.6cqw; border-radius: 50%; object-fit: cover; }
+.immb i { font-style: normal; font-weight: 700; color: var(--bone); background: var(--coal); border-radius: 99px; padding: 0 1cqw; }
+.timers { display: grid; gap: 8px; margin: 8px 0; }
+.timers label { display: grid; gap: 4px; font-size: 14px; color: var(--mute); }
 .tag .nl { display: flex; align-items: center; justify-content: center; gap: 1.4cqw; }
 .inf { display: inline-flex; align-items: center; gap: .9cqw; }
 .pts {
@@ -526,6 +531,12 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       <div class="mini" id="miniCreate" aria-hidden="true"></div>
       <div class="chips" id="chipsCreate" role="radiogroup" aria-label="عدد اللاعبين"></div>
       <p class="count-line" id="lineCreate"></p>
+      <div class="timers">
+        <label>وقت قرار التحدي (ثانية)<input class="field" id="tDecide" type="number" min="15" max="60" step="1" value="15" inputmode="numeric"></label>
+        <label>وقت الدور (ثانية)<input class="field" id="tTurn" type="number" min="15" max="60" step="1" value="60" inputmode="numeric"></label>
+        <label>وقت اختيار الهدف (ثانية)<input class="field" id="tPick" type="number" min="15" max="60" step="1" value="15" inputmode="numeric"></label>
+        <p class="hint">من ١٥ لـ٦٠ ثانية. لو لاعب خلّى وقت دوره يخلص، البوت بيلعب الدور ده بدله.</p>
+      </div>
       <p class="msg" id="createMsg" aria-live="polite"></p>
       <button class="btn primary" id="openRoom" type="button">افتح</button>
     </section>
@@ -564,8 +575,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       <div class="codebox"><span class="lbl">كود الغرفة</span><b id="roomCode"></b></div>
       <button class="btn ghost" id="copy" type="button">انسخ الدعوة</button>
       <p class="msg" id="waitMsg" aria-live="polite"></p>
+      <button class="btn ghost" id="fillBots" type="button" hidden>🤖 هاتلنا بوتات</button>
       <button class="btn primary" id="go" type="button">يلا بينا</button>
-      <p class="hint">اللعب مش هيبدأ غير لما كل اللاعبين الحقيقيين يدخلوا بالكود. مفيش بوتات في غرف الأصحاب.</p>
+      <p class="hint">اللعب مش هيبدأ غير لما الكراسي كلها تتملي: بلاعبين حقيقيين بالكود، أو بوتات لو دوست "هاتلنا بوتات". لو لاعب دخل والغرفة كاملة بالبوتات، بياخد مكان بوت.</p>
     </section>
 
     <section class="panel" id="panelPlay" hidden>
@@ -887,7 +899,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     s.style.setProperty('--c', COLORS[i]);
     s.innerHTML =
       '<div class="hand"><div class="fan" style="--i:' + i + '"><div class="card"></div><div class="card"></div><div class="card"></div></div></div>' +
-      '<div class="seat"><div class="tag"><div class="nl"><span class="av"></span><span class="nm"></span><span class="inf" title="نقاط النفوذ"><b class="pts">٣</b><span class="coins"></span></span></div><small></small></div></div>';
+      '<div class="seat"><div class="tag"><div class="nl"><span class="av"></span><span class="nm"></span><span class="inf" title="نقاط النفوذ"><b class="pts">٣</b><span class="coins"></span></span><span class="immb" hidden><img alt=""><b>محصن</b><i></i></span></div><small></small></div></div>';
     stage.appendChild(s);
     slots.push(s);
   }
@@ -972,6 +984,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   }
   function aliveList() { var a = []; S.players.forEach(function (p, i) { if (!S.out[i]) a.push(i); }); return a; }
 
+  function polImg() { var c = CFG && CFG.cards.filter(function (x) { return x.up && !x.win; })[0]; return (c && c.img) || '/img/politician.jpg'; }
   function renderTable() {
     var lv = live();
     for (var i = 0; i < MAX; i++) {
@@ -984,7 +997,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
         else { nmEl.classList.remove('crowned'); nmEl.textContent = p ? p.name : 'مستني...'; }
         var small = p ? (p.tag || '') : '';
         if (p && lv) small = S.over === i ? 'زعيم المافيا' : S.out[i] ? 'الضحية' : p.sub ? 'فصل · بوت مكانه' : cardsWord(handLen(i));
-        if (p && lv && S.imm[i] && !S.out[i] && S.over < 0) small = 'محصّن · ' + small;
+        var ib = sl.querySelector('.immb'), imn = (p && lv && !S.out[i] && S.over < 0) ? (S.imm[i] || 0) : 0;
+        ib.hidden = !imn;
+        if (imn) { ib.querySelector('i').textContent = fmt(imn); var pim = ib.querySelector('img'), pu = polImg(); if (pim.getAttribute('src') !== pu) pim.src = pu; }
         sl.querySelector('small').textContent = small;
         var inf = lv && S.inf[i] != null ? S.inf[i] : GC.startInf;
         var infEl = sl.querySelector('.inf'), ikey = String(inf), pts = infEl.querySelector('.pts');
@@ -1021,11 +1036,11 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     if (sig !== handSig) {
       handSig = sig;
       $('handRow').innerHTML = h.map(function (t, k) {
-        return '<button type="button" class="hc' + (cd(t).img ? ' art' : '') + (k === S.sel ? ' sel' : '') + '" style="color:' + esc(cd(t).color) + '" data-k="' + k + '"' + (can && S.drew && S.lock.indexOf(t) < 0 ? '' : ' disabled') + ' aria-label="' + esc(pw(t)) + '">' + faceHtml(t) + '</button>';
+        return '<button type="button" class="hc' + (cd(t).img ? ' art' : '') + (k === S.sel ? ' sel' : '') + '" style="color:' + esc(cd(t).color) + '" data-k="' + k + '"' + (can && S.drew ? '' : ' disabled') + ' aria-label="' + esc(pw(t)) + '">' + faceHtml(t) + '</button>';
       }).join('') || '<span class="msg">إيدك فاضية.</span>';
       Array.prototype.forEach.call($('declRow').children, function (b, t) {
         b.setAttribute('aria-checked', String(t === S.decl));
-        b.disabled = !can || S.sel < 0 || S.ban.indexOf(t) >= 0 || (!!cd(t).up && h[S.sel] !== t) || (S.sel >= 0 && !!cd(h[S.sel]).up && h[S.sel] !== t);
+        b.disabled = !can || S.sel < 0 || S.ban.indexOf(t) >= 0 || (!!cd(t).up && (h[S.sel] !== t || S.lock.indexOf(t) >= 0));
       });
       $('playBtn').disabled = !(canPlay() && S.sel >= 0 && S.decl >= 0);
       var st = S.sel >= 0 ? h[S.sel] : -1;
@@ -1044,8 +1059,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       else if (S.decl !== h[S.sel]) hint = 'بتكدب! لو حد اتحداك هتخسر نقطة نفوذ.';
       else hint = 'دي قوة الكارت اللي معاك. لو عايز تكدب اختار قوة تانية.';
     }
-    if (can && S.sel >= 0 && cd(h[S.sel]).up) hint = cd(h[S.sel]).name + ' بيتلعب مكشوف: مفيش تحدي ولا كدب.';
-    $('playBtn').textContent = can && S.sel >= 0 && cd(h[S.sel]).up ? 'العب الكارت مكشوف' : 'العب الكارت مقلوب';
+    if (can && S.sel >= 0 && cd(h[S.sel]).up) hint = S.decl === h[S.sel] ? cd(h[S.sel]).name + ' بيتلعب مكشوف: مفيش تحدي ولا كدب.' : (S.decl < 0 ? cd(h[S.sel]).name + (S.lock.indexOf(h[S.sel]) >= 0 ? ' مقفول لحد ما توصل لعدد النقط المطلوب. ' : ' ') + 'تقدر ترميه وتقول إنك لعبت كارت تاني (بلف).' : 'بتكدب! لو حد اتحداك هتخسر نقطة نفوذ.');
+    $('playBtn').textContent = can && S.sel >= 0 && cd(h[S.sel]).up && S.decl === h[S.sel] ? 'العب الكارت مكشوف' : 'العب الكارت مقلوب';
     var lk = h.filter(function (t) { return S.lock.indexOf(t) >= 0; });
     document.querySelector('#myHand .mh').textContent = lk.length ? 'إيدك (' + cd(lk[0]).name + ' محتاج ' + fmt(cd(lk[0]).win) + ' نقط)' : 'إيدك';
     $('declHint').textContent = hint;
@@ -1151,7 +1166,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     $('panelWait').hidden = S.playing || R.bots;
     $('panelPlay').hidden = !S.playing;
     $('roomCode').textContent = fmt(S.code);
-    $('go').hidden = !R.isHost;
+    $('go').hidden = !R.isHost; $('fillBots').hidden = !(R.isHost && !full && !S.playing && !R.bots);
     $('go').disabled = !(R.isHost && n === S.cap && R.roster.length === S.cap);
     if (!S.playing && !R.bots) {
       var w;
@@ -1334,6 +1349,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       case 'inf': return (me(o.i) ? 'اتخصمت منك' : 'اتخصمت من ' + nmA(o.i)) + ' نقطة نفوذ. فاضل ' + fmt(o.n) + '.';
       case 'out': return me(o.i) ? 'نفوذك وصل صفر. إنت الضحية.' : 'نفوذ ' + nmA(o.i) + ' وصل صفر. ' + nmA(o.i) + ' الضحية.';
       case 'left': return nmA(o.i) + ' خرج من اللعبة.';
+      case 'autoturn': return me(o.i) ? 'الوقت خلص ولعب البوت دورك.' : 'الوقت خلص عند ' + nmA(o.i) + ' ولعب البوت دوره.';
       case 'allpass': return me(o.P) ? '' : 'الكل عدّاها لـ ' + nmA(o.P) + '.';
       case 'elderhit': return (me(o.P) ? 'سحبت' : nmA(o.P) + ' سحب') + ' نقطة من ' + (me(o.T) ? 'إنت' : nmA(o.T)) + '.';
       case 'judged': return me(o.A) ? 'القاضي ألغى أكشنك.' : 'القاضي ألغى أكشن ' + nmA(o.A) + '.';
@@ -1575,7 +1591,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     S.inf = []; S.out = []; S.hands = []; S.imm = [];
     for (rr = 0; rr < n; rr++) {
       a = (rr + R.myIdx) % n;
-      S.inf[rr] = g.inf[a]; S.out[rr] = !!g.out[a]; S.imm[rr] = !!(g.imm && g.imm[a]);
+      S.inf[rr] = g.inf[a]; S.out[rr] = !!g.out[a]; S.imm[rr] = (g.imm && g.imm[a]) || 0;
       S.hands[rr] = rr === 0 ? (m.hand || []).slice() : new Array(g.handN[a] || 0).fill(-1);
     }
     S.turn = rel(g.turn); S.phase = g.phase; S.drew = !!g.drew; S.over = g.over >= 0 ? rel(g.over) : -1;
@@ -1605,7 +1621,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   });
   $('handRow').addEventListener('click', function (e) {
     var b = e.target.closest('.hc'); if (!b || !canPlay()) return;
-    S.sel = +b.dataset.k; S.decl = (S.ban.indexOf(S.hands[0][S.sel]) >= 0 || cd(S.hands[0][S.sel]).df) ? -1 : S.hands[0][S.sel]; handSig = ''; renderRoom();
+    S.sel = +b.dataset.k; S.decl = (S.ban.indexOf(S.hands[0][S.sel]) >= 0 || S.lock.indexOf(S.hands[0][S.sel]) >= 0 || cd(S.hands[0][S.sel]).df) ? -1 : S.hands[0][S.sel]; handSig = ''; renderRoom();
   });
   var declSig = '';
   function buildDecl() {
@@ -1691,7 +1707,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     if (!ME.name) { show('name'); return; }
     if (!net.on) { createMsg('مفيش اتصال بالسيرفر دلوقتي. جرب تاني بعد ثانية.', true); return; }
     $('openRoom').disabled = true; createMsg('بنفتح الغرفة...');
-    send({ t: 'create', cap: S.createN });
+    var tv = function (id, d) { var x = Math.round(Number($(id).value)); return Number.isFinite(x) && x > 0 ? Math.min(60, Math.max(15, x)) : d; };
+    send({ t: 'create', cap: S.createN, decide: tv('tDecide', 15), turn: tv('tTurn', 60), pick: tv('tPick', 15) });
     setTimeout(function () { $('openRoom').disabled = false; createMsg(''); }, 2500);
   };
   function joinErr(t) { $('joinMsg').textContent = t; $('joinMsg').className = 'msg err'; }
@@ -1710,6 +1727,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   });
   $('codeIn').addEventListener('keydown', function (e) { if (e.key === 'Enter') tryJoin(); });
   $('go').onclick = function () { send({ t: 'start' }); };
+  $('fillBots').onclick = function () { send({ t: 'fillbots' }); };
   $('copy').onclick = function () {
     var text = 'تعالى العب معايا ع المقلوب! كود الغرفة: ' + fmt(S.code) + '\n' + location.origin;
     var fail = function () {

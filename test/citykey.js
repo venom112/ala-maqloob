@@ -16,7 +16,7 @@ function mk(o) {
 }
 (async () => {
   {
-    const r = mk(); r.act('a', { a: 'play', k: 0, d: 1 });
+    const r = mk(); r.act('a', { a: 'play', k: 0, d: KEY });
     check('with 10 points the key is played face up (no challenge) and wins', r.phase === 'resolve' && r.pile[r.pile.length - 1].rev === true && r.claim.pending.length === 0);
     check('A wins the game', await until(() => r.over === 0), r.over);
     check('everybody sees the win event', r.evs.some(e => e.k === 'win' && e.w === 0));
@@ -34,7 +34,9 @@ function mk(o) {
   {
     const r = mk({ a: [KEY, KEY, KEY], inf: [4, 3, 3] }); r.drew = false;
     r.deck = [1, 1, KEY]; r.actDraw(0);
-    check('only locked keys in hand: the turn passes', r.turn === 1 && r.drew === false && r.ev && r.ev.k === 'locked', { turn: r.turn, ev: r.ev });
+    check('only locked keys in hand: the turn is not lost, one can be thrown as another card', r.turn === 0 && r.drew === true, { turn: r.turn });
+    r.act('a', { a: 'play', k: 0, d: KEY }); check('still cannot be named as the key', r.phase === 'act' && r.hands[0].length === 4);
+    r.act('a', { a: 'play', k: 0, d: 0 }); check('thrown face down as the Fatwa (a bluff)', r.phase === 'claim' && r.claim.c === 0 && r.pile[r.pile.length - 1].rev === false && r.hands[0].length === 3, { ph: r.phase });
     r.close();
   }
   {
@@ -45,6 +47,11 @@ function mk(o) {
   {
     const r = mk({ a: [KEY, 1, 2], inf: [5, 3, 3] }); r.roster[0].bot = true; r.botAct(); await sleep(100);
     check('a bot with 5 points keeps the key (plays another card)', r.over < 0 && r.hands[0].includes(KEY) && r.hands[0].length === 2, r.hands[0]);
+    r.close();
+  }
+  {
+    const r = mk({ a: [KEY, 1, 2], inf: [10, 3, 3] }); r.act('a', { a: 'play', k: 0, d: 0 });
+    check('even with 10 points the key can be thrown away as another card (no win)', r.phase === 'claim' && r.claim.c === 0 && r.over < 0 && r.pile[r.pile.length - 1].rev === false, { ph: r.phase });
     r.close();
   }
   console.log(bad ? bad + ' FAILED' : 'ALL PASS'); process.exit(bad ? 1 : 0);

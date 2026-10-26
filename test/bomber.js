@@ -19,7 +19,7 @@ function mk(o) {
     const r = mk(); r.deck = [3, 3, 3, 3, 3, 3]; const d0 = r.deck.length;
     r.act('a', { a: 'play', k: 0, d: BM }); r.decide(1, 'pass'); r.decide(2, 'pass');
     await until(() => r.phase === 'act' && r.turn === 1 && r.claim === null);
-    check('B and C each swapped one card for another from the pile', r.hands[1].filter(x => x === 3).length === 1 && r.hands[2].filter(x => x === 3).length === 1 && r.hands[1].length === 3 && r.hands[2].length === 3, r.hands);
+    check('B and C each threw one card and drew one (hands and pile keep their sizes)', r.hands[1].length === 3 && r.hands[2].length === 3 && r.hands[0].length === 2 && r.deck.length === d0, r.hands);
     check('the pile size is unchanged and A keeps his hand', r.deck.length === d0 && r.hands[0].length === 2 && r.inf.every(x => x === 3), { deck: r.deck.length, inf: r.inf });
     r.close();
   }

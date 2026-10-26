@@ -17,10 +17,10 @@ function mk(o) {
 const settle = r => until(() => r.phase === 'act' && r.claim === null && r.turn !== 0);
 (async () => {
   {
-    const r = mk(); r.act('a', { a: 'play', k: 0, d: 1 });   // asks to claim another card with the politician: its real face wins
-    check('the politician is played face up whatever was claimed (no challenge phase)', r.phase === 'resolve' && r.claim.c === PO && r.claim.pending.length === 0 && r.pile[r.pile.length - 1].rev === true, { ph: r.phase, c: r.claim && r.claim.c });
+    const r = mk(); r.act('a', { a: 'play', k: 0, d: PO });   // named as itself: played face up
+    check('the politician named as itself is played face up (no challenge phase)', r.phase === 'resolve' && r.claim.c === PO && r.claim.pending.length === 0 && r.pile[r.pile.length - 1].rev === true, { ph: r.phase, c: r.claim && r.claim.c });
     await settle(r);
-    check('A is immune now', r.isImmune(0) && r.body('b').g.imm[0] === true && !r.body('b').g.imm[1]);
+    check('A is immune now', r.isImmune(0) && r.body('b').g.imm[0] === 2 && !r.body('b').g.imm[1]);
     check('the card stays face up on the pile', r.pile[r.pile.length - 1].rev === true);
     r.close();
   }
@@ -52,6 +52,11 @@ const settle = r => until(() => r.phase === 'act' && r.claim === null && r.turn 
       r.close();
     }
     check('a bot sometimes plays the politician, always face up', ups > 0 && wrong === 0, { ups, wrong });
+  }
+  {
+    const r = mk(); r.act('a', { a: 'play', k: 0, d: 0 });
+    check('the politician can be thrown away face down as another card (bluff, no immunity)', r.phase === 'claim' && r.claim.c === 0 && !r.isImmune(0) && r.pile[r.pile.length - 1].rev === false, { ph: r.phase });
+    r.close();
   }
   console.log(bad ? bad + ' FAILED' : 'ALL PASS'); process.exit(bad ? 1 : 0);
 })();

@@ -16,7 +16,7 @@ function buildDeck(cfg) { const d = []; cfg.cards.forEach((c, k) => { for (let n
 class Room {
   constructor(code, cap, host, onEmpty, content) {
     this.content = content || (Room.defaultContent || (Room.defaultContent = Content.fixed()));
-    this.cfg = this.content.snapshot();
+    this.cfg = this.content.snapshot(); this.opts = null; this.turnKey = ''; this.autoKey = '';
     this.code = code; this.cap = cap; this.hostUid = host.uid; this.onEmpty = onEmpty;
     this.roster = [{ uid: host.uid, name: host.name }];
     this.status = 'waiting'; this.gameNo = 0; this.bots = false;
@@ -50,9 +50,9 @@ class Room {
         claim: this.claim ? { by: this.claim.by, c: this.claim.c, pending: this.claim.pending, total: this.claim.total, id: this.claim.id, up: !!this.claim.up, def: !!this.claim.def } : null,
         targets: this.phase === 'target' ? this.targets : [], defend: this.phase === 'defend' && this.defend ? { T: this.defend.T, P: this.defend.P, c: this.defend.c, opts: this.defend.opts, id: this.defend.id, kind: this.defend.kind } : null, ev: this.ev || '', evs: this.evs,
         lock: i >= 0 && this.inf ? [...new Set((this.hands[i] || []).filter(t => this.keyLocked(i, t)))] : [],
-        imm: this.immuneTo ? this.roster.map((r, j) => this.isImmune(j)) : [],
+        imm: this.immuneTo ? this.roster.map((r, j) => this.isImmune(j) ? this.immuneTo[j] - this.turnsN[j] + 1 : 0) : [],
         ban: i >= 0 && this.turnsN ? this.cfg.cards.map((c, x) => x).filter(x => this.claimBanned(i, x)) : [],
-        cfg: { cards: this.cfg.cards.map(c => ({ df: this.isDefCard(this.cfg.cards.indexOf(c)), jg: !!c.jg, win: (c.power.find(o => o.op === 'victory') || { n: 0 }).n, up: !!c.up, name: c.name, symbol: c.symbol, color: c.color, descr: c.descr, img: c.img, pen: c.pen })), set: { startInf: this.cfg.set.startInf, decideMs: this.cfg.set.decideMs, pickMs: this.cfg.set.pickMs }, v: this.cfg.v }
+        cfg: { cards: this.cfg.cards.map(c => ({ df: this.isDefCard(this.cfg.cards.indexOf(c)), jg: !!c.jg, win: (c.power.find(o => o.op === 'victory') || { n: 0 }).n, up: !!c.up, name: c.name, symbol: c.symbol, color: c.color, descr: c.descr, img: c.img, pen: c.pen })), set: { startInf: this.cfg.set.startInf, decideMs: this.cfg.set.decideMs, pickMs: this.cfg.set.pickMs, turnMs: this.cfg.set.turnMs || 0 }, v: this.cfg.v }
       };
     }
     return {
@@ -91,7 +91,7 @@ class Room {
       if (here) anyoneThere = true;
       if (this.status === 'playing') {
         if (!this.bots && !r.sub && !here && this.live() && this.over < 0) this.substitute(i);
-        else if (r.sub && here) this.restore(i);
+        else if (r.sub && here) { r.left = false; this.restore(i); }
       } else if (this.status === 'waiting' && !here && ago > WAIT_GRACE_MS) this.leave(r.uid);
     });
     if (anyoneThere) this.absentAt = 0;
@@ -110,14 +110,27 @@ class Room {
   }
   restore(i) {
     const r = this.roster[i]; if (!r || !r.sub) return;
-    r.sub = false; this.ev = { k: 'back', i }; this.touch();
+    r.sub = false; r.left = false; this.ev = { k: 'back', i }; this.touch();
   }
   add(user) {
     if (this.status !== 'waiting') return 'started';
     if (this.idx(user.uid) >= 0) return null;
-    if (this.roster.length >= this.cap) return 'full';
+    if (this.roster.length >= this.cap) {   // a seat held by a helper bot goes to the newcomer
+      const b = this.roster.map((r, i) => r.bot ? i : -1).filter(i => i >= 0).pop();
+      if (b === undefined || this.bots) return 'full';
+      this.roster[b] = { uid: user.uid, name: user.name }; this.publish(); return null;
+    }
     this.roster.push({ uid: user.uid, name: user.name });
     this.publish();
+    return null;
+  }
+  // the host fills the empty seats of a waiting room with bots
+  fillBots(uid) {
+    if (this.closed || this.status !== 'waiting' || uid !== this.hostUid || this.bots) return 'denied';
+    const used = new Set(this.roster.map(r => r.name)), pool = this.cfg.set.botNames.filter(b => !used.has(b));
+    let k = 0, n = this.roster.length;
+    while (this.roster.length < this.cap) { const nm = pool[k] || ('بوت ' + (this.roster.length + 1)); this.roster.push({ uid: 'bot:w' + (k++), name: nm, bot: true }); }
+    if (this.roster.length !== n) this.publish();
     return null;
   }
   humans() { return this.roster.filter(r => !r.bot && !r.gone); }
@@ -130,6 +143,13 @@ class Room {
       this.roster.splice(i, 1); this.publish(); return;
     }
     if (this.bots) return this.close('');
+    if (this.live() && this.over < 0 && !this.out[i]) {
+      // mid-game exit: a bot plays the seat until he comes back (same code); if he never does, the bot finishes the game
+      this.roster[i].left = true; this.lastSeen.set(uid, 0);
+      this.substitute(i);
+      if (uid === this.hostUid) { const o = this.roster.find(r => !r.bot && !r.gone && !r.left && r.uid !== uid); if (o) this.hostUid = o.uid; }
+      return;
+    }
     this.roster[i].gone = true;
     this.dropPlayer(i);
     const left = this.humans();
@@ -169,8 +189,7 @@ class Room {
   playable(i) { return this.hands[i].some(t => !this.keyLocked(i, t)); }
   // after the draw: a hand of locked keys only means the turn is lost
   lockedTurn(i) {
-    if (!this.hands[i].length || this.playable(i)) return false;
-    this.ev = { k: 'locked', i }; this.turn = this.nextAlive(i); this.drew = false; return true;
+    return false;   // a card that cannot be played as itself can always be thrown away as another card, so no turn is ever lost
   }   // played face up
   isImmune(j) { return this.immuneTo[j] >= 0 && this.turnsN[j] <= this.immuneTo[j]; }
   claimBanned(i, c) { const n = this.cdOf(c); if (!n) return false; const at = this.cdAt[i][c]; return at != null && this.turnsN[i] + 1 - at < n; }
@@ -182,9 +201,14 @@ class Room {
     this.later(() => { this.newGame(); this.touch(); }, 600);
     return null;
   }
+  // per-room timers chosen when the room is made (seconds 15..60): challenge, target pick, and a whole turn
+  applyOpts() {
+    const o = this.opts, s = this.cfg.set; if (!o) return;
+    s.decideMs = o.decideMs; s.pickMs = o.pickMs; s.turnMs = o.turnMs || 0;
+  }
   startBots(user, n) {
     this.bots = true; this.cap = n;
-    this.cfg = this.content.snapshot();
+    this.cfg = this.content.snapshot(); this.applyOpts();
     const pool = this.cfg.set.botNames.filter(b => b !== user.name);
     for (let i = 0; i < n - 1; i++) this.roster.push({ uid: 'bot:' + i, name: pool[i], bot: true });
     this.status = 'playing'; this.resetCards(); this.publish();
@@ -192,12 +216,13 @@ class Room {
   }
   newGame() {
     const n = this.roster.length;
-    this.cfg = this.content.snapshot();
+    this.cfg = this.content.snapshot(); this.applyOpts(); this.turnKey = ''; this.autoKey = '';
     this.deck = buildDeck(this.cfg);
     this.hands = this.roster.map(() => { const h = []; for (let k = 0; k < this.cfg.set.startCards; k++) h.push(this.deck.pop()); return h; });
     this.inf = this.roster.map(() => this.cfg.set.startInf);
     this.out = this.roster.map(r => !!r.gone);
-    this.pile = []; this.over = -1; this.ev = ''; this.turn = 0; this.phase = 'act'; this.drew = false; this.claim = null; this.claimId++;
+    this.pile = []; this.over = -1; this.ev = ''; this.phase = 'act'; this.drew = false; this.claim = null; this.claimId++;
+    { const ok = this.out.map((o, k) => o ? -1 : k).filter(k => k >= 0); this.turn = Room.firstTurn !== undefined ? Room.firstTurn : (ok.length ? ok[Math.floor(Math.random() * ok.length)] : 0); }   // a random player starts every game
     this.targets = []; this.pickCb = null; this.dealt = true; this.gameNo++; this.evs = []; this.skips = new Set(); this.defend = null; this.giveCb = null; this.peek = null; this.gid++;
     this.mem = new Memory(n, this.cfg); this.initTrack();
   }
@@ -461,6 +486,7 @@ class Room {
               }
               return this.defense(P, T, cl, (blocked, how) => {
                 if (blocked && how === 'elder') execd.push({ op: 'steal', n: p.n, T: [], P, blocked: true });
+                else if (blocked && this.isImmune(P)) execd.push({ op: 'steal', n: p.n, T: [], imm: [P], P: T, reflected: true });   // the politician: not even a counter-attack touches him
                 else if (blocked) { this.applyStep({ op: 'steal', n: p.n, T: [P] }, T); execd.push({ op: 'steal', n: p.n, T: [P], P: T, reflected: true }); }
                 else { this.applyStep({ op: 'steal', n: p.n, T: [T] }, P); execd.push({ op: 'steal', n: p.n, T: [T], P }); }
                 this.touch(); this.later(nextV, 900);
@@ -651,14 +677,26 @@ class Room {
   /* ---------- bots ---------- */
   schedule() {
     clearTimeout(this.apT);
-    if (this.closed || !this.live() || this.over >= 0 || this.phase !== 'act' || !this.isBot(this.turn)) return;
+    if (this.closed || !this.live() || this.over >= 0 || this.phase !== 'act') return;
+    if (!this.isBot(this.turn) && !this.autoTurn()) { this.armTurn(); return; }
     const tk = this.token;
     this.apT = setTimeout(() => { if (tk === this.token) this.botAct(); }, (900 + Math.random() * 700) * (Room.speed || 1));
   }
+  turnId() { return this.gid + '|' + this.turn + '|' + this.claimId; }
+  autoTurn() { return this.autoKey === this.turnId(); }   // a human who ran out of turn time: the bot logic plays this one turn for him
+  armTurn() {
+    const ms = this.cfg.set.turnMs; if (!ms) return;
+    const key = this.turnId(); if (this.turnKey === key) return;
+    this.turnKey = key; const i = this.turn;
+    this.later(() => {
+      if (this.turnKey !== key || this.turnId() !== key || this.phase !== 'act' || this.over >= 0 || this.isBot(i)) return;
+      this.autoKey = key; this.E('autoturn', { i }); this.ev = { k: 'autoturn', i }; this.touch();
+    }, ms);
+  }
   botAct() {
     if (this.closed || !this.live() || this.over >= 0 || this.phase !== 'act') return;
-    const i = this.turn; if (!this.isBot(i)) return;
-    this.ev = '';
+    const i = this.turn; if (!this.isBot(i) && !this.autoTurn()) return;
+    if (!this.autoTurn()) this.ev = '';
     const h = this.hands[i];
     if (!this.drew) {
       if (this.doDraw(i)) { this.E('draw', { i }); this.touch(); return; }
@@ -667,9 +705,9 @@ class Room {
     if (!h.length) { this.ev = { k: 'nocards', i }; this.turn = this.nextAlive(i); this.drew = false; this.touch(); return; }
     if (this.lockedTurn(i)) { this.touch(); return; }
     const d = this.brain(i).play(this.botCtx(i));
-    if (this.keyLocked(i, h[d.k])) { const ks = h.map((t, x) => x).filter(x => !this.keyLocked(i, h[x])); d.k = ks[Math.floor(Math.random() * ks.length)]; d.claim = h[d.k]; }
-    { const real0 = h[d.k]; if (this.isUp(real0)) d.claim = real0; else if (this.isUp(d.claim)) d.claim = real0; }
-    if (this.isDefCard(d.claim)) { const okc = this.cfg.cards.map((c, x) => x).filter(x => !this.isDefCard(x) && !this.isUp(x) && !this.claimBanned(i, x)); d.claim = okc[Math.floor(Math.random() * okc.length)]; }
+    if (this.keyLocked(i, h[d.k])) { const ks = h.map((t, x) => x).filter(x => !this.keyLocked(i, h[x])); if (ks.length) { d.k = ks[Math.floor(Math.random() * ks.length)]; d.claim = h[d.k]; } }
+    { const real0 = h[d.k]; if (this.isUp(real0)) d.claim = this.keyLocked(i, real0) ? -1 : real0; else if (this.isUp(d.claim)) d.claim = real0; }
+    if (d.claim < 0 || this.isDefCard(d.claim)) { const okc = this.cfg.cards.map((c, x) => x).filter(x => !this.isDefCard(x) && !this.isUp(x) && !this.claimBanned(i, x)); d.claim = okc[Math.floor(Math.random() * okc.length)]; }
     if (this.claimBanned(i, d.claim)) {   // the accountant is not allowed now: say the card's true power, or any allowed one
       const real = h[d.k], okc = this.cfg.cards.map((c, x) => x).filter(x => !this.claimBanned(i, x) && !this.isUp(x) && !this.isDefCard(x));
       d.claim = !this.claimBanned(i, real) ? real : okc[Math.floor(Math.random() * okc.length)];
@@ -708,8 +746,9 @@ class Room {
       const k = Number(d.k); let c = Number(d.d);
       if (this.canActFor(i) && this.drew && Number.isInteger(k) && k >= 0 && this.hands[i][k] != null && Number.isInteger(c) && c >= 0 && c < this.cfg.cards.length) {
         const real = this.hands[i][k];
-        if (this.keyLocked(i, real)) return;
-        if (this.isUp(real)) c = real; else if (this.isUp(c)) return;   // a face-up card cannot be bluffed, and cannot be claimed with another card
+        // a face-up card (the key, the politician) is played face up when you say its own name (the key only with enough points);
+        // any card can instead be thrown away face down as another card; nobody can claim a face-up card face down
+        if (this.isUp(c) && (c !== real || this.keyLocked(i, real))) return;
         if (this.isDefCard(c)) return;   // a defender cannot be played as itself on your own turn (it can be thrown away as another card)
         if (!this.claimBanned(i, c)) this.doPlay(i, k, c);
       }

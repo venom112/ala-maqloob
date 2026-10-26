@@ -134,6 +134,8 @@ async function createCore(store) {
           if (!Number.isInteger(cap) || cap < MIN || cap > MAX) return err('cap', 'عدد اللاعبين من ٣ لـ٨.');
           const code = genCode(); if (!code) return err('codes', 'مقدرناش نفتح غرفة دلوقتي.');
           const room = new Room(code, cap, user, destroyed, content); rooms.set(code, room); userRoom.set(user.id, code);
+          const secs = (v, d) => { const x = Number(v); return Number.isFinite(x) ? Math.min(60, Math.max(15, Math.round(x))) * 1000 : d; };
+          room.opts = { decideMs: secs(m.decide, 15000), pickMs: secs(m.pick, 15000), turnMs: secs(m.turn, 60000) }; room.applyOpts();
           room.attach(user.id, send); return;
         }
         if (m.t === 'bots') {
@@ -160,6 +162,7 @@ async function createCore(store) {
         if (m.t === 'leave') { if (room) { userRoom.delete(user.id); room.leave(user.id); } return send({ t: 'left' }); }
         if (!room) return;
         if (m.t === 'start') { const bad = room.start(user.id); if (bad === 'notfull') err('notfull', 'اللعب مش هيبدأ غير لما كل اللاعبين يدخلوا.'); return; }
+        if (m.t === 'fillbots') { room.fillBots(user.id); return; }
         if (m.t === 'again') return room.again(user.id);
         if (m.t === 'act') return room.act(user.id, m);
       } catch (e) { console.error('ws error', e); err('server', 'حصلت مشكلة عندنا. جرب تاني.'); }
