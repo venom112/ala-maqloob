@@ -211,6 +211,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .immb img { width: 4.6cqw; height: 4.6cqw; border-radius: 50%; object-fit: cover; }
 .immb i { font-style: normal; font-weight: 700; color: var(--bone); background: var(--coal); border-radius: 99px; padding: 0 1cqw; }
 .timers { display: grid; gap: 8px; margin: 8px 0; }
+.stp { display: flex; gap: 6px; align-items: stretch; }
+.stp .field { flex: 1; text-align: center; min-width: 0; }
+.stb { width: 44px; border-radius: 10px; border: 1px solid var(--line, #444); background: transparent; color: inherit; font-size: 22px; font-weight: 700; cursor: pointer; }
 .timers label { display: grid; gap: 4px; font-size: 14px; color: var(--mute); }
 .tag .nl { display: flex; align-items: center; justify-content: center; gap: 1.4cqw; }
 .inf { display: inline-flex; align-items: center; gap: .9cqw; }
@@ -532,10 +535,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       <div class="chips" id="chipsCreate" role="radiogroup" aria-label="عدد اللاعبين"></div>
       <p class="count-line" id="lineCreate"></p>
       <div class="timers">
-        <label>وقت قرار التحدي (ثانية)<input class="field" id="tDecide" type="number" min="15" max="60" step="1" value="15" inputmode="numeric"></label>
-        <label>وقت الدور (ثانية)<input class="field" id="tTurn" type="number" min="15" max="60" step="1" value="60" inputmode="numeric"></label>
-        <label>وقت اختيار الهدف (ثانية)<input class="field" id="tPick" type="number" min="15" max="60" step="1" value="15" inputmode="numeric"></label>
-        <p class="hint">من ١٥ لـ٦٠ ثانية. لو لاعب خلّى وقت دوره يخلص، البوت بيلعب الدور ده بدله.</p>
+        <label>وقت قرار التحدي (ثانية)<span class="stp" data-for="tDecide"><button type="button" class="stb" data-d="-1" aria-label="أقل">−</button><input class="field" id="tDecide" type="number" min="15" max="60" step="5" value="15" inputmode="numeric"><button type="button" class="stb" data-d="1" aria-label="أكتر">+</button></span></label>
+        <label>وقت الدور<span class="stp" data-for="tTurn"><button type="button" class="stb" data-d="-1" aria-label="أقل">−</button><select class="field" id="tTurn"><option value="15">15 ثانية</option><option value="20">20 ثانية</option><option value="25">25 ثانية</option><option value="30">30 ثانية</option><option value="35">35 ثانية</option><option value="40">40 ثانية</option><option value="45">45 ثانية</option><option value="50">50 ثانية</option><option value="55">55 ثانية</option><option value="60" selected>60 ثانية</option><option value="0">بدون وقت</option></select><button type="button" class="stb" data-d="1" aria-label="أكتر">+</button></span></label>
+        <label>وقت اختيار الهدف (ثانية)<span class="stp" data-for="tPick"><button type="button" class="stb" data-d="-1" aria-label="أقل">−</button><input class="field" id="tPick" type="number" min="15" max="60" step="5" value="15" inputmode="numeric"><button type="button" class="stb" data-d="1" aria-label="أكتر">+</button></span></label>
       </div>
       <p class="msg" id="createMsg" aria-live="polite"></p>
       <button class="btn primary" id="openRoom" type="button">افتح</button>
@@ -1703,12 +1705,19 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   /* ---------- lobby actions ---------- */
   $('startBots').onclick = function () { if (!ME.name) { show('name'); return; } send({ t: 'bots', n: S.botsN }); };
   function createMsg(t, err) { $('createMsg').textContent = t; $('createMsg').className = 'msg' + (err ? ' err' : ''); }
+  document.querySelectorAll('.stp .stb').forEach(function (b) {
+    b.onclick = function () {
+      var el = $(b.parentNode.getAttribute('data-for')), d = Number(b.getAttribute('data-d'));
+      if (el.tagName === 'SELECT') { var i = el.selectedIndex + d; if (i >= 0 && i < el.options.length) el.selectedIndex = i; return; }
+      el.value = Math.min(60, Math.max(15, (Math.round(Number(el.value)) || 15) + d * 5));
+    };
+  });
   $('openRoom').onclick = function () {
     if (!ME.name) { show('name'); return; }
     if (!net.on) { createMsg('مفيش اتصال بالسيرفر دلوقتي. جرب تاني بعد ثانية.', true); return; }
     $('openRoom').disabled = true; createMsg('بنفتح الغرفة...');
     var tv = function (id, d) { var x = Math.round(Number($(id).value)); return Number.isFinite(x) && x > 0 ? Math.min(60, Math.max(15, x)) : d; };
-    send({ t: 'create', cap: S.createN, decide: tv('tDecide', 15), turn: tv('tTurn', 60), pick: tv('tPick', 15) });
+    send({ t: 'create', cap: S.createN, decide: tv('tDecide', 15), turn: ($('tTurn').value === '0' ? 0 : tv('tTurn', 60)), pick: tv('tPick', 15) });
     setTimeout(function () { $('openRoom').disabled = false; createMsg(''); }, 2500);
   };
   function joinErr(t) { $('joinMsg').textContent = t; $('joinMsg').className = 'msg err'; }

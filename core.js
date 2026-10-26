@@ -135,7 +135,7 @@ async function createCore(store) {
           const code = genCode(); if (!code) return err('codes', 'مقدرناش نفتح غرفة دلوقتي.');
           const room = new Room(code, cap, user, destroyed, content); rooms.set(code, room); userRoom.set(user.id, code);
           const secs = (v, d) => { const x = Number(v); return Number.isFinite(x) ? Math.min(60, Math.max(15, Math.round(x))) * 1000 : d; };
-          room.opts = { decideMs: secs(m.decide, 15000), pickMs: secs(m.pick, 15000), turnMs: secs(m.turn, 60000) }; room.applyOpts();
+          room.opts = { decideMs: secs(m.decide, 15000), pickMs: secs(m.pick, 15000), turnMs: (m.turn === 0 || m.turn === '0') ? 0 : secs(m.turn, 60000) }; room.applyOpts();
           room.attach(user.id, send); return;
         }
         if (m.t === 'bots') {
