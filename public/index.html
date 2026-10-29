@@ -276,14 +276,38 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .logbtn { position: fixed; top: 58px; left: 10px; z-index: 40; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--brass-dim); background: var(--coal); color: var(--brass); font-size: 20px; cursor: pointer; display: grid; place-items: center; }
 .adminbtn { position: fixed; top: 10px; right: 10px; z-index: 40; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--brass-dim); background: var(--coal); color: var(--brass); font-size: 20px; text-decoration: none; display: grid; place-items: center; }
 .logpanel { position: fixed; top: 104px; left: 10px; z-index: 40; width: min(320px, calc(100vw - 20px)); max-height: 55vh; overflow: auto; padding: 10px 12px; border: 1px solid var(--brass-dim); border-radius: 14px; background: rgba(20,20,22,.96); font-size: 13px; line-height: 1.5; }
-.rules { max-height: 80vh; overflow: auto; text-align: right; }
-.rules h3 { margin: 0 0 8px; }
-.rules .rh { margin: 12px 0 6px; color: var(--brass); }
-.rc { display: flex; gap: 10px; align-items: flex-start; padding: 9px 0; border-top: 1px solid var(--line); }
-.rc img { width: 64px; border-radius: 6px; flex: none; }
-.rc h5 { margin: 0 0 4px; font-size: 15px; }
-.rc p { margin: 0 0 4px; font-size: 13px; line-height: 1.55; }
-.rules .rtxt p { margin: 0 0 9px; line-height: 1.6; font-size: 14px; }
+.rules { max-height: 86vh; overflow: auto; text-align: right; }
+.rules h3 { margin: 0; }
+.rhead { display: flex; justify-content: space-between; align-items: center; }
+.rx { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: transparent; color: var(--bone); font-size: 16px; cursor: pointer; }
+.rtabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.rtab { padding: 10px 4px; border-radius: 10px; border: 1px solid var(--line); background: transparent; color: var(--mute); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.rtab.on { background: var(--brass); color: #17130b; border-color: var(--brass); }
+.rpane { display: flex; flex-direction: column; gap: 10px; }
+#rulesVideo { width: 100%; max-height: 62vh; border-radius: 12px; background: #000; aspect-ratio: 9 / 16; object-fit: contain; }
+.rnote { margin: 0; font-size: 13px; color: var(--mute); line-height: 1.6; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; counter-reset: st; }
+.steps li { counter-increment: st; position: relative; padding: 12px 52px 12px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--coal-2); display: grid; gap: 4px; }
+.steps li:before { content: counter(st); position: absolute; right: 12px; top: 12px; width: 28px; height: 28px; border-radius: 50%; background: var(--brass); color: #17130b; font-weight: 700; display: grid; place-items: center; }
+.steps b { color: var(--brass); font-size: 16px; }
+.steps span { font-size: 14px; line-height: 1.7; }
+.rfil { display: flex; gap: 6px; flex-wrap: wrap; }
+.rfil button { padding: 6px 12px; border-radius: 16px; border: 1px solid var(--line); background: transparent; color: var(--mute); font: inherit; font-size: 13px; cursor: pointer; }
+.rfil button.on { background: var(--brass); color: #17130b; border-color: var(--brass); }
+.rcards { display: grid; gap: 8px; }
+.rc { border: 1px solid var(--line); border-radius: 12px; background: var(--coal-2); overflow: hidden; }
+.rc > button { all: unset; box-sizing: border-box; width: 100%; display: flex; gap: 10px; align-items: center; padding: 8px; cursor: pointer; }
+.rc img.th { width: 52px; aspect-ratio: 864 / 1232; object-fit: cover; border-radius: 6px; flex: none; }
+.rc .tt { flex: 1; min-width: 0; }
+.rc h5 { margin: 0 0 2px; font-size: 15px; color: var(--brass); }
+.rc .one { margin: 0; font-size: 13px; line-height: 1.5; color: var(--bone); }
+.rc .chev { color: var(--mute); transition: rotate .15s; }
+.rc.open .chev { rotate: 180deg; }
+.rc .det { display: none; padding: 4px 12px 12px; text-align: center; }
+.rc.open .det { display: block; }
+.rc .det img { width: min(60%, 220px); border-radius: 12px; border: 2px solid var(--brass); margin: 6px auto 10px; display: block; }
+.rc .det p { margin: 0 0 6px; font-size: 14px; line-height: 1.65; }
+.rc .det .pn { color: #ff8a8a; }
 .logpanel p { margin: 0 0 6px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
 .logpanel p:last-child { border: 0; margin: 0; padding: 0; }
 .claimbox { display: flex; flex-direction: column; gap: 12px; padding: 14px; border: 1px solid var(--brass-dim); border-radius: 14px; background: var(--coal); }
@@ -307,7 +331,16 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .hc .gl { font-size: 34px; line-height: 1; }
 .hc .pw { font-size: 12px; font-weight: 600; font-family: var(--font-body); }
 .hc.sel { border-color: var(--brass); translate: 0 -8px; box-shadow: 0 0 0 3px rgba(200,162,75,.35); }
-.hc:disabled { opacity: .55; cursor: default; }
+.hc:disabled, .hc.dis { opacity: .55; }
+.pvsheet { align-items: center; text-align: center; }
+.pvcard { width: min(62vw, 260px); aspect-ratio: 864 / 1232; border-radius: 18px; overflow: hidden; border: 2px solid var(--brass); box-shadow: 0 8px 30px rgba(0,0,0,.6); background: linear-gradient(170deg, #f3ecd8, #ddd2b6); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+.pvcard img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pvcard .gl { font-size: 96px; line-height: 1; }
+.pvcard .pw { font-size: 22px; font-weight: 700; }
+.pvtxt { margin: 0; font-size: 15px; color: var(--bone); }
+.pvmore { color: var(--mute); font-size: 14px; }
+.pvpen { color: var(--blood); font-size: 14px; }
+.pvsheet .cbtns { width: 100%; }
 .decl { display: flex; flex-direction: column; gap: 6px; }
 .decl .lbl { color: var(--mute); font-size: 13px; }
 .chips4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; }
@@ -639,6 +672,17 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
         <h3 class="mh">إيدك</h3>
         <div class="hrow" id="handRow"></div>
       </div>
+      <div class="modal" id="pvBox" hidden><div class="claimbox sheet pvsheet" role="dialog" aria-label="الكارت">
+        <div class="pvcard" id="pvCard"></div>
+        <h3 id="pvName"></h3>
+        <p class="pvtxt" id="pvPow"></p>
+        <p class="pvtxt pvmore" id="pvMore"></p>
+        <p class="pvtxt pvpen" id="pvPen"></p>
+        <div class="cbtns">
+          <button class="btn primary" id="pvPlay" type="button">هلعبه</button>
+          <button class="btn pass" id="pvNo" type="button">غيرت رأيي</button>
+        </div>
+      </div></div>
       <div class="modal" id="showBox" hidden><div class="claimbox sheet"><h3 id="showTitle"></h3><div class="hrow" id="showRow"></div><button class="btn primary" id="showOk" type="button">تمام</button></div></div>
       <div class="modal" id="declBox" hidden><div class="claimbox sheet" role="dialog" aria-label="اختار القوة اللي هتعلنها">
         <h3>هتعلن إنه إيه؟</h3>
@@ -656,18 +700,31 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   <button class="logbtn" id="logBtn" type="button" aria-label="سجل اللعب" aria-expanded="false" hidden>☰</button>
   <div class="logpanel" id="logPanel" hidden></div>
       <div class="modal" id="rulesBox" hidden><div class="claimbox sheet rules" role="dialog" aria-label="اتعلم ازاي تلعب">
-        <h3>اتعلم ازاي تلعب</h3>
-        <div class="rtxt">
-          <p><b>الفكرة:</b> من ٣ لـ٨ لاعبين. <span id="rulesStart"></span> اللي نفوذه يوصل صفر بيطلع من اللعبة، وآخر واحد يفضل هو الفايز.</p>
-          <p><b>دورك:</b> اسحب ورقة، وبعدين العب كارت واحد <b>مقلوب</b> وقول إنه كارت معيّن (ممكن تكون صادق وممكن تبلف). كل كارت له قوة بتتنفذ لو محدش كشفك.</p>
-          <p><b>التحدي:</b> أي لاعب يقدر يقول "اتحداك". الكارت بيتكشف: لو كنت بتكدب بتخسر عقوبة الكارت وقوته بتتلغي، ولو كنت صادق المتحدي بيخسر نقطة وقوتك بتتنفذ. لو محدش اتحدى القوة بتتنفذ.</p>
-          <p><b>الدفاع:</b> لو حد هاجمك (زي سرقة نقطة أو تبديل كارت) تقدر تلعب كارت دفاع مقلوب (المحامي، الضابط الفاسد، العجوز) وده كمان ممكن يتحدّى. القاضي بتلعبه ضد أي أكشن عادي عشان تلغيه.</p>
-          <p><b>كروت الدفاع</b> (المحامي، الضابط، القاضي، العجوز) مبتتلعبش باسمها في دورك، لكن تقدر ترميها وتقول إنها كارت تاني. وكروت الدفاع مبتوقفش بعض.</p>
-          <p><b>الكروت المكشوفة:</b> السياسي (مناعة دورين) ومفتاح المدينة (لو معاك ١٠ نقط أو أكتر بتفوز على طول) بيتلعبوا مكشوفين، ومفيش تحدي ولا حاجة بتوقفهم.</p>
-          <p><b>نصايح:</b> اتحدى لما تحس إن حد بيبلف، وبلّف أنت لما محدش شايف كروتك، وافتكر إن العقوبة بتفرق من كارت لكارت. تقدر تشوف قوة وعقوبة أي كارت من اللعبة نفسها، وسجل اللعب في الأيقونة ☰.</p>
+        <div class="rhead"><h3>اتعلم ازاي تلعب</h3><button class="rx" id="rulesX" type="button" aria-label="قفل">✕</button></div>
+        <div class="rtabs" role="tablist">
+          <button type="button" class="rtab on" data-tab="vid">🎬 فيديو</button>
+          <button type="button" class="rtab" data-tab="how">📖 القوانين</button>
+          <button type="button" class="rtab" data-tab="cards">🃏 الكروت</button>
         </div>
-        <h4 class="rh">الكروت بالتفصيل</h4>
-        <div class="rcards" id="rulesCards"></div>
+        <div class="rpane" id="rp-vid">
+          <video id="rulesVideo" controls playsinline preload="none" poster="/img/rules-poster.jpg"></video>
+          <p class="rnote">فيديو قصير (حوالي دقيقة ونص) بيشرح اللعبة والكروت. لو عايز تقرا بدل ما تتفرج، افتح "القوانين".</p>
+        </div>
+        <div class="rpane" id="rp-how" hidden>
+          <ol class="steps">
+            <li><b>الفكرة</b><span>من ٣ لـ٨ لاعبين. <span id="rulesStart"></span> اللي نفوذه يخلص بيطلع برّه، وآخر واحد يفضل هو الفايز 🏆</span></li>
+            <li><b>دورك</b><span>اسحب ورقة، وبعدين العب كارت واحد <u>مقلوب</u> وقول إنه كارت معيّن. ممكن تكون صادق وممكن تحوّر.</span></li>
+            <li><b>التحدي</b><span>أي لاعب يقدر يقول "اتحداك". الكارت بيتكشف:<br>• لو كنت بتكدب: بتخسر عقوبة الكارت وقوته بتتلغي.<br>• لو كنت صادق: المتحدي بيخسر نقطة وقوتك بتتنفذ.<br>ولو محدش اتحدى، القوة بتتنفذ عادي.</span></li>
+            <li><b>الدفاع</b><span>لو حد هاجمك (سرقة نقطة، تبديل كارت، نشل) تقدر تلعب كارت دفاع مقلوب. القاضي بيلغي أي أكشن عادي. كروت الدفاع مبتتلعبش باسمها في دورك، لكن تقدر ترميها وتحوّر بيها، ومبتوقفش بعض.</span></li>
+            <li><b>الكروت المكشوفة</b><span>السياسي (حصانة دورين) ومفتاح المدينة (معاك ١٠ نقط = فوز فوري) بيتلعبوا مكشوفين: مفيش تحدي ومفيش حاجة توقفهم. ولو أنت لسه محصن مينفعش تلعب سياسي تاني.</span></li>
+            <li><b>نصايح</b><span>اتحدى لما تحس إن حد بيحوّر، وحوّر لما محدش شايف كروتك، وافتكر إن العقوبة بتفرق من كارت لكارت. سجل اللعب في الأيقونة ☰.</span></li>
+          </ol>
+        </div>
+        <div class="rpane" id="rp-cards" hidden>
+          <div class="rfil" id="rulesFil"></div>
+          <p class="rnote">دوس على أي كارت يفتح بتفاصيله.</p>
+          <div class="rcards" id="rulesCards"></div>
+        </div>
         <button class="btn primary" id="rulesOk" type="button">فهمت</button>
       </div></div>
 
@@ -1033,12 +1090,13 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     $('myHand').hidden = !show;
     var h = S.hands[0] || [], can = show && canAct();
     $('declBox').hidden = !(show && can && S.drew && S.sel >= 0);
+    if (typeof pvSync === 'function') pvSync();
     if (!show) return;
     var sig = h.join(',') + '|' + S.sel + '|' + S.decl + '|' + can + '|' + S.drew;
     if (sig !== handSig) {
       handSig = sig;
       $('handRow').innerHTML = h.map(function (t, k) {
-        return '<button type="button" class="hc' + (cd(t).img ? ' art' : '') + (k === S.sel ? ' sel' : '') + '" style="color:' + esc(cd(t).color) + '" data-k="' + k + '"' + (can && S.drew ? '' : ' disabled') + ' aria-label="' + esc(pw(t)) + '">' + faceHtml(t) + '</button>';
+        return '<button type="button" class="hc' + (cd(t).img ? ' art' : '') + (k === S.sel ? ' sel' : '') + (can && S.drew ? '' : ' dis') + '" style="color:' + esc(cd(t).color) + '" data-k="' + k + '" aria-label="' + esc(pw(t)) + '">' + faceHtml(t) + '</button>';
       }).join('') || '<span class="msg">إيدك فاضية.</span>';
       Array.prototype.forEach.call($('declRow').children, function (b, t) {
         b.setAttribute('aria-checked', String(t === S.decl));
@@ -1057,14 +1115,14 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     if (can) {
       if (!S.drew) hint = 'لازم تسحب ورقة من الكومة الأول، وبعدها تلعب.';
       else if (S.sel < 0) hint = 'اختار كارت من إيدك تلعبه.';
-      else if (S.decl < 0 && cd(h[S.sel]).df) hint = cd(h[S.sel]).name + ' كارت دفاع: بيتلعب وقت الدفاع بس. ترميه دلوقتي؟ اختار قوة تانية تقول إنك لعبتها (بلف).';
+      else if (S.decl < 0 && cd(h[S.sel]).df) hint = cd(h[S.sel]).name + ' كارت دفاع: بيتلعب وقت الدفاع بس. ترميه دلوقتي؟ اختار قوة تانية تقول إنك لعبتها (تحوير).';
       else if (S.decl !== h[S.sel]) hint = 'بتكدب! لو حد اتحداك هتخسر نقطة نفوذ.';
       else hint = 'دي قوة الكارت اللي معاك. لو عايز تكدب اختار قوة تانية.';
     }
-    if (can && S.sel >= 0 && cd(h[S.sel]).up) hint = S.decl === h[S.sel] ? cd(h[S.sel]).name + ' بيتلعب مكشوف: مفيش تحدي ولا كدب.' : (S.decl < 0 ? cd(h[S.sel]).name + (S.lock.indexOf(h[S.sel]) >= 0 ? ' مقفول لحد ما توصل لعدد النقط المطلوب. ' : ' ') + 'تقدر ترميه وتقول إنك لعبت كارت تاني (بلف).' : 'بتكدب! لو حد اتحداك هتخسر نقطة نفوذ.');
+    if (can && S.sel >= 0 && cd(h[S.sel]).up) hint = S.decl === h[S.sel] ? cd(h[S.sel]).name + ' بيتلعب مكشوف: مفيش تحدي ولا كدب.' : (S.decl < 0 ? cd(h[S.sel]).name + (S.lock.indexOf(h[S.sel]) >= 0 ? (cd(h[S.sel]).win ? ' مقفول لحد ما توصل لعدد النقط المطلوب. ' : ' مقفول: إنت لسه محصن، استنى لما الحصانة تخلص. ') : ' ') + 'تقدر ترميه وتقول إنك لعبت كارت تاني (تحوير).' : 'بتكدب! لو حد اتحداك هتخسر نقطة نفوذ.');
     $('playBtn').textContent = can && S.sel >= 0 && cd(h[S.sel]).up && S.decl === h[S.sel] ? 'العب الكارت مكشوف' : 'العب الكارت مقلوب';
     var lk = h.filter(function (t) { return S.lock.indexOf(t) >= 0; });
-    document.querySelector('#myHand .mh').textContent = lk.length ? 'إيدك (' + cd(lk[0]).name + ' محتاج ' + fmt(cd(lk[0]).win) + ' نقط)' : 'إيدك';
+    document.querySelector('#myHand .mh').textContent = lk.length ? 'إيدك (' + cd(lk[0]).name + (cd(lk[0]).win ? ' محتاج ' + fmt(cd(lk[0]).win) + ' نقط' : ' مقفول وإنت محصن') + ')' : 'إيدك';
     $('declHint').textContent = hint;
   }
   function renderClaim() {
@@ -1621,9 +1679,33 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     if (!canAct() || S.drew || locked()) return;
     lock(); send({ t: 'act', a: 'draw' });
   });
+  /* tap a card in your hand: it opens big with its rule under it; "هلعبه" goes on to declare it, "غيرت رأيي" puts it back */
+  var PV = -1;
+  function pvOpen(k) {
+    var t = (S.hands[0] || [])[k]; if (t === undefined) return;
+    PV = k; var c = cd(t);
+    $('pvCard').innerHTML = faceHtml(t); $('pvCard').style.color = c.color;
+    $('pvName').textContent = c.name; $('pvPow').textContent = c.descr || '';
+    var mo = (typeof MORE !== 'undefined' && MORE[c.name]) || ''; $('pvMore').textContent = mo; $('pvMore').hidden = !mo;
+    $('pvPen').textContent = c.pen ? 'عقوبة الكدب: ' + c.pen : ''; $('pvPen').hidden = !c.pen;
+    $('pvBox').hidden = false; pvSync();
+  }
+  function pvSync() {
+    if (PV < 0) return;
+    if (!live() || (S.hands[0] || [])[PV] === undefined) { PV = -1; $('pvBox').hidden = true; return; }
+    $('pvPlay').hidden = !canPlay(); $('pvNo').textContent = canPlay() ? 'غيرت رأيي' : 'تمام';
+  }
+  function pvClose() { PV = -1; $('pvBox').hidden = true; }
+  $('pvNo').onclick = pvClose;
+  $('pvBox').addEventListener('click', function (e) { if (e.target === $('pvBox')) pvClose(); });
+  $('pvPlay').onclick = function () {
+    if (PV < 0 || !canPlay()) { pvClose(); return; }
+    var k = PV; pvClose();
+    S.sel = k; S.decl = (S.ban.indexOf(S.hands[0][k]) >= 0 || S.lock.indexOf(S.hands[0][k]) >= 0 || cd(S.hands[0][k]).df) ? -1 : S.hands[0][k]; handSig = ''; renderRoom();
+  };
   $('handRow').addEventListener('click', function (e) {
-    var b = e.target.closest('.hc'); if (!b || !canPlay()) return;
-    S.sel = +b.dataset.k; S.decl = (S.ban.indexOf(S.hands[0][S.sel]) >= 0 || S.lock.indexOf(S.hands[0][S.sel]) >= 0 || cd(S.hands[0][S.sel]).df) ? -1 : S.hands[0][S.sel]; handSig = ''; renderRoom();
+    var b = e.target.closest('.hc'); if (!b) return;
+    pvOpen(+b.dataset.k);
   });
   var declSig = '';
   function buildDecl() {
@@ -1681,20 +1763,36 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     'القاضي': 'بتلعبه في دور غيرك، وقت التحدي، ضد أي أكشن عادي عشان تلغيه. مبيلغيش كروت الدفاع ولا الكروت المكشوفة. مينفعش تلعبه في دورك باسمه.',
     'العجوز': 'دفاع بس: بيلغي أي هجوم عليك (سرقة أو تبديل أو نشل)، وبعدها بتسحب نقطة من أي لاعب تختاره. مفيش حاجة توقفه غير التحدي. مينفعش تلعبه في دورك باسمه.'
   };
+  var GROUPS = { 'هجوم': ['الفتوّة', 'الظل', 'النشال', 'العصفورة'], 'دفاع': ['المحامي', 'الضابط الفاسد', 'القاضي', 'العجوز'], 'مساعدة': ['المحاسب', 'طبيب العصابة', 'المُهرِّب', 'المُفجِّر', 'المُزوِّر'], 'مكشوفة': ['السياسي', 'مفتاح المدينة'] };
+  var RFIL = '';
   function fillRules() {
     var cs = (GC.cards && GC.cards.length ? GC.cards : (CFG && CFG.cards) || []).filter(function (c) { return c.cnt == null || c.cnt > 0; });
     var inf = GC.startInf || 3, hc = GC.startCards || 3;
     $('rulesStart').textContent = 'كل لاعب بيبدأ بـ' + fmt(inf) + ' نقط نفوذ و' + fmt(hc) + ' كروت.';
-    $('rulesCards').innerHTML = cs.map(function (c) {
-      return '<div class="rc">' + (c.img ? '<img src="' + esc(c.img) + '" alt="">' : '') + '<div><h5>' + esc((c.symbol ? c.symbol + ' ' : '') + c.name) + (c.cnt != null ? ' <small>(' + fmt(c.cnt) + ' نسخ)</small>' : '') + '</h5>' +
-        '<p><b>القوة:</b> ' + esc(c.descr || '') + '</p>' + (MORE[c.name] ? '<p>' + esc(MORE[c.name]) + '</p>' : '') + '<p><b>عقوبة الكدب:</b> ' + esc(c.pen || '') + '</p></div></div>';
-    }).join('');
+    $('rulesFil').innerHTML = ['الكل'].concat(Object.keys(GROUPS)).map(function (g) { return '<button type="button" data-g="' + (g === 'الكل' ? '' : g) + '" class="' + ((g === 'الكل' ? '' : g) === RFIL ? 'on' : '') + '">' + g + '</button>'; }).join('');
+    var shown = cs.filter(function (c) { return !RFIL || GROUPS[RFIL].indexOf(c.name) >= 0; });
+    $('rulesCards').innerHTML = shown.map(function (c) {
+      return '<div class="rc"><button type="button"><img class="th" src="' + esc(c.img || '') + '" alt="" ' + (c.img ? '' : 'hidden') + '><div class="tt"><h5>' + esc((c.symbol ? c.symbol + ' ' : '') + c.name) + (c.cnt != null ? ' <small>(' + fmt(c.cnt) + ' نسخ)</small>' : '') + '</h5><p class="one">' + esc(c.descr || '') + '</p></div><span class="chev">▾</span></button>' +
+        '<div class="det">' + (c.img ? '<img src="' + esc(c.img) + '" alt="' + esc(c.name) + '">' : '') + (MORE[c.name] ? '<p>' + esc(MORE[c.name]) + '</p>' : '') + '<p class="pn"><b>عقوبة الكدب:</b> ' + esc(c.pen || '') + '</p></div></div>';
+    }).join('') || '<p class="rnote">مفيش كروت في القسم ده.</p>';
   }
-  function openRules() { fillRules(); $('rulesBox').hidden = false; $('rulesBox').querySelector('.rules').scrollTop = 0; }
+  function rulesTab(t) {
+    Array.prototype.forEach.call(document.querySelectorAll('.rtab'), function (b) { b.classList.toggle('on', b.dataset.tab === t); });
+    ['vid', 'how', 'cards'].forEach(function (x) { $('rp-' + x).hidden = x !== t; });
+    var v = $('rulesVideo');
+    if (t === 'vid') { if (!v.querySelector('source')) { v.innerHTML = '<source src="/img/rules.mp4" type="video/mp4"><source src="/img/rules.webm" type="video/webm">'; v.load(); } } else { try { v.pause(); } catch (e) {} }
+    $('rulesBox').querySelector('.rules').scrollTop = 0;
+  }
+  function openRules() { fillRules(); $('rulesBox').hidden = false; rulesTab('vid'); }
+  function closeRules() { try { $('rulesVideo').pause(); } catch (e) {} $('rulesBox').hidden = true; }
+  Array.prototype.forEach.call(document.querySelectorAll('.rtab'), function (b) { b.onclick = function () { rulesTab(b.dataset.tab); }; });
+  $('rulesFil').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; RFIL = b.dataset.g; fillRules(); });
+  $('rulesCards').addEventListener('click', function (e) { var b = e.target.closest('.rc > button'); if (b) b.parentNode.classList.toggle('open'); });
+  $('rulesX').onclick = closeRules;
   $('goRulesW').onclick = openRules;
   $('goRules').onclick = openRules;
-  $('rulesOk').onclick = function () { $('rulesBox').hidden = true; };
-  $('rulesBox').addEventListener('click', function (e) { if (e.target === this) this.hidden = true; });
+  $('rulesOk').onclick = closeRules;
+  $('rulesBox').addEventListener('click', function (e) { if (e.target === this) closeRules(); });
   $('judgeBtn').onclick = function () { S.jopen = true; S.jsel = -1; S.jsig = ''; renderJudge(); };
   $('judgeSkip').onclick = function () { S.jopen = false; renderJudge(); };
   $('judgeRow').addEventListener('click', function (e) { var b = e.target.closest('.hc'); if (!b) return; S.jsel = +b.dataset.k; S.jsig = ''; renderJudge(); });

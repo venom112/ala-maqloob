@@ -1,12 +1,12 @@
 // Keeps the app shell and pictures available offline so the installed app opens at once.
 // The game itself needs the connection to the server, so nothing about it is cached.
-const V = 'ala-v26';
+const V = 'ala-v31';
 const SHELL = ['/', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png', '/img/back.jpg', '/img/coin1.webp', '/img/coin5.webp', '/img/coin10.webp', '/img/logo.jpg', '/img/fatwa.jpg', '/img/lawyer.jpg', '/img/shadow.jpg', '/img/officer.jpg', '/img/pickpocket.jpg', '/img/sparrow.jpg'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', e => {
   const r = e.request, u = new URL(r.url);
-  if (r.method !== 'GET') return;
+  if (r.method !== 'GET' || r.headers.has('range') || /\.(mp4|webm)$/.test(new URL(r.url).pathname)) return;   // video streams straight from the network
   if (u.origin !== location.origin) {
     // fonts: use the copy we have, refresh it in the background
     if (/fonts\.(googleapis|gstatic)\.com$/.test(u.host)) {

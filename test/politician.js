@@ -58,5 +58,23 @@ const settle = r => until(() => r.phase === 'act' && r.claim === null && r.turn 
     check('the politician can be thrown away face down as another card (bluff, no immunity)', r.phase === 'claim' && r.claim.c === 0 && !r.isImmune(0) && r.pile[r.pile.length - 1].rev === false, { ph: r.phase });
     r.close();
   }
+  {
+    const r = mk({ a: [PO, PO, 2] }); r.act('a', { a: 'play', k: 0, d: PO }); await settle(r);
+    r.turn = 0; r.drew = true; r.phase = 'act'; r.claim = null;
+    check('a second politician is locked while the first immunity lasts', r.isImmune(0) && r.body('a').g.lock.includes(PO));
+    const n = r.hands[0].length; r.act('a', { a: 'play', k: 0, d: PO });
+    check('playing it face up is refused', r.phase === 'act' && r.hands[0].length === n, { ph: r.phase });
+    r.act('a', { a: 'play', k: 0, d: 0 });
+    check('but it can still be thrown face down as a bluff', r.phase === 'claim' && r.claim.c === 0 && r.hands[0].length === n - 1, { ph: r.phase });
+    r.close();
+  }
+  {
+    const r = mk({ a: [PO, PO, 2] }); r.act('a', { a: 'play', k: 0, d: PO }); await settle(r);
+    r.turnsN[0] += 2;   // two of his turns have passed
+    check('when the immunity is over a new politician can be played', !r.isImmune(0) && !r.body('a').g.lock.includes(PO));
+    r.turn = 0; r.drew = true; r.phase = 'act'; r.claim = null; r.act('a', { a: 'play', k: 0, d: PO });
+    check('and it gives a fresh immunity', r.isImmune(0) || r.phase === 'resolve', { ph: r.phase });
+    r.close();
+  }
   console.log(bad ? bad + ' FAILED' : 'ALL PASS'); process.exit(bad ? 1 : 0);
 })();

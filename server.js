@@ -9,7 +9,7 @@ const { createCore } = require('./core');
 
 const PORT = Number(process.env.PORT) || 3000;
 const PUB = path.join(__dirname, 'public');
-const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.ico': 'image/x-icon' };
+const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.mp4': 'video/mp4', '.webm': 'video/webm' };
 
 async function main() {
   const store = await openStore();
@@ -28,6 +28,13 @@ async function main() {
         const h = { 'content-type': MIME[ext] || 'application/octet-stream', 'x-content-type-options': 'nosniff', 'referrer-policy': 'no-referrer' };
         h['cache-control'] = (ext === '.html' || path.basename(file) === 'sw.js' || ext === '.webmanifest') ? 'no-cache' : 'public, max-age=86400';
         if (path.basename(file) === 'admin.html' || path.basename(file) === 'index.html') h['cross-origin-opener-policy'] = 'same-origin-allow-popups';
+        const m = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || '');
+        if (m && (m[1] || m[2])) {   // video seeking
+          let a = m[1] === '' ? Math.max(0, buf.length - Number(m[2])) : Number(m[1]), b = m[1] === '' || m[2] === '' ? buf.length - 1 : Math.min(Number(m[2]), buf.length - 1);
+          if (a > b || a >= buf.length) { res.writeHead(416, { 'content-range': 'bytes */' + buf.length }); res.end(); return; }
+          res.writeHead(206, Object.assign(h, { 'content-range': 'bytes ' + a + '-' + b + '/' + buf.length, 'content-length': b - a + 1, 'accept-ranges': 'bytes' })); res.end(buf.subarray(a, b + 1)); return;
+        }
+        if (ext === '.mp4' || ext === '.webm') h['accept-ranges'] = 'bytes';
         res.writeHead(200, h); res.end(buf);
       });
     } catch (e) { console.error('http error', e); try { res.writeHead(500); res.end(); } catch (x) {} }

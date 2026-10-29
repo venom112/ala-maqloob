@@ -18,7 +18,8 @@ if(!window.__drv) window.__drv=setInterval(function(){
   var gb=$('giveBox'); if(!gb.hidden){ var gs=document.querySelectorAll('#giveRow .hc'); if(gs.length){ gs[0].click(); $('givePlay').click(); } return; }
   var db=$('defendBox'); if(!db.hidden){ $('defSkip').click(); return; }
   var dp=$('drawPile'); if(dp && !dp.disabled){dp.click();return;}
-  var hc=document.querySelectorAll('#handRow .hc:not([disabled])'), pb=$('playBtn');
+  if(!$('pvBox').hidden){ if(!$('pvPlay').hidden) $('pvPlay').click(); else $('pvNo').click(); return; }
+  var hc=document.querySelectorAll('#handRow .hc:not(.dis)'), pb=$('playBtn');
   if(hc.length && !$('myHand').hidden){
     if(pb.disabled){ var sel=document.querySelector('#handRow .hc.sel'); if(sel){ var dd=[...document.querySelectorAll('#declRow .c4:not([disabled])')].filter(function(e){return !e.hidden}); if(dd.length){ dd[Math.floor(Math.random()*dd.length)].click(); return; } } hc[Math.floor(Math.random()*hc.length)].click(); return; }
     if(Math.random()<.7){ var d=[...document.querySelectorAll('#declRow .c4:not([disabled])')].filter(function(e){return !e.hidden}); if(d.length) d[Math.floor(Math.random()*d.length)].click(); }
@@ -52,7 +53,7 @@ try:
     q=br.new_context(viewport={'width':430,'height':900}).new_page(); q.goto(URL); q.wait_for_selector('#st-welcome:not([hidden])',timeout=20000)
     check('welcome has both buttons',q.is_visible('#goHave') and q.is_visible('#goNew') and 'عندي حساب' in q.inner_text('#goHave') and 'لسه جديد' in q.inner_text('#goNew'))
     q.click('#goRulesW'); q.wait_for_selector('#rulesBox:not([hidden])'); time.sleep(.3)
-    check('rules list every card in detail',q.locator('#rulesCards .rc').count()>=15 and 'العجوز' in q.inner_text('#rulesCards') and 'عقوبة الكدب' in q.inner_text('#rulesCards'),q.locator('#rulesCards .rc').count())
+    check('rules list every card in detail',q.locator('#rulesCards .rc').count()>=15 and 'العجوز' in q.text_content('#rulesCards') and 'عقوبة الكدب' in q.text_content('#rulesCards'),q.locator('#rulesCards .rc').count())
     q.click('#rulesOk'); q.click('#goNew'); check('new player form hides nothing needed',q.is_visible('#nameIn') and q.is_visible('#regBtn') and not q.is_visible('#loginBtn'))
     q.click('#nameBack'); q.click('#goHave'); check('login form has no name field',not q.is_visible('#nameIn') and q.is_visible('#loginBtn') and not q.is_visible('#regBtn'))
     q.context.close()

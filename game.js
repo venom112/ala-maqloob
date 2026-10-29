@@ -185,7 +185,10 @@ class Room {
   isUp(c) { const cd = this.cfg.cards[c]; return !!cd && cd.power.some(o => o.op === 'immune' || o.op === 'victory'); }
   // the city key: cannot be played with fewer points than it asks for
   winNeed(c) { const cd = this.cfg.cards[c], o = cd && cd.power.find(x => x.op === 'victory'); return o ? o.n : 0; }
-  keyLocked(i, t) { const n = this.winNeed(t); return n > 0 && this.inf[i] < n; }
+  keyLocked(i, t) {   // the key waits for enough points; the politician waits until the immunity he gave is over
+    const n = this.winNeed(t); if (n > 0) return this.inf[i] < n;
+    const c = this.cfg.cards[t]; return !!c && !!this.immuneTo && c.power.some(o => o.op === 'immune') && this.isImmune(i);
+  }
   playable(i) { return this.hands[i].some(t => !this.keyLocked(i, t)); }
   // after the draw: a hand of locked keys only means the turn is lost
   lockedTurn(i) {
