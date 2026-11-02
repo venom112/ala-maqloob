@@ -20,6 +20,7 @@ class Room {
     this.code = code; this.cap = cap; this.hostUid = host.uid; this.onEmpty = onEmpty;
     this.roster = [{ uid: host.uid, name: host.name }];
     this.status = 'waiting'; this.gameNo = 0; this.bots = false;
+    this.name = 'غرفة ' + host.name; this.pass = ''; this.quick = false; this.lastJoin = Date.now();   // chosen when the room is made
     this.conns = new Map();            // uid -> send(fn)
     this.timers = new Set(); this.token = 0;
     this.evSeq = 0; this.evs = [];
@@ -56,7 +57,7 @@ class Room {
       };
     }
     return {
-      t: 'room', code: this.code, cap: this.cap, status: this.status, gameNo: this.gameNo, bots: this.bots,
+      t: 'room', code: this.code, name: this.name, locked: !!this.pass, pass: uid === this.hostUid ? this.pass : '', quick: !!this.quick, cap: this.cap, status: this.status, gameNo: this.gameNo, bots: this.bots,
       roster: this.roster.map(r => ({ name: r.name, bot: !!r.bot, sub: !!r.sub, gone: !!r.gone, host: r.uid === this.hostUid })),
       you: i, isHost: uid === this.hostUid, g, peek: this.peek && i >= 0 && this.peek.to === i ? { of: this.peek.of, cards: this.peek.cards, id: this.peek.id } : null, hand: i >= 0 && this.hands[i] && this.status === 'playing' ? this.hands[i] : []
     };
@@ -94,6 +95,10 @@ class Room {
         else if (r.sub && here) { r.left = false; this.restore(i); }
       } else if (this.status === 'waiting' && !here && ago > WAIT_GRACE_MS) this.leave(r.uid);
     });
+    if (this.quick && this.status === 'waiting' && !this.bots) {   // quick game: starts when full, or 8 s after the room reached 3 players
+      const n = this.roster.length;
+      if (n >= this.cap || (n >= 3 && now - this.lastJoin > (Room.quickWait || 8000))) { this.cap = n; this.start(this.hostUid); }
+    }
     if (anyoneThere) this.absentAt = 0;
     else if (!this.absentAt) this.absentAt = now;
     else if (now - this.absentAt > ABSENT_CLOSE_MS) this.close('');
@@ -120,7 +125,7 @@ class Room {
       if (b === undefined || this.bots) return 'full';
       this.roster[b] = { uid: user.uid, name: user.name }; this.publish(); return null;
     }
-    this.roster.push({ uid: user.uid, name: user.name });
+    this.roster.push({ uid: user.uid, name: user.name }); this.lastJoin = Date.now();
     this.publish();
     return null;
   }
@@ -139,7 +144,10 @@ class Room {
     const send = this.conns.get(uid); this.conns.delete(uid);
     if (send) send({ t: 'left' });
     if (this.status === 'waiting') {
-      if (uid === this.hostUid) return this.close('صاحب الغرفة قفل الغرفة.');
+      if (uid === this.hostUid) {
+        if (this.quick && this.roster.some(r => r.uid !== uid && !r.bot)) { this.roster.splice(i, 1); this.hostUid = this.roster.find(r => !r.bot).uid; this.publish(); return; }
+        return this.close('صاحب الغرفة قفل الغرفة.');
+      }
       this.roster.splice(i, 1); this.publish(); return;
     }
     if (this.bots) return this.close('');
@@ -147,6 +155,7 @@ class Room {
       // mid-game exit: a bot plays the seat until he comes back (same code); if he never does, the bot finishes the game
       this.roster[i].left = true; this.lastSeen.set(uid, 0);
       this.substitute(i);
+      if (!this.roster.some(r => !r.bot && !r.gone && !r.left)) return this.close('');   // nobody is left to come back
       if (uid === this.hostUid) { const o = this.roster.find(r => !r.bot && !r.gone && !r.left && r.uid !== uid); if (o) this.hostUid = o.uid; }
       return;
     }

@@ -93,7 +93,7 @@ const assets = { async fetch(req) {   // html_handling "none": exact file names 
   check('/ serves the game page', r.status === 200 && /text\/html/.test(r.headers.get('content-type')) && (await r.text()).includes('ع المقلوب'));
   r = await req('/admin'); const adminHtml = await r.text();
   check('/admin serves the admin panel with the sign-in popup header', r.status === 200 && adminHtml.includes('<html') && r.headers.get('cross-origin-opener-policy') === 'same-origin-allow-popups');
-  r = await req('/sw.js'); check('static files pass straight through', r.status === 200 && (await r.text()).includes("const V = 'ala-v32'"));
+  r = await req('/sw.js'); check('static files pass straight through', r.status === 200 && (await r.text()).includes("const V = 'ala-v33'"));
   r = await req('/nope.png'); check('unknown file: 404', r.status === 404);
   r = await req('/healthz'); check('/healthz answers', r.status === 200 && (await r.text()) === 'ok');
   r = await req('/api/config'); const cfg = await r.json();
@@ -186,6 +186,27 @@ const assets = { async fetch(req) {   // html_handling "none": exact file names 
     check('the host fills the empty seats with bots', await until(() => { const m = last(g1, 'room'); return m && m.roster.length === 4 && m.roster.filter(r => r.bot).length === 3; }), last(g1, 'room').roster);
     const g2 = await mk('رنا'); g2.send({ t: 'join', code: last(g1, 'room').code });
     check('a newcomer takes the seat of a bot', await until(() => { const m = last(g1, 'room'); return m && m.roster.length === 4 && m.roster.filter(r => r.bot).length === 2 && m.roster.some(r => r.name === 'رنا'); }), last(g1, 'room').roster); g1.close(); g2.close(); }
+  {
+    const n1 = await mk('نور'), n2 = await mk('كريم'), v = await mk('زائر');
+    n1.send({ t: 'create', cap: 3, name: '  غرفة   النور ', pass: '4321' }); n2.send({ t: 'create', cap: 4 });
+    await until(() => last(n1, 'room') && last(n2, 'room'));
+    const a = last(n1, 'room'), b = last(n2, 'room');
+    check('a room can be named; a blank name shows the host\'s name', a.name === 'غرفة النور' && b.name === 'غرفة كريم', [a.name, b.name]);
+    check('a password makes the room private, and only the host sees it', a.locked === true && a.pass === '4321' && b.locked === false && b.pass === '');
+    v.send({ t: 'rooms' }); await until(() => last(v, 'rooms'));
+    const L = last(v, 'rooms').list, la = L.find(x => x.code === a.code), lb = L.find(x => x.code === b.code);
+    check('the room list shows public and private rooms with host, seats and lock', la && lb && la.locked && !lb.locked && la.host === 'نور' && lb.n === 1 && lb.cap === 4 && !JSON.stringify(L).includes('4321'), L);
+    v.send({ t: 'join', code: a.code }); check('a private room asks for the password', await until(() => last(v, 'err') && last(v, 'err').code === 'pass'));
+    v.send({ t: 'join', code: a.code, pass: '0000' }); await sleep(300); check('a wrong password is refused', last(v, 'err').msg.includes('غلط') && !last(v, 'room'));
+    v.send({ t: 'join', code: a.code, pass: '4321' }); check('the right password gets in', await until(() => last(v, 'room') && last(v, 'room').roster.length === 2));
+    v.send({ t: 'leave' }); await sleep(200);
+    const q1 = await mk('قصي'), q2 = await mk('قمر'), q3 = await mk('قاسم');
+    q1.send({ t: 'quick' }); await until(() => last(q1, 'room')); q2.send({ t: 'quick' }); q3.send({ t: 'quick' });
+    check('players who press the quick button land in the same room', await until(() => last(q1, 'room').roster.length === 3) && last(q2, 'room').code === last(q1, 'room').code && last(q1, 'room').quick === true);
+    check('it starts by itself a few seconds after three are there', await until(() => [q1, q2, q3].every(w => { const m = last(w, 'room'); return m && m.status === 'playing'; }), 30000));
+    [n1, n2, q1, q2, q3].forEach(w => w.send({ t: 'leave' })); await sleep(300);
+    [n1, n2, v, q1, q2, q3].forEach(w => w.close());
+  }
   f2.send({ t: 'start' }); await sleep(200);
   check('only the host can start', last(f1, 'room').status === 'waiting');
   f1.send({ t: 'start' });

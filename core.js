@@ -135,6 +135,7 @@ async function createCore(store) {
           const code = genCode(); if (!code) return err('codes', 'مقدرناش نفتح غرفة دلوقتي.');
           const room = new Room(code, cap, user, destroyed, content); rooms.set(code, room); userRoom.set(user.id, code);
           const secs = (v, d) => { const x = Number(v); return Number.isFinite(x) ? Math.min(60, Math.max(15, Math.round(x))) * 1000 : d; };
+          room.name = String(m.name || '').replace(/\s+/g, ' ').trim().slice(0, 30) || room.name; room.pass = String(m.pass || '').trim().slice(0, 20);
           room.opts = { decideMs: secs(m.decide, 15000), pickMs: secs(m.pick, 15000), turnMs: (m.turn === 0 || m.turn === '0') ? 0 : secs(m.turn, 60000) }; room.applyOpts();
           room.attach(user.id, send); return;
         }
@@ -145,6 +146,26 @@ async function createCore(store) {
           const code = 'b' + genCode(); const room = new Room(code, n, user, destroyed, content); rooms.set(code, room); userRoom.set(user.id, code);
           room.attach(user.id, send); room.startBots(user, n); return;
         }
+        if (m.t === 'rooms') {   // every room that still has a free seat, public and private
+          const list = [];
+          for (const r of rooms.values()) {
+            if (r.closed || r.bots || r.status !== 'waiting' || r.roster.length >= r.cap) continue;
+            const h = r.roster.find(x => x.uid === r.hostUid);
+            list.push({ code: r.code, name: r.name, host: h ? h.name : '', n: r.roster.length, cap: r.cap, locked: !!r.pass, quick: !!r.quick, at: r.lastJoin });
+          }
+          list.sort((a, b) => b.at - a.at);
+          return send({ t: 'rooms', list: list.slice(0, 50).map(x => ({ code: x.code, name: x.name, host: x.host, n: x.n, cap: x.cap, locked: x.locked, quick: x.quick })) });
+        }
+        if (m.t === 'quick') {   // find me players: join a waiting quick room, or open one for the next person who presses the button
+          if (userRoom.has(user.id)) return err('busy', 'إنت في غرفة بالفعل. اخرج منها الأول.');
+          let room = null;
+          for (const r of rooms.values()) if (r.quick && !r.closed && r.status === 'waiting' && r.roster.length < r.cap) { room = r; break; }
+          if (!room) {
+            const code = genCode(); if (!code) return err('codes', 'مقدرناش نفتح غرفة دلوقتي.');
+            room = new Room(code, 4, user, destroyed, content); room.quick = true; room.name = 'لعبة سريعة'; rooms.set(code, room);
+          } else room.add(user);
+          userRoom.set(user.id, room.code); room.attach(user.id, send); return;
+        }
         if (m.t === 'join') {
           const code = String(m.code || '').replace(/\D/g, '');
           const room = rooms.get(code);
@@ -152,6 +173,7 @@ async function createCore(store) {
           const mine = userRoom.get(user.id);
           if (mine && mine !== code) return err('busy', 'إنت في غرفة تانية. اخرج منها الأول.');
           if (room.idx(user.id) < 0) {
+            if (room.pass && String(m.pass || '').trim() !== room.pass) return err('pass', m.pass ? 'كلمة السر غلط.' : 'الغرفة دي خاصة. اكتب كلمة السر.');
             const bad = room.add(user);
             if (bad === 'full') return err('full', 'الغرفة دي كاملة.');
             if (bad === 'started') return err('started', 'اللعبة في الغرفة دي بدأت بالفعل.');

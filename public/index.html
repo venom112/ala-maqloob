@@ -213,6 +213,15 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .timers { display: grid; gap: 8px; margin: 8px 0; }
 .stp { display: flex; gap: 6px; align-items: stretch; }
 .stp .field { flex: 1; text-align: center; min-width: 0; }
+.rlhead { display: flex; justify-content: space-between; align-items: center; }
+.rlist { display: grid; gap: 8px; max-height: 38vh; overflow: auto; }
+.rm { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--coal-2); cursor: pointer; }
+.rm:active { border-color: var(--brass); }
+.rm .ic { font-size: 20px; }
+.rm .tx { flex: 1; min-width: 0; }
+.rm b { display: block; font-size: 15px; color: var(--bone); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rm small { color: var(--mute); font-size: 12px; }
+.rm .ct { font-weight: 700; color: var(--brass); }
 .stb { width: 44px; border-radius: 10px; border: 1px solid var(--line, #444); background: transparent; color: inherit; font-size: 22px; font-weight: 700; cursor: pointer; }
 .timers label { display: grid; gap: 4px; font-size: 14px; color: var(--mute); }
 .tag .nl { display: flex; align-items: center; justify-content: center; gap: 1.4cqw; }
@@ -567,7 +576,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       <h2 class="q">هتلعب إزاي؟</h2>
       <p class="msg" id="homeNote" aria-live="polite"></p>
       <button class="btn big ghost" id="goBots" type="button"><b>العب مع بوتات زيك 🙂</b><small>تدريب لوحدك من غير ما تستنى حد</small></button>
-      <button class="btn big primary" id="goFriends" type="button"><b>العب مع اصحابك</b><small>اعمل غرفة أو ادخل بكود</small></button>
+      <button class="btn big primary" id="goQuick" type="button"><b>⚡ هاتلي لعيبة</b><small>ادخل لعبة سريعة مع لاعبين داسوا نفس الزرار</small></button>
+      <button class="btn big ghost" id="goFriends" type="button"><b>العب مع اصحابك</b><small>اعمل غرفة أو ادخل بكود</small></button>
       <button class="btn big ghost" id="goRules" type="button"><b>📖 اتعلم ازاي تلعب</b><small>القواعد وشرح كل الكروت</small></button>
     </section>
 
@@ -595,6 +605,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       <div class="chips" id="chipsCreate" role="radiogroup" aria-label="عدد اللاعبين"></div>
       <p class="count-line" id="lineCreate"></p>
       <div class="timers">
+        <label>اسم الغرفة (اختياري)<input class="field" id="roomName" type="text" maxlength="30" autocomplete="off" placeholder="لو سبته فاضي هيظهر اسمك"></label>
+        <label>كلمة سر الغرفة (اختياري)<span class="stp"><input class="field" id="roomPass" type="text" maxlength="20" autocomplete="off" placeholder="من غير كلمة سر = غرفة عامة"><button type="button" class="stb" id="genPass" aria-label="اعمل كلمة سر" title="اعمل كلمة سر">🎲</button></span></label>
         <label>وقت قرار التحدي (ثانية)<span class="stp" data-for="tDecide"><button type="button" class="stb" data-d="-1" aria-label="أقل">−</button><input class="field" id="tDecide" type="number" min="15" max="60" step="5" value="15" inputmode="numeric"><button type="button" class="stb" data-d="1" aria-label="أكتر">+</button></span></label>
         <label>وقت الدور<span class="stp" data-for="tTurn"><button type="button" class="stb" data-d="-1" aria-label="أقل">−</button><select class="field" id="tTurn"><option value="15">15 ثانية</option><option value="20">20 ثانية</option><option value="25">25 ثانية</option><option value="30">30 ثانية</option><option value="35">35 ثانية</option><option value="40">40 ثانية</option><option value="45">45 ثانية</option><option value="50">50 ثانية</option><option value="55">55 ثانية</option><option value="60" selected>60 ثانية</option><option value="0">بدون وقت</option></select><button type="button" class="stb" data-d="1" aria-label="أكتر">+</button></span></label>
         <label>وقت اختيار الهدف (ثانية)<span class="stp" data-for="tPick"><button type="button" class="stb" data-d="-1" aria-label="أقل">−</button><input class="field" id="tPick" type="number" min="15" max="60" step="5" value="15" inputmode="numeric"><button type="button" class="stb" data-d="1" aria-label="أكتر">+</button></span></label>
@@ -606,8 +618,11 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     <section class="step" id="st-join" hidden>
       <button class="back" data-back="friends" type="button"><span aria-hidden="true">→</span>رجوع</button>
       <h2 class="q">ادخل غرفة</h2>
-      <label class="msg" for="codeIn">اكتب كود الغرفة (٥ أرقام)</label>
+      <div class="rlhead"><b>الغرف المتاحة دلوقتي</b><button class="link" id="refRooms" type="button">تحديث ↻</button></div>
+      <div class="rlist" id="roomList"><p class="msg">بندوّر على الغرف...</p></div>
+      <label class="msg" for="codeIn">أو اكتب كود الغرفة (٥ أرقام)</label>
       <input class="field" id="codeIn" type="text" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="٠٠٠٠٠">
+      <input class="field" id="joinPass" type="text" maxlength="20" autocomplete="off" placeholder="كلمة سر الغرفة" hidden>
       <p class="msg" id="joinMsg" aria-live="polite"></p>
       <button class="btn primary" id="joinBtn" type="button">انضمام</button>
       <p class="hint">الكود بيوصلك من صاحب الغرفة. اللعب بيبدأ لما كل اللاعبين يدخلوا.</p>
@@ -635,6 +650,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 
     <section class="panel" id="panelWait" hidden>
       <div class="codebox"><span class="lbl">كود الغرفة</span><b id="roomCode"></b></div>
+      <p class="msg" id="roomMeta"></p>
       <button class="btn ghost" id="copy" type="button">انسخ الدعوة</button>
       <p class="msg" id="waitMsg" aria-live="polite"></p>
       <button class="btn ghost" id="fillBots" type="button" hidden>🤖 هاتلنا بوتات</button>
@@ -811,7 +827,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       if (!$('emailIn').value) $('emailIn').value = localSavedMail || '';
       setTimeout(function () { (localSavedMail ? $('passIn') : $('emailIn')).focus(); }, 30);
     }
-    if (step === 'join') { $('joinMsg').textContent = ''; $('joinMsg').className = 'msg'; setTimeout(function () { $('codeIn').focus(); }, 30); }
+    if (step === 'join') { $('joinPass').value = ''; $('joinPass').hidden = true; setTimeout(loadRooms, 50); $('joinMsg').textContent = ''; $('joinMsg').className = 'msg'; setTimeout(function () { $('codeIn').focus(); }, 30); }
   }
   /* ---------- accounts live on the server: a unique name plus a password ---------- */
   var TOK = 'ala-maqloob-token';
@@ -1250,15 +1266,19 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     renderTable();
     var n = S.players.length, full = n >= S.cap;
     $('cnt').textContent = fmt(Math.min(n, S.cap)) + ' / ' + fmt(S.cap);
-    $('roomTitle').textContent = R.bots ? 'مع البوتات' : 'غرفة ' + fmt(S.code);
+    $('roomTitle').textContent = R.bots ? 'مع البوتات' : (R.name || 'غرفة ' + fmt(S.code));
     $('panelWait').hidden = S.playing || R.bots;
     $('panelPlay').hidden = !S.playing;
     $('roomCode').textContent = fmt(S.code);
-    $('go').hidden = !R.isHost; $('fillBots').hidden = !(R.isHost && !full && !S.playing && !R.bots);
+    $('roomCode').parentNode.hidden = !!R.quick;
+    $('copy').hidden = !!R.quick;
+    $('roomMeta').textContent = R.quick ? 'لعبة سريعة: بتبدأ لوحدها لما يكمل ٤ لاعبين، أو بعد ٨ ثواني من ما يبقوا ٣.' : (R.name ? 'اسم الغرفة: ' + R.name : '') + (R.locked ? (R.isHost && R.pass ? ' · 🔒 كلمة السر: ' + R.pass : ' · 🔒 غرفة خاصة') : '');
+    $('go').hidden = !R.isHost || !!R.quick; $('fillBots').hidden = !(R.isHost && !full && !S.playing && !R.bots);
     $('go').disabled = !(R.isHost && n === S.cap && R.roster.length === S.cap);
     if (!S.playing && !R.bots) {
       var w;
       if (full) w = R.isHost ? 'الكل دخل. <strong>ابدأ الملحمة!</strong>' : 'الكل دخل. مستنيين صاحب الغرفة يبدأ.';
+      else if (R.quick) w = 'بندوّر على لاعيبة... دخل <strong>' + fmt(n) + '</strong> من <strong>' + fmt(S.cap) + '</strong>.';
       else w = 'دخل <strong>' + fmt(n) + '</strong> من <strong>' + fmt(S.cap) + '</strong> لاعبين. ابعت الكود لأصحابك، واللعب مش هيبدأ غير لما العدد يكمل.';
       $('waitMsg').innerHTML = w;
     }
@@ -1622,6 +1642,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       case 'banned': case 'kicked': net.stop = m.t === 'banned' ? false : false; setTok(''); ME.name = ''; net.on = false; authBusy(false); connBar(true); if (inRoom()) leaveLocal(); show('name'); nameErr(m.msg); try { net.ws && net.ws.close(); } catch (e) {} break;
       case 'room': connBar(true); applyRoom(m); break;
       case 'left': if (inRoom()) { leaveLocal(); show('home'); } break;
+      case 'rooms': fillRoomList(m.list || []); break;
       case 'closed': if (inRoom()) { leaveLocal(); show('home'); homeNote(m.msg || 'الغرفة اتقفلت.'); } break;
       case 'replaced': net.stop = true; if (inRoom()) leaveLocal(); show('boot'); $('st-boot').querySelector('.msg').textContent = 'اللعبة مفتوحة في مكان تاني بنفس الحساب. اقفل التاني وحمّل الصفحة تاني.'; break;
       case 'err': onErr(m); break;
@@ -1634,7 +1655,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     if (!$('st-gname').hidden) { $('gnameMsg').textContent = m.msg; $('gnameMsg').className = 'msg err'; return; }
     if (!$('st-name').hidden) { nameErr(m.msg); return; }
     if (!$('st-create').hidden) { $('openRoom').disabled = false; createMsg(m.msg, true); return; }
-    if (!$('st-join').hidden) { $('joinBtn').disabled = false; joinErr(m.msg); return; }
+    if (!$('st-join').hidden) { $('joinBtn').disabled = false; if (m.code === 'pass') $('joinPass').hidden = false; joinErr(m.msg); return; }
     homeNote(m.msg);
   }
 
@@ -1661,6 +1682,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   }
   function applyRoom(m) {
     if (!inRoom()) enterRoomView();
+    R.name = m.name || ''; R.locked = !!m.locked; R.pass = m.pass || ''; R.quick = !!m.quick;
     R.code = m.code; R.cap = m.cap; R.bots = !!m.bots; R.isHost = !!m.isHost; R.roster = m.roster; R.myIdx = m.you < 0 ? 0 : m.you;
     S.cap = m.cap; S.code = m.code;
     if (m.gameNo !== R.gameSeen) { R.gameSeen = m.gameNo; resetLocalGame(); }
@@ -1843,7 +1865,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     if (!net.on) { createMsg('مفيش اتصال بالسيرفر دلوقتي. جرب تاني بعد ثانية.', true); return; }
     $('openRoom').disabled = true; createMsg('بنفتح الغرفة...');
     var tv = function (id, d) { var x = Math.round(Number($(id).value)); return Number.isFinite(x) && x > 0 ? Math.min(60, Math.max(15, x)) : d; };
-    send({ t: 'create', cap: S.createN, decide: tv('tDecide', 15), turn: ($('tTurn').value === '0' ? 0 : tv('tTurn', 60)), pick: tv('tPick', 15) });
+    send({ t: 'create', cap: S.createN, name: $('roomName').value, pass: $('roomPass').value, decide: tv('tDecide', 15), turn: ($('tTurn').value === '0' ? 0 : tv('tTurn', 60)), pick: tv('tPick', 15) });
     setTimeout(function () { $('openRoom').disabled = false; createMsg(''); }, 2500);
   };
   function joinErr(t) { $('joinMsg').textContent = t; $('joinMsg').className = 'msg err'; }
@@ -1852,8 +1874,25 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     if (code.length < 5) { joinErr('اكتب الكود كامل، ٥ أرقام.'); return; }
     if (!net.on) { joinErr('مفيش اتصال بالسيرفر دلوقتي. جرب تاني بعد ثانية.'); return; }
     $('joinMsg').textContent = 'بندوّر على الغرفة...'; $('joinMsg').className = 'msg';
-    send({ t: 'join', code: code });
+    send({ t: 'join', code: code, pass: $('joinPass').value });
   }
+  /* open rooms: public and private, refreshed while the join screen is open */
+  function loadRooms() { if (!net.on || $('st-join').hidden) return; send({ t: 'rooms' }); }
+  setInterval(loadRooms, 3000);
+  $('refRooms').onclick = loadRooms;
+  function fillRoomList(list) {
+    $('roomList').innerHTML = list.length ? list.map(function (r) {
+      return '<button type="button" class="rm" data-code="' + esc(r.code) + '" data-lock="' + (r.locked ? 1 : 0) + '"><span class="ic">' + (r.locked ? '🔒' : '🌐') + '</span><span class="tx"><b>' + esc(r.name) + '</b><small>المضيف: ' + esc(r.host) + (r.locked ? ' · خاصة' : ' · عامة') + (r.quick ? ' · سريعة' : '') + '</small></span><span class="ct">' + fmt(r.n) + '/' + fmt(r.cap) + '</span></button>';
+    }).join('') : '<p class="msg">مفيش غرف مفتوحة دلوقتي. اعمل غرفة، أو دوس "هاتلي لعيبة" من الشاشة الرئيسية.</p>';
+  }
+  $('roomList').addEventListener('click', function (e) {
+    var b = e.target.closest('.rm'); if (!b) return;
+    $('codeIn').value = b.dataset.code.replace(/\d/g, function (d) { return AR[d]; });
+    if (b.dataset.lock === '1' && !$('joinPass').value) { $('joinPass').hidden = false; $('joinPass').focus(); joinErr('الغرفة دي خاصة. اكتب كلمة السر وبعدين دوس انضمام.'); return; }
+    tryJoin();
+  });
+  $('goQuick').onclick = function () { if (!ME.name) { show('name'); return; } if (!net.on) { homeNote('مفيش اتصال بالسيرفر دلوقتي. جرب تاني بعد ثانية.'); return; } homeNote('بندوّر على لاعيبة...'); send({ t: 'quick' }); };
+  $('genPass').onclick = function () { $('roomPass').value = String(1000 + Math.floor(Math.random() * 9000)); };
   $('joinBtn').onclick = tryJoin;
   $('codeIn').addEventListener('input', function () {
     var v = toLatin(this.value).slice(0, 5);
@@ -1864,7 +1903,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   $('go').onclick = function () { send({ t: 'start' }); };
   $('fillBots').onclick = function () { send({ t: 'fillbots' }); };
   $('copy').onclick = function () {
-    var text = 'تعالى العب معايا ع المقلوب! كود الغرفة: ' + fmt(S.code) + '\n' + location.origin;
+    var text = 'تعالى العب معايا ع المقلوب! كود الغرفة: ' + fmt(S.code) + (R.locked && R.pass ? ' · كلمة السر: ' + R.pass : '') + '\n' + location.origin;
     var fail = function () {
       try {
         var r = document.createRange(); r.selectNodeContents($('roomCode'));
