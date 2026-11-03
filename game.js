@@ -52,8 +52,9 @@ class Room {
         targets: this.phase === 'target' ? this.targets : [], defend: this.phase === 'defend' && this.defend ? { T: this.defend.T, P: this.defend.P, c: this.defend.c, opts: this.defend.opts, id: this.defend.id, kind: this.defend.kind } : null, ev: this.ev || '', evs: this.evs,
         lock: i >= 0 && this.inf ? [...new Set((this.hands[i] || []).filter(t => this.keyLocked(i, t)))] : [],
         imm: this.immuneTo ? this.roster.map((r, j) => this.isImmune(j) ? this.immuneTo[j] - this.turnsN[j] + 1 : 0) : [],
+        cd: i >= 0 && this.turnsN && this.cdAt[i] ? this.cfg.cards.map((c, x) => this.cdLeft(i, x)) : [],
         ban: i >= 0 && this.turnsN ? this.cfg.cards.map((c, x) => x).filter(x => this.claimBanned(i, x)) : [],
-        cfg: { cards: this.cfg.cards.map(c => ({ df: this.isDefCard(this.cfg.cards.indexOf(c)), jg: !!c.jg, win: (c.power.find(o => o.op === 'victory') || { n: 0 }).n, up: !!c.up, name: c.name, symbol: c.symbol, color: c.color, descr: c.descr, img: c.img, pen: c.pen })), set: { startInf: this.cfg.set.startInf, decideMs: this.cfg.set.decideMs, pickMs: this.cfg.set.pickMs, turnMs: this.cfg.set.turnMs || 0 }, v: this.cfg.v }
+        cfg: { cards: this.cfg.cards.map(c => ({ df: this.isDefCard(this.cfg.cards.indexOf(c)), jg: !!c.jg, win: (c.power.find(o => o.op === 'victory') || { n: 0 }).n, up: !!c.up, snd: (c.power[0] || {}).op || '', cdn: this.cdOf(this.cfg.cards.indexOf(c)), name: c.name, symbol: c.symbol, color: c.color, descr: c.descr, img: c.img, pen: c.pen })), set: { startInf: this.cfg.set.startInf, decideMs: this.cfg.set.decideMs, pickMs: this.cfg.set.pickMs, turnMs: this.cfg.set.turnMs || 0 }, v: this.cfg.v }
       };
     }
     return {
@@ -204,6 +205,8 @@ class Room {
     return false;   // a card that cannot be played as itself can always be thrown away as another card, so no turn is ever lost
   }   // played face up
   isImmune(j) { return this.immuneTo[j] >= 0 && this.turnsN[j] <= this.immuneTo[j]; }
+  // how many of his own turns a player still has to wait before he may claim this card again (0 = ready)
+  cdLeft(i, c) { const n = this.cdOf(c); if (!n) return 0; const at = this.cdAt[i][c]; return at == null ? 0 : Math.max(0, n - (this.turnsN[i] + 1 - at)); }
   claimBanned(i, c) { const n = this.cdOf(c); if (!n) return false; const at = this.cdAt[i][c]; return at != null && this.turnsN[i] + 1 - at < n; }
   regainN(i) { return this.lostLog[i].filter(s => s > this.prevStart[i]).length; }
   start(uid) {

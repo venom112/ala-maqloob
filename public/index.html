@@ -115,10 +115,10 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .snd[aria-pressed="false"] { color: var(--mute); }
 .count b { font-family: var(--font-display); font-size: 20px; color: var(--bone); font-weight: 700; }
 
-.stage { container-type: inline-size; position: relative; width: 100%; aspect-ratio: 1; margin-bottom: 14px; }
+.stage { container-type: inline-size; position: relative; width: 100%; aspect-ratio: 1; margin-bottom: calc(14px + 3cqw); }
 .table {
   position: absolute; left: 50%; top: 50%;
-  width: 76cqw; aspect-ratio: 1; translate: -50% -50%;
+  width: 88cqw; aspect-ratio: 1; translate: -50% -50%;
   border-radius: 50%;
   background: radial-gradient(circle at 50% 40%, #2a2a2d 0%, #1c1c1e 58%, #121213 100%);
   box-shadow:
@@ -129,17 +129,18 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     inset 0 0 7cqw rgba(0,0,0,.75);
 }
 .table::after { content: ""; position: absolute; inset: 2.4cqw; border-radius: 50%; border: .3cqw dashed rgba(200,162,75,.26); pointer-events: none; }
-.logo { position: absolute; left: 50%; top: calc(50% - 10cqw); width: 42cqw; aspect-ratio: 1; translate: -50% -50%; display: block; max-width: none; }
+.logo { position: absolute; left: 50%; top: calc(50% - 11cqw); width: 48cqw; aspect-ratio: 1; translate: -50% -50%; display: block; max-width: none; }
 
 .slot { position: absolute; inset: 0; pointer-events: none; transition: --a .7s cubic-bezier(.3,.8,.25,1); }
 .slot.nohand .hand, .slot.me .hand { display: none !important; }
 .seat {
   position: absolute; left: 50%; top: 50%; width: 0; height: 0;
-  transform: rotate(var(--a)) translateY(-38.5cqw) rotate(calc(var(--a) * -1));
+  transform: rotate(var(--a)) translateY(-44cqw) rotate(calc(var(--a) * -1));
   transition: opacity .4s;
 }
 .slot:not(.on) .seat { opacity: 0; pointer-events: none; }
-.stage.crowd .slot .coins { display: none; }   /* 7-8 seats: the number is enough, the coin stack made neighbours collide */
+.stage.crowd .tag .nl { flex-wrap: wrap; width: 29cqw; margin-inline: auto; row-gap: .6cqw; }   /* 6-8 seats: name on one line, points and coins on the next, so neighbours never collide */
+.stage.crowd .slot .nm { max-width: 6em; }
 .slot:not(.on) .tag { display: none; }   /* seats beyond the table size are invisible; their labels must not widen the page */
 .av {
   flex: none; width: clamp(20px, 5.6cqw, 30px); aspect-ratio: 1; border-radius: 50%;
@@ -156,7 +157,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .slot.me .av { border-width: max(2px, .8cqw); }
 .slot.empty .av { border-style: dashed; border-color: #4f4b45; color: var(--mute); background: transparent; box-shadow: none; animation: none; font-weight: 500; }
 .tag {
-  position: absolute; top: -3.2cqw; left: -22cqw; width: 44cqw; text-align: center;
+  position: absolute; top: -3.2cqw; left: 0; width: max-content; transform: translateX(-50%); text-align: center;
   font-size: clamp(11px, 3.4cqw, 15px); line-height: 1.25; color: var(--bone); white-space: nowrap; text-shadow: 0 1px 6px #000;
 }
 .tag small { display: block; font-size: clamp(9px, 2.5cqw, 11px); color: var(--brass); letter-spacing: .04em; min-height: 1.1em; }
@@ -164,7 +165,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .slot.turn .av { box-shadow: 0 0 0 1cqw rgba(200,162,75,.28), 0 0 5cqw rgba(200,162,75,.6); animation: pulse 1.8s ease-in-out infinite; }
 @keyframes pulse { 50% { box-shadow: 0 0 0 1.6cqw rgba(200,162,75,.16), 0 0 7cqw rgba(200,162,75,.35); } }
 
-.hand { position: absolute; left: 50%; top: 50%; width: 0; height: 0; display: none; transform: rotate(var(--a)) translateY(-27.5cqw); }
+.hand { position: absolute; left: 50%; top: 50%; width: 0; height: 0; display: none; transform: rotate(var(--a)) translateY(-31cqw); }
 .stage.dealt .slot.on:not(.empty) .hand { display: block; }
 .fan { position: absolute; left: 0; top: 0; width: 0; height: 0; animation: deal .55s cubic-bezier(.2,.9,.3,1) both; animation-delay: calc(var(--i) * 80ms); }
 @keyframes deal { from { opacity: 0; transform: translateY(16cqw) scale(.3); } to { opacity: 1; transform: none; } }
@@ -178,8 +179,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .card:nth-child(3) { transform: translate(2.4cqw, .4cqw) rotate(13deg); }
 
 /* draw pile (right) and play pile (left), centred on the table below the logo */
-.piles { position: absolute; left: 50%; top: 50%; translate: -50% calc(-50% + 13.5cqw); display: flex; gap: 4cqw; z-index: 3; }
-.pile { position: relative; width: 11cqw; height: 15.4cqw; padding: 0; border: 0; background: none; border-radius: 1.4cqw; font: inherit; cursor: pointer; transition: scale .15s; }
+.piles { position: absolute; left: 50%; top: 50%; translate: -50% calc(-50% + 15cqw); display: flex; gap: 4cqw; z-index: 3; }
+.pile { position: relative; width: 12.4cqw; height: 17.4cqw; padding: 0; border: 0; background: none; border-radius: 1.4cqw; font: inherit; cursor: pointer; transition: scale .15s; }
 .pile:disabled { opacity: .8; cursor: default; }
 .pile:not(:disabled):active { scale: .96; }
 .pcard { position: absolute; inset: 0; border-radius: 1.4cqw; box-shadow: 0 .6cqw 1.4cqw rgba(0,0,0,.6); }
@@ -224,6 +225,11 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .rm b { display: block; font-size: 15px; color: var(--bone); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rm small { color: var(--mute); font-size: 12px; }
 .rm .ct { font-weight: 700; color: var(--brass); }
+.cdb { display: inline-block; margin-inline-start: 6px; padding: 0 7px; border-radius: 10px; font-size: 12px; font-weight: 700; line-height: 1.6; background: #3a2a10; color: #ffcc66; border: 1px solid #8f7433; }
+.cdb.ok { background: #12301d; color: #7fe0a0; border-color: #2f7a4a; }
+.hc .cdh { position: absolute; top: 2px; left: 2px; z-index: 2; padding: 0 5px; border-radius: 8px; font-size: 11px; font-weight: 700; line-height: 1.5; background: rgba(20,14,4,.9); color: #ffcc66; border: 1px solid #8f7433; direction: rtl; }
+.hc .cdh.ok { color: #7fe0a0; border-color: #2f7a4a; background: rgba(8,30,16,.9); }
+.hc { position: relative; }
 .stb { width: 44px; border-radius: 10px; border: 1px solid var(--line, #444); background: transparent; color: inherit; font-size: 22px; font-weight: 700; cursor: pointer; }
 .timers label { display: grid; gap: 4px; font-size: 14px; color: var(--mute); }
 .tag .nl { display: flex; align-items: center; justify-content: center; gap: 1.4cqw; }
@@ -246,9 +252,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .slot.out .coins { opacity: .45; filter: grayscale(1); }
 
 /* coins lying on the table in front of the draw pile */
-.bank { position: absolute; left: 50%; top: 50%; width: 0; height: 0; translate: 8cqw 25.2cqw; z-index: 2; pointer-events: none; }
+.bank { position: absolute; left: 50%; top: 50%; width: 0; height: 0; translate: 0 30cqw; z-index: 2; pointer-events: none; }
 .bcoin {
-  position: absolute; width: 5cqw; aspect-ratio: 1; left: calc(var(--x) * 1cqw - 2.5cqw); top: calc(var(--y) * 1cqw - 2.5cqw); rotate: var(--r);
+  position: absolute; width: calc(var(--s) * 1cqw); aspect-ratio: 1; left: calc(var(--x) * 1cqw - var(--s) * .5cqw); top: calc(var(--y) * 1cqw - var(--s) * .5cqw); rotate: var(--r);
   background-size: cover; filter: drop-shadow(0 .5cqw .7cqw rgba(0,0,0,.75));
   animation: dropin .5s cubic-bezier(.2,1,.3,1) both; animation-delay: calc(var(--k) * 70ms);
 }
@@ -349,6 +355,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .pvcard .gl { font-size: 96px; line-height: 1; }
 .pvcard .pw { font-size: 22px; font-weight: 700; }
 .pvtxt { margin: 0; font-size: 15px; color: var(--bone); }
+.pvcd { color: #ffcc66; font-weight: 700; }
+.pvcd.ok { color: #7fe0a0; }
 .pvmore { color: var(--mute); font-size: 14px; }
 .pvpen { color: var(--blood); font-size: 14px; }
 .pvsheet .cbtns { width: 100%; }
@@ -724,6 +732,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
         <div class="pvcard" id="pvCard"></div>
         <h3 id="pvName"></h3>
         <p class="pvtxt" id="pvPow"></p>
+        <p class="pvtxt pvcd" id="pvCd" hidden></p>
         <p class="pvtxt pvmore" id="pvMore"></p>
         <p class="pvtxt pvpen" id="pvPen"></p>
         <div class="cbtns">
@@ -987,6 +996,23 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       tone(130, 1.2, 'sawtooth', .08, 0, 260);
       for (var k = 0; k < 14; k++) noise(.1, .09, .4 + k * .11, 2500);
     },
+    // one sound per card power, played when the card is put on the table (the sound follows the card that was NAMED)
+    card: function (op) { SFX.play(); var f = SFX['p_' + op]; if (f) f(); },
+    p_steal: function () { noise(.1, .28, .05, 300); tone(100, .28, 'square', .28, .05, 45); tone(1568, .08, 'square', .1, .3); tone(2093, .22, 'square', .1, .38); },
+    p_swap: function () { tone(280, .38, 'sine', .2, 0, 950); tone(950, .38, 'sine', .2, .22, 280); noise(.45, .07, .05, 2600); },
+    p_take: function () { tone(1800, .04, 'square', .1, 0); tone(1500, .04, 'square', .1, .09); tone(2100, .04, 'square', .1, .18); noise(.18, .1, .24, 3800); },
+    p_peek: function () { tone(2000, .09, 'sine', .15, 0, 2900); tone(2600, .09, 'sine', .15, .13, 3300); tone(2200, .12, 'sine', .15, .27, 3100); },
+    p_regain: function () { noise(.05, .22, 0, 5000); tone(1568, .55, 'sine', .2, .05); tone(2093, .7, 'sine', .14, .12); noise(.05, .12, .32, 6000); noise(.05, .12, .39, 6000); noise(.05, .12, .46, 6000); },
+    p_inf_gain: function () { [659, 880, 1175, 1568].forEach(function (f, k) { tone(f, .3, 'triangle', .15, k * .1); }); tone(330, .9, 'sine', .08, 0, 440); noise(.3, .05, .35, 5000); },
+    p_smuggle: function () { tone(120, .55, 'sawtooth', .1, 0, 70); noise(.45, .08, .05, 700); tone(330, .06, 'square', .08, .55); tone(90, .2, 'sine', .3, .72, 45); },
+    p_recycle: function () { noise(.28, .08, 0, 6000); tone(1400, .26, 'sine', .06, 0, 3000); noise(.7, .42, .3, 250); tone(70, .8, 'sawtooth', .32, .3, 25); noise(.4, .18, .4, 1200); },
+    p_immune: function () { [392, 392, 523, 659].forEach(function (f, k) { tone(f, k === 3 ? .6 : .17, 'sawtooth', .13, k * .2); }); tone(784, .7, 'triangle', .1, .62); },
+    p_copy: function () { for (var k = 0; k < 3; k++) { tone(620, .14, 'triangle', .16 - k * .04, k * .22, 760); tone(700, .14, 'sine', .1 - k * .03, k * .22 + .08, 540); } },
+    p_victory: function () { tone(1200, .05, 'square', .12, 0); tone(800, .05, 'square', .12, .08); noise(.1, .2, .15, 500); [392, 523, 659, 784, 1047].forEach(function (f, k) { tone(f, .3, 'sawtooth', .1, .3 + k * .1); }); tone(1319, .8, 'triangle', .12, .85); },
+    p_reflect: function () { noise(.05, .2, 0, 2500); tone(880, .12, 'square', .18, .05); tone(660, .55, 'square', .17, .2, 640); },
+    p_guard: function () { for (var k = 0; k < 2; k++) { tone(700, .28, 'square', .1, k * .6, 950); tone(950, .28, 'square', .1, k * .6 + .3, 700); } },
+    p_judge: function () { for (var k = 0; k < 2; k++) { tone(170, .13, 'sine', .45, k * .24, 60); noise(.05, .35, k * .24, 1800); } tone(880, .55, 'sine', .06, .5); },
+    p_elder: function () { tone(110, 1.3, 'sine', .3, 0, 98); tone(220, 1.1, 'sine', .14, 0); tone(330, .9, 'triangle', .07, .03); noise(.22, .1, 0, 400); },
     fatwa: function () { noise(.12, .3, 0, 300); tone(90, .3, 'square', .3, 0, 45); tone(1175, .09, 'square', .12, .55); tone(1568, .35, 'square', .12, .65); },
     lose: function () { [392, 370, 349, 262].forEach(function (f, k) { tone(f, .5, 'sawtooth', .13, k * .45, f * .94); }); }
   };
@@ -1019,6 +1045,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   function cd(t) { return (CFG && CFG.cards[t]) || { name: '؟', symbol: '', color: '#17130b', descr: '', img: '', pen: '' }; }
   function esc(x) { return String(x == null ? '' : x).replace(/[&<>"']/g, function (ch) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]; }); }
   function pw(t) { return cd(t).name; }
+  // cards that can only be played once every N turns: how long until this one is ready again for me
+  function cdTxt(t) { var c = cd(t), n = c.cdn || 0; if (!n) return null; var left = (S.cdr && S.cdr[t]) || 0; return left ? { t: '⏳ ' + fmt(left), ok: false, full: 'باقي ' + fmt(left) + (left === 1 ? ' دور' : ' أدوار') + ' لحد ما تقدر تلعبه تاني' } : { t: '✓', ok: true, full: 'جاهز (مرة كل ' + fmt(n) + ' أدوار)' }; }
   function lab(t) { var c = cd(t); return (c.symbol ? c.symbol + ' ' : '') + c.name; }
   function faceHtml(t) { var c = cd(t); return c.img ? '<img src="' + esc(c.img) + '" alt="' + esc(c.name) + '">' : '<span class="gl">' + esc(c.symbol) + '</span><span class="pw">' + esc(c.name) + '</span>'; }
   function applyImages(im) {
@@ -1069,15 +1097,15 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     var ch = Array.from(name), last = ch.pop() || '';
     return ch.join('') + '<span class="lastch">' + last + '</span>';
   }
-  // a random handful of coins on the table in front of the draw pile
+  // a random heap of 1 / 5 / 10 coins lying on the table below the piles: dense in the middle, loose at the edges
   function genBank() {
-    var n = 4 + Math.floor(Math.random() * 6), a = [];
+    var n = 16 + Math.floor(Math.random() * 8), a = [], g = function () { return (Math.random() + Math.random() + Math.random() - 1.5) / 1.5; };
     for (var k = 0; k < n; k++) {
-      var r = Math.random(), v = r < .55 ? 1 : r < .85 ? 5 : 10, ang = Math.random() * 6.283, d = Math.sqrt(Math.random());
-      a.push({ v: v, x: +(Math.cos(ang) * d * 5).toFixed(1), y: +(Math.sin(ang) * d * 2).toFixed(1), r: Math.round(Math.random() * 60 - 30) });
+      var r = Math.random(), v = r < .5 ? 1 : r < .83 ? 5 : 10;
+      a.push({ v: v, s: v === 1 ? 5 : v === 5 ? 5.6 : 6.2, x: +(g() * 11).toFixed(1), y: +(g() * 4.2).toFixed(1), r: Math.round(Math.random() * 360) });
     }
     a.sort(function (p, q) { return p.y - q.y; });
-    $('bank').innerHTML = a.map(function (c, k) { return '<i class="bcoin c' + c.v + '" style="--x:' + c.x + ';--y:' + c.y + ';--r:' + c.r + 'deg;--k:' + k + '"></i>'; }).join('');
+    $('bank').innerHTML = a.map(function (c, k) { return '<i class="bcoin c' + c.v + '" style="--x:' + c.x + ';--y:' + c.y + ';--r:' + c.r + 'deg;--s:' + c.s + ';--k:' + k + '"></i>'; }).join('');
   }
   function nm(i) { return S.players[i].name; }
   function handLen(i) { return S.hands[i] ? S.hands[i].length : 0; }
@@ -1127,7 +1155,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       sl.classList.toggle('nohand', lv && !!p && (!!S.out[i] || !handLen(i)));
       sl.classList.toggle('turn', lv && !!p && S.over < 0 && !S.out[i] && i === S.turn);
     }
-    stage.classList.toggle('crowd', S.cap >= 7);
+    stage.classList.toggle('crowd', S.cap >= 6);
     stage.classList.toggle('dealt', lv);
     stage.classList.toggle('live', lv);
     renderPiles();
@@ -1159,13 +1187,15 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     $('declBox').hidden = !(show && can && S.drew && S.sel >= 0);
     if (typeof pvSync === 'function') pvSync();
     if (!show) return;
-    var sig = h.join(',') + '|' + S.sel + '|' + S.decl + '|' + can + '|' + S.drew;
+    var sig = h.join(',') + '|' + S.sel + '|' + S.decl + '|' + can + '|' + S.drew + '|' + (S.cdr || []).join('.');
     if (sig !== handSig) {
       handSig = sig;
       $('handRow').innerHTML = h.map(function (t, k) {
-        return '<button type="button" class="hc' + (cd(t).img ? ' art' : '') + (k === S.sel ? ' sel' : '') + (can && S.drew ? '' : ' dis') + '" style="color:' + esc(cd(t).color) + '" data-k="' + k + '" aria-label="' + esc(pw(t)) + '">' + faceHtml(t) + '</button>';
+        return '<button type="button" class="hc' + (cd(t).img ? ' art' : '') + (k === S.sel ? ' sel' : '') + (can && S.drew ? '' : ' dis') + '" style="color:' + esc(cd(t).color) + '" data-k="' + k + '" aria-label="' + esc(pw(t)) + '">' + faceHtml(t) + (cdTxt(t) ? '<span class="cdh' + (cdTxt(t).ok ? ' ok' : '') + '">' + cdTxt(t).t + '</span>' : '') + '</button>';
       }).join('') || '<span class="msg">إيدك فاضية.</span>';
       Array.prototype.forEach.call($('declRow').children, function (b, t) {
+        var ct = cdTxt(t), bd = b.querySelector('.cdb');
+        if (ct) { if (!bd) { bd = document.createElement('span'); b.appendChild(bd); } bd.className = 'cdb' + (ct.ok ? ' ok' : ''); bd.textContent = ct.t; bd.title = ct.full; } else if (bd) bd.remove();
         b.setAttribute('aria-checked', String(t === S.decl));
         b.disabled = !can || S.sel < 0 || S.ban.indexOf(t) >= 0 || (!!cd(t).up && (h[S.sel] !== t || S.lock.indexOf(t) >= 0));
       });
@@ -1324,7 +1354,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   }
 
   /* ---------- piles ---------- */
-  var DRAW = { x: 7.5, y: 13.5 }, PLAY = { x: -7.5, y: 13.5 };
+  var DRAW = { x: 8.2, y: 15 }, PLAY = { x: -8.2, y: 15 };
   function newPileCard(t, c) {
     return { t: t, c: c, rev: false, rot: Math.round((Math.random() * 2 - 1) * 14), dx: +((Math.random() * 2 - 1) * .8).toFixed(1) };
   }
@@ -1367,7 +1397,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       }
     } catch (e) {}
   }
-  function seatXY(i) { var a = angle(i, S.cap) * Math.PI / 180; return { x: Math.sin(a) * 38.5, y: -Math.cos(a) * 38.5 }; }
+  function seatXY(i) { var a = angle(i, S.cap) * Math.PI / 180; return { x: Math.sin(a) * 44, y: -Math.cos(a) * 44 }; }
   var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   function flyFromDraw(i) {
     if (calm) return;
@@ -1503,7 +1533,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     var r;
     switch (d.k) {
       case 'draw': SFX.draw(); flyFromDraw(rel(d.i)); break;
-      case 'play': landOnPlay(rel(d.i)); SFX.play(); bubble(rel(d.i), lab(d.c), 'claim'); break;
+      case 'play': landOnPlay(rel(d.i)); SFX.card(CFG && CFG.cards[d.c] ? CFG.cards[d.c].snd : ''); bubble(rel(d.i), lab(d.c), 'claim'); break;
       case 'pass':
         r = rel(d.j);
         if (r === 0) { if (!d.auto) { fx('pass', 'ماشي، الكارت عدّى', 'خلاص هعديهالك', 1300); SFX.pass(); } }
@@ -1733,7 +1763,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     S.claim = g.claim ? { by: rel(g.claim.by), c: g.claim.c, pending: g.claim.pending.map(rel), total: g.claim.total, id: g.claim.id } : null;
     S.targets = (g.targets || []).map(rel);
     if (m.peek && m.peek.id !== S.peekId) { S.peekId = m.peek.id; S.peekMem = { id: m.peek.id, of: rel(m.peek.of), cards: m.peek.cards.slice() }; S.peekOpen = true; }
-    S.ban = g.ban || []; S.lock = g.lock || [];
+    S.ban = g.ban || []; S.lock = g.lock || []; S.cdr = g.cd || [];
     S.defend = g.defend ? { T: rel(g.defend.T), P: rel(g.defend.P), c: g.defend.c, id: g.defend.id, kind: g.defend.kind } : null;
     S.ev = g.ev || '';
     handSig = '';
@@ -1761,6 +1791,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     $('pvName').textContent = c.name; $('pvPow').textContent = c.descr || '';
     var mo = (typeof MORE !== 'undefined' && MORE[c.name]) || ''; $('pvMore').textContent = mo; $('pvMore').hidden = !mo;
     $('pvPen').textContent = c.pen ? 'عقوبة الكدب: ' + c.pen : ''; $('pvPen').hidden = !c.pen;
+    var ct = cdTxt(t); $('pvCd').hidden = !ct; if (ct) { $('pvCd').textContent = '⏱ ' + ct.full; $('pvCd').className = 'pvtxt pvcd' + (ct.ok ? ' ok' : ''); }
     $('pvBox').hidden = false; pvSync();
   }
   function pvSync() {
@@ -1950,7 +1981,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   $('leave').onclick = leave;
 
   /* ---------- start: connect, and sign in with the saved session if there is one ---------- */
-  window.__ala = { net: net, connect: connect };   // used by the end-to-end test to cut and restore the connection
+  window.__ala = { net: net, connect: connect, SFX: SFX, S: S };   // used by the end-to-end test to cut and restore the connection
   /* the opening splash stays at least 2.4 s, then fades once the first real screen is ready (never longer than 7 s) */
   var SPL0 = Date.now(), splDone = false;
   function hideSplash() {

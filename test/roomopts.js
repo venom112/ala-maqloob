@@ -34,6 +34,18 @@ function game(opts) {
     r.close();
   }
   {
+    const r = game(), ACC = 9, SMU = 11;
+    check('a cooldown card is ready at the start', r.body('a').g.cd[ACC] === 0 && r.body('a').g.cd[SMU] === 0 && r.body('a').g.cfg.cards[ACC].cdn === 2 && r.body('a').g.cfg.cards[SMU].cdn === 3 && r.body('a').g.cfg.cards[0].cdn === 0);
+    r.turnsN[0] = 1; r.cdAt[0][ACC] = 1; r.cdAt[0][SMU] = 1;   // both were played on his first turn
+    check('right after playing it he must wait n-1 more turns', r.body('a').g.cd[ACC] === 1 && r.body('a').g.cd[SMU] === 2 && r.claimBanned(0, ACC) && r.claimBanned(0, SMU), r.body('a').g.cd);
+    r.turnsN[0] = 2;
+    check('the counter goes down turn by turn', r.body('a').g.cd[ACC] === 0 && !r.claimBanned(0, ACC) && r.body('a').g.cd[SMU] === 1 && r.claimBanned(0, SMU));
+    r.turnsN[0] = 3;
+    check('and it is ready again exactly when the server allows it', r.body('a').g.cd[SMU] === 0 && !r.claimBanned(0, SMU) && !r.body('b').g.cd.some(x => x > 0));
+    check('every power has a sound key', r.body('a').g.cfg.cards.every((c, x) => x < 4 && !r.cfg.cards[x].power.length ? true : !!c.snd), r.body('a').g.cfg.cards.map(c => c.snd));
+    r.close();
+  }
+  {
     Room.speed = .01;   // 1 s of game time = 10 ms
     const r = game({ decideMs: 15000, pickMs: 15000, turnMs: 15000 });
     r.hands[0] = [0, 1, 2]; r.turn = 0; r.drew = false; r.phase = 'act'; r.touch();
