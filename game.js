@@ -243,7 +243,7 @@ class Room {
     if (uid !== this.hostUid || this.status !== 'playing' || this.over < 0) return;
     this.clearTimers();
     if (this.bots) { this.newGame(); this.touch(); return; }
-    this.roster = this.roster.filter(r => !r.gone);
+    this.roster = this.roster.filter(r => !r.gone && !r.left);   // somebody who left for good is not dealt into the next game
     this.resetCards(); this.evs = []; this.gameNo++;
     if (this.roster.length < this.cap) { this.status = 'waiting'; this.publish(); return; }
     this.status = 'waiting'; this.start(this.hostUid);

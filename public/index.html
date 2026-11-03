@@ -139,6 +139,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   transition: opacity .4s;
 }
 .slot:not(.on) .seat { opacity: 0; pointer-events: none; }
+.stage.crowd .slot .coins { display: none; }   /* 7-8 seats: the number is enough, the coin stack made neighbours collide */
+.slot:not(.on) .tag { display: none; }   /* seats beyond the table size are invisible; their labels must not widen the page */
 .av {
   flex: none; width: clamp(20px, 5.6cqw, 30px); aspect-ratio: 1; border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, var(--coal-2), #0f0f10);
@@ -526,8 +528,11 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 @keyframes srise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 @keyframes sbar { 0% { translate: -120% 0; } 100% { translate: 280% 0; } }
 @media (prefers-reduced-motion: reduce) { #splash *, #splash { animation: none !important; } #splash .sc, #splash .stitle, #splash .slogo { opacity: 1; } #splash .sc { transform: translate(var(--x), var(--y)) rotate(var(--r)); } }
+#exitToast { position: fixed; left: 50%; bottom: 12vh; translate: -50% 0; z-index: 1000; max-width: 86vw; padding: 12px 20px; border-radius: 24px; background: rgba(236,228,207,.96); color: #17130b; font-weight: 700; font-size: 15px; text-align: center; box-shadow: 0 6px 24px rgba(0,0,0,.6); opacity: 0; visibility: hidden; transition: opacity .25s; pointer-events: none; }
+#exitToast.on { opacity: 1; visibility: visible; }
 </style>
 
+<div id="exitToast" role="status" aria-live="polite">للخروج اضغط زر الرجوع مرة أخرى</div>
 <div id="splash" aria-hidden="true"><div class="sbox"><span class="glow"></span><span class="ring"></span><span class="ring r2"></span><span class="sc c1"></span><span class="sc c2"></span><span class="sc c3"></span><span class="sc c4"></span><img class="slogo" src="/img/logo.jpg" alt=""><span class="stitle">ع المقلوب</span></div><div class="sbar"><i></i></div></div>
 
 <div class="wrap" dir="rtl" lang="ar">
@@ -825,9 +830,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     $('whoName').textContent = ME.name;
     if (step === 'name') {
       if (!$('emailIn').value) $('emailIn').value = localSavedMail || '';
-      setTimeout(function () { (localSavedMail ? $('passIn') : $('emailIn')).focus(); }, 30);
+      setTimeout(function () { var ac = document.activeElement; if (!ac || ac === document.body || ac.tagName === 'BUTTON') (localSavedMail ? $('passIn') : $('emailIn')).focus(); }, 30);
     }
-    if (step === 'join') { $('joinPass').value = ''; $('joinPass').hidden = true; setTimeout(loadRooms, 50); $('joinMsg').textContent = ''; $('joinMsg').className = 'msg'; setTimeout(function () { $('codeIn').focus(); }, 30); }
+    if (step === 'join') { $('joinPass').value = ''; $('joinPass').hidden = true; setTimeout(loadRooms, 50); $('joinMsg').textContent = ''; $('joinMsg').className = 'msg'; setTimeout(function () { var ac = document.activeElement; if (!ac || ac === document.body || ac.tagName === 'BUTTON') $('codeIn').focus(); }, 30); }
   }
   /* ---------- accounts live on the server: a unique name plus a password ---------- */
   var TOK = 'ala-maqloob-token';
@@ -1122,10 +1127,28 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       sl.classList.toggle('nohand', lv && !!p && (!!S.out[i] || !handLen(i)));
       sl.classList.toggle('turn', lv && !!p && S.over < 0 && !S.out[i] && i === S.turn);
     }
+    stage.classList.toggle('crowd', S.cap >= 7);
     stage.classList.toggle('dealt', lv);
     stage.classList.toggle('live', lv);
     renderPiles();
+    fitTags(); clearTimeout(fitT); fitT = setTimeout(fitTags, 900);   // seats glide round for 0.7 s: measure again once they have settled
   }
+  /* a name tag at the side of a crowded table must never run off the screen: nudge it back in */
+  var fitQ = 0, fitT = 0;
+  function fitTags() {
+    if (fitQ) return;
+    fitQ = requestAnimationFrame(function () {
+      fitQ = 0;
+      var tags = [], i, vw = document.documentElement.clientWidth, m = 6, rs = [];
+      for (i = 0; i < slots.length; i++) if (slots[i].classList.contains('on')) { var t = slots[i].querySelector('.tag'); t.style.translate = ''; tags.push(t); }
+      for (i = 0; i < tags.length; i++) rs.push(tags[i].querySelector('.nl').getBoundingClientRect());
+      for (i = 0; i < tags.length; i++) {
+        var r = rs[i], dx = r.width <= 0 ? 0 : (r.left < m ? m - r.left : (r.right > vw - m ? (vw - m) - r.right : 0));
+        if (dx) tags[i].style.translate = Math.round(dx) + 'px 0';
+      }
+    });
+  }
+  window.addEventListener('resize', fitTags);
 
   /* my hand, the declared power, and the challenge box */
   var handSig = '';
@@ -1936,6 +1959,38 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     setTimeout(function () { var e = $('splash'); if (!e) return; e.classList.add('out'); setTimeout(function () { if (e.parentNode) e.parentNode.removeChild(e); }, 700); }, w);
   }
   setTimeout(hideSplash, 7000);
+  /* the phone's back button steps back inside the game; pressing it twice quickly leaves */
+  var exitArmed = 0, exitT = null;
+  function exitToast(on) { $('exitToast').classList.toggle('on', on); }
+  function backStep() {
+    var m = document.querySelector('.modal:not([hidden])');
+    if (m) {
+      if (m.id === 'rulesBox') closeRules();
+      else if (m.id === 'pvBox') pvClose();
+      else if (m.id === 'declBox') $('declCancel').onclick();
+      else if (m.id === 'showBox') $('showOk').onclick();
+      return true;   // other pop-ups are decisions: the button does nothing there
+    }
+    if (!$('logPanel').hidden) { $('logPanel').hidden = true; $('logBtn').setAttribute('aria-expanded', 'false'); return true; }
+    if (!$('lobby').hidden) {
+      var b = document.querySelector('#lobby .step:not([hidden]) .back');
+      if (b && b.offsetParent !== null) { b.click(); return true; }
+    }
+    return false;
+  }
+  try {
+    history.replaceState({ g: 'base' }, '');
+    // the guard entry is added at the first tap: browsers skip history entries made before any user interaction
+    var armGuard = function () { document.removeEventListener('pointerdown', armGuard, true); document.removeEventListener('keydown', armGuard, true); if (!history.state || history.state.g !== 'top') history.pushState({ g: 'top' }, ''); };
+    document.addEventListener('pointerdown', armGuard, true); document.addEventListener('keydown', armGuard, true);
+    window.addEventListener('popstate', function () {
+      if (history.state && history.state.g === 'top') return;
+      if (backStep()) { history.pushState({ g: 'top' }, ''); return; }
+      if (exitArmed && Date.now() - exitArmed < 2600) { exitToast(false); exitArmed = 0; history.back(); return; }
+      exitArmed = Date.now(); exitToast(true); clearTimeout(exitT); exitT = setTimeout(function () { exitArmed = 0; exitToast(false); }, 2600);
+      history.pushState({ g: 'top' }, '');
+    });
+  } catch (e) {}
   function boot() { show('boot'); loadConfig(); connect(); }
   boot();
 })();
