@@ -116,6 +116,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .count b { font-family: var(--font-display); font-size: 20px; color: var(--bone); font-weight: 700; }
 
 .stage { container-type: inline-size; position: relative; width: 100%; aspect-ratio: 100 / 114; margin-bottom: 8px; }
+@media (min-width: 700px) {   /* big screens: the table grows with the window, as tall as fits above the hand */
+  .stage { width: min(96vw, 1200px, max(100%, calc((100vh - 230px) / 1.14))); position: relative; left: 50%; translate: -50% 0; }
+}
 .table {
   position: absolute; left: 50%; top: 50%;
   width: 62cqw; aspect-ratio: 1; translate: -50% -50%;
@@ -142,11 +145,11 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .stage.crowd .slot .nm { max-width: 5.6em; }
 .slot:not(.on) .tag { display: none; }   /* seats beyond the table size are invisible; their labels must not widen the page */
 .av {
-  flex: none; width: clamp(26px, 8cqw, 40px); aspect-ratio: 1; pointer-events: auto; cursor: pointer; border-radius: 50%;
+  flex: none; width: clamp(26px, 8cqw, 64px); aspect-ratio: 1; pointer-events: auto; cursor: pointer; border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, var(--coal-2), #0f0f10);
   border: max(1.5px, .5cqw) solid var(--c);
   display: grid; place-items: center; line-height: 1;
-  font-family: var(--font-display); font-weight: 700; font-size: clamp(14px, 4.4cqw, 21px); color: var(--c);
+  font-family: var(--font-display); font-weight: 700; font-size: clamp(14px, 4.4cqw, 32px); color: var(--c);
   box-shadow: 0 .6cqw 1.4cqw rgba(0,0,0,.55);
   transition: box-shadow .3s, scale .4s;
   animation: pop .45s cubic-bezier(.2,.9,.3,1.3) both;
@@ -158,9 +161,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .tag {
   position: absolute; top: 0; left: 0; width: 15cqw; transform: translate(-50%, -50%); text-align: center;
   display: flex; flex-direction: column; align-items: center; gap: .7cqw;
-  font-size: clamp(11px, 3.4cqw, 15px); line-height: 1.25; color: var(--bone); white-space: nowrap; text-shadow: 0 1px 6px #000;
+  font-size: clamp(11px, 3.4cqw, 22px); line-height: 1.25; color: var(--bone); white-space: nowrap; text-shadow: 0 1px 6px #000;
 }
-.tag small { display: block; font-size: clamp(9px, 2.5cqw, 11px); color: var(--brass); letter-spacing: .04em; min-height: 1.1em; }
+.tag small { display: block; font-size: clamp(9px, 2.5cqw, 16px); color: var(--brass); letter-spacing: .04em; min-height: 1.1em; }
 .slot.empty .tag { color: var(--mute); }
 .slot.turn .av { box-shadow: 0 0 0 1cqw rgba(200,162,75,.28), 0 0 5cqw rgba(200,162,75,.6); animation: pulse 1.8s ease-in-out infinite; }
 @keyframes pulse { 50% { box-shadow: 0 0 0 1.6cqw rgba(200,162,75,.16), 0 0 7cqw rgba(200,162,75,.35); } }
@@ -235,15 +238,15 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .tag .nm { max-width: 7em; font-weight: 600; }
 .inf { display: inline-flex; align-items: center; justify-content: center; gap: .9cqw; flex-wrap: nowrap; }
 .pts {
-  display: grid; place-items: center; width: clamp(19px, 5.6cqw, 28px); aspect-ratio: 1; border-radius: 50%; line-height: 1;
+  display: grid; place-items: center; width: clamp(19px, 5.6cqw, 44px); aspect-ratio: 1; border-radius: 50%; line-height: 1;
   background: #0f0f10; border: max(1.5px, .4cqw) solid var(--brass); color: var(--brass);
-  font-family: var(--font-display); font-weight: 700; font-size: clamp(11px, 3.4cqw, 16px);
+  font-family: var(--font-display); font-weight: 700; font-size: clamp(11px, 3.4cqw, 24px);
   box-shadow: 0 0 1.4cqw rgba(200,162,75,.45);
 }
 .pts.bump { animation: bump .6s cubic-bezier(.2,1.6,.3,1); }
 @keyframes bump { 0% { scale: 1.9; } 100% { scale: 1; } }
 .coins { display: inline-flex; direction: ltr; }
-.coin { display: block; width: clamp(13px, 3.8cqw, 19px); aspect-ratio: 1; background-size: cover; filter: drop-shadow(0 1px 2px rgba(0,0,0,.75)); }
+.coin { display: block; width: clamp(13px, 3.8cqw, 30px); aspect-ratio: 1; background-size: cover; filter: drop-shadow(0 1px 2px rgba(0,0,0,.75)); }
 .coin + .coin { margin-left: -.9cqw; }
 .c1 { background-image: var(--coin1); }
 .c5 { background-image: var(--coin5); }
@@ -1821,7 +1824,16 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     var k = PV; pvClose();
     S.sel = k; S.decl = (S.ban.indexOf(S.hands[0][k]) >= 0 || S.lock.indexOf(S.hands[0][k]) >= 0 || cd(S.hands[0][k]).df) ? -1 : S.hands[0][k]; handSig = ''; renderRoom();
   };
+  /* open on press-and-release of the same card slot, even if the hand was redrawn between the two (a redraw used to swallow the click) */
+  var hcDown = -1, hcAt = 0;
+  $('handRow').addEventListener('pointerdown', function (e) { var b = e.target.closest('.hc'); hcDown = b ? +b.dataset.k : -1; });
+  $('handRow').addEventListener('pointerup', function (e) {
+    var b = e.target.closest('.hc'), k = b ? +b.dataset.k : hcDown;
+    if (hcDown < 0 || k !== hcDown) { hcDown = -1; return; }
+    hcDown = -1; hcAt = Date.now(); pvOpen(k);
+  });
   $('handRow').addEventListener('click', function (e) {
+    if (Date.now() - hcAt < 600) return;
     var b = e.target.closest('.hc'); if (!b) return;
     pvOpen(+b.dataset.k);
   });
