@@ -146,6 +146,20 @@ async function createCore(store) {
           const code = 'b' + genCode(); const room = new Room(code, n, user, destroyed, content); rooms.set(code, room); userRoom.set(user.id, code);
           room.attach(user.id, send); room.startBots(user, n); return;
         }
+        if (m.t === 'profile' && user) {   // my own account card
+          const f = await store.userFull(user.id), st = await store.getStats(user.id);
+          return send({ t: 'profile', name: user.name, email: (await store.emailOf(user.id)) || '', created: f ? f.created : 0, games: st.games, wins: st.wins, losses: st.losses });
+        }
+        if (m.t === 'rename' && user) {
+          const fail = msg => send({ t: 'renamed', ok: false, msg });
+          if (userRoom.get(user.id)) return fail('اخرج من الغرفة الأول وبعدين غيّر اسمك.');
+          const name = S.norm(m.name), bad = S.validName(name); if (bad) return fail(bad);
+          if (name === user.name) return send({ t: 'renamed', ok: true, name });
+          const r = await store.renameUser(user.id, name, S.nameKey(name));
+          if (r === 'taken') return fail('الاسم ده مستخدم. اختار اسم تاني.');
+          if (r !== 'ok') return fail('معرفتش أغيّر الاسم. جرب تاني.');
+          user.name = name; return send({ t: 'renamed', ok: true, name });
+        }
         if (m.t === 'pstats') {   // match record of a player in my room
           const room = rooms.get(userRoom.get(user.id)); const r = room && room.roster[Number(m.i)];
           if (!r) return;

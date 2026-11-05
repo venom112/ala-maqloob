@@ -296,6 +296,12 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .modal .sheet { width: 100%; max-width: 560px; max-height: 88vh; overflow: auto; box-shadow: 0 -6px 30px rgba(0,0,0,.6); border-color: var(--brass); }
 .modal .sheet h3 { margin: 0; font-family: var(--font-display); font-size: 18px; color: var(--brass); }
 .logbtn { position: fixed; top: 58px; left: 10px; z-index: 40; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--brass-dim); background: var(--coal); color: var(--brass); font-size: 20px; cursor: pointer; display: grid; place-items: center; }
+.accbtn { position: fixed; top: 10px; left: 10px; z-index: 40; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--brass-dim); background: var(--coal); color: var(--brass); font-size: 19px; display: grid; place-items: center; cursor: pointer; }
+.accrow { display: grid; gap: 4px; margin: 6px 0 4px; }
+.accrow label { font-size: 13px; color: var(--mute); }
+.accname { display: flex; gap: 8px; }
+.accname input { flex: 1; min-width: 0; }
+.accmail { direction: ltr; text-align: right; color: var(--bone); font-size: 14px; word-break: break-all; }
 .adminbtn { position: fixed; top: 10px; right: 10px; z-index: 40; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--brass-dim); background: var(--coal); color: var(--brass); font-size: 20px; text-decoration: none; display: grid; place-items: center; }
 .logpanel { position: fixed; top: 104px; left: 10px; z-index: 40; width: min(320px, calc(100vw - 20px)); max-height: 55vh; overflow: auto; padding: 10px 12px; border: 1px solid var(--brass-dim); border-radius: 14px; background: rgba(20,20,22,.96); font-size: 13px; line-height: 1.5; }
 .rules { max-height: 86vh; overflow: auto; text-align: right; }
@@ -739,6 +745,16 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
         <h3 class="mh">إيدك</h3>
         <div class="hrow" id="handRow"></div>
       </div>
+      <div class="modal" id="accBox" hidden><div class="claimbox sheet" role="dialog" aria-label="حسابي">
+        <h3>حسابي</h3>
+        <div class="accrow"><label for="accName">الاسم</label><div class="accname"><input id="accName" type="text" maxlength="100" autocomplete="off"><button class="btn" id="accSave" type="button">حفظ</button></div></div>
+        <p class="msg" id="accMsg" aria-live="polite"></p>
+        <div class="accrow" id="accMailRow"><label>الإيميل</label><div class="accmail" id="accMail"></div></div>
+        <div class="accrow"><label>عضو من</label><div id="accSince"></div></div>
+        <div class="accrow"><label>مبارياتي</label></div>
+        <div class="pstgrid"><div><b id="accG">٠</b><span>مباريات</span></div><div><b id="accW">٠</b><span>فوز</span></div><div><b id="accL">٠</b><span>خسارة</span></div></div>
+        <div class="cbtns"><button class="btn pass" id="accClose" type="button">تمام</button></div>
+      </div></div>
       <div class="modal" id="pstBox" hidden><div class="claimbox sheet" role="dialog" aria-label="سجل اللاعب">
         <h3 id="pstName"></h3>
         <p class="pvtxt" id="pstNote" hidden></p>
@@ -802,6 +818,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
         <button class="btn primary" id="rulesOk" type="button">فهمت</button>
       </div></div>
 
+  <button class="accbtn" id="accBtn" type="button" aria-label="حسابي" hidden>👤</button>
   <a class="adminbtn" id="adminBtn" href="/admin" aria-label="لوحة الأدمن" hidden>⚙</a>
   <div id="fx" aria-hidden="true"></div>
 
@@ -842,9 +859,18 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     $('pstName').textContent = m.name || '';
     $('pstNote').hidden = !m.bot; $('pstNote').textContent = 'ده بوت: مالوش سجل مباريات.';
     $('pstGrid').hidden = !!m.bot;
-    $('pstG').textContent = fmt(m.games || 0); $('pstW').textContent = fmt(m.wins || 0); $('pstL').textContent = fmt(m.losses || 0);
+    $('pstG').textContent = m.games || 0; $('pstW').textContent = m.wins || 0; $('pstL').textContent = m.losses || 0;
     $('pstBox').hidden = false;
   }
+  $('accBtn').onclick = function () { send({ t: 'profile' }); };
+  $('accClose').onclick = function () { $('accBox').hidden = true; };
+  $('accBox').addEventListener('click', function (e) { if (e.target === this) this.hidden = true; });
+  $('accSave').onclick = function () {
+    var v = $('accName').value.trim(), bad = validName(v);
+    if (bad) { $('accMsg').textContent = bad; $('accMsg').className = 'msg err'; return; }
+    $('accSave').disabled = true; send({ t: 'rename', name: v });
+  };
+  $('accName').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('accSave').click(); });
   $('pstClose').onclick = function () { $('pstBox').hidden = true; };
   $('pstBox').addEventListener('click', function (e) { if (e.target === this) this.hidden = true; });
   function rel(a) { var n = R.roster.length || 1; return (a - R.myIdx + n) % n; }
@@ -859,6 +885,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     if (!ME.name && step !== 'name' && step !== 'boot' && step !== 'gname') step = 'welcome';
     if (step === 'name' && !AMODE) step = 'welcome';
     STEPS.forEach(function (s) { $('st-' + s).hidden = s !== step; });
+    syncAdmin();
     if (step !== 'boot' && typeof hideSplash === 'function') hideSplash();
     $('who').hidden = step === 'name' || step === 'welcome' || step === 'gname' || step === 'boot' || !ME.name;
     if (step === 'welcome') AMODE = '';
@@ -873,7 +900,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   /* ---------- accounts live on the server: a unique name plus a password ---------- */
   var TOK = 'ala-maqloob-token';
   var net = { ws: null, on: false, tries: 0, last: 0, rt: 0, stop: false };
-  function syncAdmin() { $('adminBtn').hidden = !(ME.admin && $('room').hidden); }
+  function syncAdmin() { $('adminBtn').hidden = !(ME.admin && $('room').hidden); $('accBtn').hidden = !(ME.name && net.on && $('room').hidden && !$('st-home').hidden); }
   function validName(v) {
     var len = Array.from(v).length;
     if (len < 2) return 'الاسم لازم يكون حرفين على الأقل.';
@@ -1715,6 +1742,16 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       case 'left': if (inRoom()) { leaveLocal(); show('home'); } break;
       case 'rooms': fillRoomList(m.list || []); break;
       case 'pstats': showPstats(m); break;
+      case 'profile':
+        $('accName').value = m.name || ''; $('accMail').textContent = m.email || ''; $('accMailRow').hidden = !m.email;
+        $('accSince').textContent = m.created ? new Date(m.created).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+        $('accG').textContent = m.games || 0; $('accW').textContent = m.wins || 0; $('accL').textContent = m.losses || 0;
+        $('accMsg').textContent = ''; $('accBox').hidden = false; break;
+      case 'renamed':
+        $('accSave').disabled = false;
+        if (m.ok) { ME.name = m.name; try { localStorage.setItem(KEY, m.name); localSaved = m.name; } catch (e) {} $('accName').value = m.name; $('accMsg').textContent = 'اتغيّر الاسم ✓'; $('accMsg').className = 'msg'; }
+        else { $('accMsg').textContent = m.msg || 'مقدرتش أغيّر الاسم.'; $('accMsg').className = 'msg err'; }
+        break;
       case 'closed': if (inRoom()) { leaveLocal(); show('home'); homeNote(m.msg || 'الغرفة اتقفلت.'); } break;
       case 'replaced': net.stop = true; if (inRoom()) leaveLocal(); show('boot'); $('st-boot').querySelector('.msg').textContent = 'اللعبة مفتوحة في مكان تاني بنفس الحساب. اقفل التاني وحمّل الصفحة تاني.'; break;
       case 'err': onErr(m); break;
