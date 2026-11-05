@@ -146,6 +146,13 @@ async function createCore(store) {
           const code = 'b' + genCode(); const room = new Room(code, n, user, destroyed, content); rooms.set(code, room); userRoom.set(user.id, code);
           room.attach(user.id, send); room.startBots(user, n); return;
         }
+        if (m.t === 'pstats') {   // match record of a player in my room
+          const room = rooms.get(userRoom.get(user.id)); const r = room && room.roster[Number(m.i)];
+          if (!r) return;
+          if (r.bot || !r.uid || String(r.uid).startsWith('bot:')) return send({ t: 'pstats', i: Number(m.i), name: r.name, bot: true, games: 0, wins: 0, losses: 0 });
+          const st = await store.getStats(r.uid);
+          return send({ t: 'pstats', i: Number(m.i), name: r.name, bot: false, games: st.games, wins: st.wins, losses: st.losses });
+        }
         if (m.t === 'rooms') {   // every room that still has a free seat, public and private
           const list = [];
           for (const r of rooms.values()) {

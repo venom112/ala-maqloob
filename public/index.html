@@ -115,10 +115,10 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .snd[aria-pressed="false"] { color: var(--mute); }
 .count b { font-family: var(--font-display); font-size: 20px; color: var(--bone); font-weight: 700; }
 
-.stage { container-type: inline-size; position: relative; width: 100%; aspect-ratio: 1; margin-bottom: calc(14px + 3cqw); }
+.stage { container-type: inline-size; position: relative; width: 100%; aspect-ratio: 100 / 114; margin-bottom: 8px; }
 .table {
   position: absolute; left: 50%; top: 50%;
-  width: 88cqw; aspect-ratio: 1; translate: -50% -50%;
+  width: 62cqw; aspect-ratio: 1; translate: -50% -50%;
   border-radius: 50%;
   background: radial-gradient(circle at 50% 40%, #2a2a2d 0%, #1c1c1e 58%, #121213 100%);
   box-shadow:
@@ -128,26 +128,25 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     0 5cqw 9cqw rgba(0,0,0,.65),
     inset 0 0 7cqw rgba(0,0,0,.75);
 }
-.table::after { content: ""; position: absolute; inset: 2.4cqw; border-radius: 50%; border: .3cqw dashed rgba(200,162,75,.26); pointer-events: none; }
-.logo { position: absolute; left: 50%; top: calc(50% - 11cqw); width: 48cqw; aspect-ratio: 1; translate: -50% -50%; display: block; max-width: none; }
+.table::after { content: ""; position: absolute; inset: 1.8cqw; border-radius: 50%; border: .3cqw dashed rgba(200,162,75,.26); pointer-events: none; }
+.logo { position: absolute; left: 50%; top: calc(50% - 11cqw); width: 30cqw; aspect-ratio: 1; translate: -50% -50%; display: block; max-width: none; }
 
 .slot { position: absolute; inset: 0; pointer-events: none; transition: --a .7s cubic-bezier(.3,.8,.25,1); }
 .slot.nohand .hand, .slot.me .hand { display: none !important; }
 .seat {
   position: absolute; left: 50%; top: 50%; width: 0; height: 0;
-  transform: rotate(var(--a)) translateY(-44cqw) rotate(calc(var(--a) * -1));
+  transform: rotate(var(--a)) translateY(calc(-1cqw * (34 + 7.5 * max(sin(var(--a)), -1 * sin(var(--a))) + 11 * max(cos(var(--a)), -1 * cos(var(--a)))))) rotate(calc(var(--a) * -1));
   transition: opacity .4s;
 }
 .slot:not(.on) .seat { opacity: 0; pointer-events: none; }
-.stage.crowd .tag .nl { flex-wrap: wrap; width: 29cqw; margin-inline: auto; row-gap: .6cqw; }   /* 6-8 seats: name on one line, points and coins on the next, so neighbours never collide */
-.stage.crowd .slot .nm { max-width: 6em; }
+.stage.crowd .slot .nm { max-width: 5.6em; }
 .slot:not(.on) .tag { display: none; }   /* seats beyond the table size are invisible; their labels must not widen the page */
 .av {
-  flex: none; width: clamp(20px, 5.6cqw, 30px); aspect-ratio: 1; border-radius: 50%;
+  flex: none; width: clamp(26px, 8cqw, 40px); aspect-ratio: 1; pointer-events: auto; cursor: pointer; border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, var(--coal-2), #0f0f10);
   border: max(1.5px, .5cqw) solid var(--c);
   display: grid; place-items: center; line-height: 1;
-  font-family: var(--font-display); font-weight: 700; font-size: clamp(11px, 3.2cqw, 17px); color: var(--c);
+  font-family: var(--font-display); font-weight: 700; font-size: clamp(14px, 4.4cqw, 21px); color: var(--c);
   box-shadow: 0 .6cqw 1.4cqw rgba(0,0,0,.55);
   transition: box-shadow .3s, scale .4s;
   animation: pop .45s cubic-bezier(.2,.9,.3,1.3) both;
@@ -157,7 +156,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .slot.me .av { border-width: max(2px, .8cqw); }
 .slot.empty .av { border-style: dashed; border-color: #4f4b45; color: var(--mute); background: transparent; box-shadow: none; animation: none; font-weight: 500; }
 .tag {
-  position: absolute; top: -3.2cqw; left: 0; width: max-content; transform: translateX(-50%); text-align: center;
+  position: absolute; top: 0; left: 0; width: 15cqw; transform: translate(-50%, -50%); text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: .7cqw;
   font-size: clamp(11px, 3.4cqw, 15px); line-height: 1.25; color: var(--bone); white-space: nowrap; text-shadow: 0 1px 6px #000;
 }
 .tag small { display: block; font-size: clamp(9px, 2.5cqw, 11px); color: var(--brass); letter-spacing: .04em; min-height: 1.1em; }
@@ -165,7 +165,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .slot.turn .av { box-shadow: 0 0 0 1cqw rgba(200,162,75,.28), 0 0 5cqw rgba(200,162,75,.6); animation: pulse 1.8s ease-in-out infinite; }
 @keyframes pulse { 50% { box-shadow: 0 0 0 1.6cqw rgba(200,162,75,.16), 0 0 7cqw rgba(200,162,75,.35); } }
 
-.hand { position: absolute; left: 50%; top: 50%; width: 0; height: 0; display: none; transform: rotate(var(--a)) translateY(-31cqw); }
+.hand { position: absolute; left: 50%; top: 50%; width: 0; height: 0; display: none; transform: rotate(var(--a)) translateY(-23cqw); }
 .stage.dealt .slot.on:not(.empty) .hand { display: block; }
 .fan { position: absolute; left: 0; top: 0; width: 0; height: 0; animation: deal .55s cubic-bezier(.2,.9,.3,1) both; animation-delay: calc(var(--i) * 80ms); }
 @keyframes deal { from { opacity: 0; transform: translateY(16cqw) scale(.3); } to { opacity: 1; transform: none; } }
@@ -179,8 +179,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .card:nth-child(3) { transform: translate(2.4cqw, .4cqw) rotate(13deg); }
 
 /* draw pile (right) and play pile (left), centred on the table below the logo */
-.piles { position: absolute; left: 50%; top: 50%; translate: -50% calc(-50% + 15cqw); display: flex; gap: 4cqw; z-index: 3; }
-.pile { position: relative; width: 12.4cqw; height: 17.4cqw; padding: 0; border: 0; background: none; border-radius: 1.4cqw; font: inherit; cursor: pointer; transition: scale .15s; }
+.piles { position: absolute; left: 50%; top: 50%; translate: -50% calc(-50% + 11cqw); display: flex; gap: 3cqw; z-index: 3; }
+.pile { position: relative; width: 10.4cqw; height: 14.6cqw; padding: 0; border: 0; background: none; border-radius: 1.4cqw; font: inherit; cursor: pointer; transition: scale .15s; }
 .pile:disabled { opacity: .8; cursor: default; }
 .pile:not(:disabled):active { scale: .96; }
 .pcard { position: absolute; inset: 0; border-radius: 1.4cqw; box-shadow: 0 .6cqw 1.4cqw rgba(0,0,0,.6); }
@@ -232,10 +232,10 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .hc { position: relative; }
 .stb { width: 44px; border-radius: 10px; border: 1px solid var(--line, #444); background: transparent; color: inherit; font-size: 22px; font-weight: 700; cursor: pointer; }
 .timers label { display: grid; gap: 4px; font-size: 14px; color: var(--mute); }
-.tag .nl { display: flex; align-items: center; justify-content: center; gap: 1.4cqw; }
-.inf { display: inline-flex; align-items: center; gap: .9cqw; }
+.tag .nm { max-width: 7em; font-weight: 600; }
+.inf { display: inline-flex; align-items: center; justify-content: center; gap: .9cqw; flex-wrap: nowrap; }
 .pts {
-  display: grid; place-items: center; width: clamp(19px, 5.4cqw, 28px); aspect-ratio: 1; border-radius: 50%; line-height: 1;
+  display: grid; place-items: center; width: clamp(19px, 5.6cqw, 28px); aspect-ratio: 1; border-radius: 50%; line-height: 1;
   background: #0f0f10; border: max(1.5px, .4cqw) solid var(--brass); color: var(--brass);
   font-family: var(--font-display); font-weight: 700; font-size: clamp(11px, 3.4cqw, 16px);
   box-shadow: 0 0 1.4cqw rgba(200,162,75,.45);
@@ -252,7 +252,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .slot.out .coins { opacity: .45; filter: grayscale(1); }
 
 /* coins lying on the table in front of the draw pile */
-.bank { position: absolute; left: 50%; top: 50%; width: 0; height: 0; translate: 0 30cqw; z-index: 2; pointer-events: none; }
+.bank { position: absolute; left: 50%; top: 50%; width: 0; height: 0; translate: 0 -2cqw; z-index: 2; pointer-events: none; }
 .bcoin {
   position: absolute; width: calc(var(--s) * 1cqw); aspect-ratio: 1; left: calc(var(--x) * 1cqw - var(--s) * .5cqw); top: calc(var(--y) * 1cqw - var(--s) * .5cqw); rotate: var(--r);
   background-size: cover; filter: drop-shadow(0 .5cqw .7cqw rgba(0,0,0,.75));
@@ -367,7 +367,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .c4[aria-checked="true"] { background: var(--brass); border-color: var(--brass); color: #1a1405; }
 
 .bubble {
-  position: absolute; left: 50%; top: -11cqw; translate: -50% 0; z-index: 6; white-space: nowrap;
+  position: absolute; left: 50%; top: -19cqw; translate: -50% 0; z-index: 6; white-space: nowrap;
   padding: .9cqw 2.4cqw; border-radius: 2.2cqw; font-size: clamp(11px, 3.4cqw, 15px); font-weight: 600; pointer-events: none;
   animation: bub 2.4s ease both;
 }
@@ -438,6 +438,12 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .tgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; }
 .tbtn { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 58px; line-height: 1.3; }
 .tbtn small { font-size: 12px; color: var(--brass); font-weight: 400; }
+.tbtn .ti { display: flex; gap: 10px; align-items: center; justify-content: center; font-size: 12px; color: var(--bone); margin-top: 2px; }
+.tbtn .ti .coins { transform: scale(.9); }
+.pstgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0 16px; text-align: center; }
+.pstgrid div { border: 1px solid var(--brass-dim); border-radius: 12px; padding: 10px 4px; display: grid; gap: 2px; }
+.pstgrid b { font-family: var(--font-display); font-size: 28px; color: var(--brass); }
+.pstgrid span { font-size: 12px; color: var(--mute); }
 .flypip { position: absolute; left: 50%; top: 50%; width: 5cqw; height: 5cqw; margin: -2.5cqw 0 0 -2.5cqw; background: var(--coin1) center / cover; filter: drop-shadow(0 0 1.6cqw rgba(200,162,75,.95)); z-index: 7; pointer-events: none; }
 .cardimg { display: block; margin: 0 auto 12px; width: min(48vw, 200px); aspect-ratio: 864 / 1232; object-fit: cover; border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.8), 0 0 0 3px var(--brass); }
 .cardimg.ph { background: linear-gradient(170deg, #f3ecd8, #ddd2b6); color: #17130b; display: flex; flex-direction: column; align-items: center; justify-content: center; direction: ltr; }
@@ -728,6 +734,12 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
         <h3 class="mh">إيدك</h3>
         <div class="hrow" id="handRow"></div>
       </div>
+      <div class="modal" id="pstBox" hidden><div class="claimbox sheet" role="dialog" aria-label="سجل اللاعب">
+        <h3 id="pstName"></h3>
+        <p class="pvtxt" id="pstNote" hidden></p>
+        <div class="pstgrid" id="pstGrid"><div><b id="pstG">٠</b><span>مباريات</span></div><div><b id="pstW">٠</b><span>فوز</span></div><div><b id="pstL">٠</b><span>خسارة</span></div></div>
+        <div class="cbtns"><button class="btn pass" id="pstClose" type="button">تمام</button></div>
+      </div></div>
       <div class="modal" id="pvBox" hidden><div class="claimbox sheet pvsheet" role="dialog" aria-label="الكارت">
         <div class="pvcard" id="pvCard"></div>
         <h3 id="pvName"></h3>
@@ -820,6 +832,16 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   var S = { botsN: 5, createN: 4, cap: 0, players: [], mode: '', code: '', playing: false, dealt: false, turn: 0, hands: [], inf: [], out: [], phase: 'act', drew: false, claim: null, sel: -1, decl: -1, deck: [], targets: [], tsig: '', pile: [], over: -1, spectating: false, ev: '', ov: '', barId: 0, tbarId: 0, ban: [], imm: [], lock: [] };
   var LOG = [];
   var R = { code: '', roster: [], myIdx: 0, cap: 0, isHost: false, bots: false, seenEv: 0, first: true, gameSeen: -1, lockUntil: 0 };
+  /* a player's match record: tap the circle with the letter */
+  function showPstats(m) {
+    $('pstName').textContent = m.name || '';
+    $('pstNote').hidden = !m.bot; $('pstNote').textContent = 'ده بوت: مالوش سجل مباريات.';
+    $('pstGrid').hidden = !!m.bot;
+    $('pstG').textContent = fmt(m.games || 0); $('pstW').textContent = fmt(m.wins || 0); $('pstL').textContent = fmt(m.losses || 0);
+    $('pstBox').hidden = false;
+  }
+  $('pstClose').onclick = function () { $('pstBox').hidden = true; };
+  $('pstBox').addEventListener('click', function (e) { if (e.target === this) this.hidden = true; });
   function rel(a) { var n = R.roster.length || 1; return (a - R.myIdx + n) % n; }
   function absOf(r) { var n = R.roster.length || 1; return (r + R.myIdx) % n; }
 
@@ -997,22 +1019,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       for (var k = 0; k < 14; k++) noise(.1, .09, .4 + k * .11, 2500);
     },
     // one sound per card power, played when the card is put on the table (the sound follows the card that was NAMED)
-    card: function (op) { SFX.play(); var f = SFX['p_' + op]; if (f) f(); },
-    p_steal: function () { noise(.1, .28, .05, 300); tone(100, .28, 'square', .28, .05, 45); tone(1568, .08, 'square', .1, .3); tone(2093, .22, 'square', .1, .38); },
-    p_swap: function () { tone(280, .38, 'sine', .2, 0, 950); tone(950, .38, 'sine', .2, .22, 280); noise(.45, .07, .05, 2600); },
-    p_take: function () { tone(1800, .04, 'square', .1, 0); tone(1500, .04, 'square', .1, .09); tone(2100, .04, 'square', .1, .18); noise(.18, .1, .24, 3800); },
-    p_peek: function () { tone(2000, .09, 'sine', .15, 0, 2900); tone(2600, .09, 'sine', .15, .13, 3300); tone(2200, .12, 'sine', .15, .27, 3100); },
-    p_regain: function () { noise(.05, .22, 0, 5000); tone(1568, .55, 'sine', .2, .05); tone(2093, .7, 'sine', .14, .12); noise(.05, .12, .32, 6000); noise(.05, .12, .39, 6000); noise(.05, .12, .46, 6000); },
-    p_inf_gain: function () { [659, 880, 1175, 1568].forEach(function (f, k) { tone(f, .3, 'triangle', .15, k * .1); }); tone(330, .9, 'sine', .08, 0, 440); noise(.3, .05, .35, 5000); },
-    p_smuggle: function () { tone(120, .55, 'sawtooth', .1, 0, 70); noise(.45, .08, .05, 700); tone(330, .06, 'square', .08, .55); tone(90, .2, 'sine', .3, .72, 45); },
-    p_recycle: function () { noise(.28, .08, 0, 6000); tone(1400, .26, 'sine', .06, 0, 3000); noise(.7, .42, .3, 250); tone(70, .8, 'sawtooth', .32, .3, 25); noise(.4, .18, .4, 1200); },
-    p_immune: function () { [392, 392, 523, 659].forEach(function (f, k) { tone(f, k === 3 ? .6 : .17, 'sawtooth', .13, k * .2); }); tone(784, .7, 'triangle', .1, .62); },
-    p_copy: function () { for (var k = 0; k < 3; k++) { tone(620, .14, 'triangle', .16 - k * .04, k * .22, 760); tone(700, .14, 'sine', .1 - k * .03, k * .22 + .08, 540); } },
-    p_victory: function () { tone(1200, .05, 'square', .12, 0); tone(800, .05, 'square', .12, .08); noise(.1, .2, .15, 500); [392, 523, 659, 784, 1047].forEach(function (f, k) { tone(f, .3, 'sawtooth', .1, .3 + k * .1); }); tone(1319, .8, 'triangle', .12, .85); },
-    p_reflect: function () { noise(.05, .2, 0, 2500); tone(880, .12, 'square', .18, .05); tone(660, .55, 'square', .17, .2, 640); },
-    p_guard: function () { for (var k = 0; k < 2; k++) { tone(700, .28, 'square', .1, k * .6, 950); tone(950, .28, 'square', .1, k * .6 + .3, 700); } },
-    p_judge: function () { for (var k = 0; k < 2; k++) { tone(170, .13, 'sine', .45, k * .24, 60); noise(.05, .35, k * .24, 1800); } tone(880, .55, 'sine', .06, .5); },
-    p_elder: function () { tone(110, 1.3, 'sine', .3, 0, 98); tone(220, 1.1, 'sine', .14, 0); tone(330, .9, 'triangle', .07, .03); noise(.22, .1, 0, 400); },
+    card: function (rec) { SFX.play(); if (!rec || !rec.length) return; rec.forEach(function (o) { if (o.k === 'n') noise(o.d, o.v, o.a || 0, o.hz || 1000); else tone(o.f, o.d, o.w, o.v, o.a || 0, o.to); }); },
     fatwa: function () { noise(.12, .3, 0, 300); tone(90, .3, 'square', .3, 0, 45); tone(1175, .09, 'square', .12, .55); tone(1568, .35, 'square', .12, .65); },
     lose: function () { [392, 370, 349, 262].forEach(function (f, k) { tone(f, .5, 'sawtooth', .13, k * .45, f * .94); }); }
   };
@@ -1033,7 +1040,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     s.style.setProperty('--c', COLORS[i]);
     s.innerHTML =
       '<div class="hand"><div class="fan" style="--i:' + i + '"><div class="card"></div><div class="card"></div><div class="card"></div></div></div>' +
-      '<div class="seat"><div class="tag"><div class="nl"><span class="av"></span><span class="nm"></span><span class="inf" title="نقاط النفوذ"><b class="pts">٣</b><span class="coins"></span></span><span class="immb" hidden><img alt=""><b>محصن</b><i></i></span></div><small></small></div></div>';
+      '<div class="seat"><div class="tag"><span class="av"></span><span class="nm"></span><span class="inf" title="نقاط النفوذ"><b class="pts">٣</b><span class="coins"></span></span><small></small><span class="immb" hidden><img alt=""><b>محصن</b><i></i></span></div></div>';
     stage.appendChild(s);
     slots.push(s);
   }
@@ -1107,6 +1114,11 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     a.sort(function (p, q) { return p.y - q.y; });
     $('bank').innerHTML = a.map(function (c, k) { return '<i class="bcoin c' + c.v + '" style="--x:' + c.x + ';--y:' + c.y + ';--r:' + c.r + 'deg;--s:' + c.s + ';--k:' + k + '"></i>'; }).join('');
   }
+  stage.addEventListener('click', function (e) {
+    var av = e.target.closest('.av'); if (!av) return;
+    var i = slots.indexOf(av.closest('.slot')); if (i < 0 || !S.players[i]) return;
+    var n = R.roster.length || 1; send({ t: 'pstats', i: (i + R.myIdx) % n });
+  });
   function nm(i) { return S.players[i].name; }
   function handLen(i) { return S.hands[i] ? S.hands[i].length : 0; }
 
@@ -1164,6 +1176,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   /* a name tag at the side of a crowded table must never run off the screen: nudge it back in */
   var fitQ = 0, fitT = 0;
   function fitTags() {
+    return;
     if (fitQ) return;
     fitQ = requestAnimationFrame(function () {
       fitQ = 0;
@@ -1248,10 +1261,10 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     if (!on) return;
     $('targetTxt').textContent = cd(S.claim.c).name + ' معاك. اختار لاعب تطبّق عليه القوة.';
     if (S.tbarId !== S.claim.id) { S.tbarId = S.claim.id; var tb = $('targetBar'); tb.style.animation = 'none'; void tb.offsetWidth; tb.style.animation = 'drain ' + (PICK_MS / 1000) + 's linear forwards'; }
-    var sig = S.targets.join(',') + '|' + S.targets.map(function (j) { return S.inf[j]; }).join(',');
+    var sig = S.targets.join(',') + '|' + S.targets.map(function (j) { return S.inf[j] + ':' + handLen(j); }).join(',');
     if (sig !== S.tsig) {
       S.tsig = sig;
-      $('targetRow').innerHTML = S.targets.map(function (j) { return '<button type="button" class="btn tbtn" data-j="' + j + '"><b>' + esc(nm(j)) + '</b><small>نفوذ: ' + fmt(S.inf[j]) + '</small></button>'; }).join('');
+      $('targetRow').innerHTML = S.targets.map(function (j) { return '<button type="button" class="btn tbtn" data-j="' + j + '"><b>' + esc(nm(j)) + '</b><small>نفوذ: ' + fmt(S.inf[j]) + '</small><span class="ti"><span class="coins">' + coinsHtml(S.inf[j], null) + '</span><span>' + cardsWord(handLen(j)) + '</span></span></button>'; }).join('');
     }
   }
 
@@ -1354,7 +1367,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   }
 
   /* ---------- piles ---------- */
-  var DRAW = { x: 8.2, y: 15 }, PLAY = { x: -8.2, y: 15 };
+  var DRAW = { x: 6.7, y: 11 }, PLAY = { x: -6.7, y: 11 };
   function newPileCard(t, c) {
     return { t: t, c: c, rev: false, rot: Math.round((Math.random() * 2 - 1) * 14), dx: +((Math.random() * 2 - 1) * .8).toFixed(1) };
   }
@@ -1397,7 +1410,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       }
     } catch (e) {}
   }
-  function seatXY(i) { var a = angle(i, S.cap) * Math.PI / 180; return { x: Math.sin(a) * 44, y: -Math.cos(a) * 44 }; }
+  function seatXY(i) { var a = angle(i, S.cap) * Math.PI / 180; var r = 34 + 7.5 * Math.abs(Math.sin(a)) + 11 * Math.abs(Math.cos(a)); return { x: Math.sin(a) * r, y: -Math.cos(a) * r }; }
   var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   function flyFromDraw(i) {
     if (calm) return;
@@ -1696,6 +1709,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       case 'room': connBar(true); applyRoom(m); break;
       case 'left': if (inRoom()) { leaveLocal(); show('home'); } break;
       case 'rooms': fillRoomList(m.list || []); break;
+      case 'pstats': showPstats(m); break;
       case 'closed': if (inRoom()) { leaveLocal(); show('home'); homeNote(m.msg || 'الغرفة اتقفلت.'); } break;
       case 'replaced': net.stop = true; if (inRoom()) leaveLocal(); show('boot'); $('st-boot').querySelector('.msg').textContent = 'اللعبة مفتوحة في مكان تاني بنفس الحساب. اقفل التاني وحمّل الصفحة تاني.'; break;
       case 'err': onErr(m); break;

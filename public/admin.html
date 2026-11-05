@@ -217,6 +217,40 @@ ol { padding-inline-start: 20px; text-align: right; }
     v.append(h('div', { class: 'bar' }, qi, h('button', { class: 'primary', onclick: find }, 'بحث')), tools || '', body); load();
   }
 
+  /* ---------- card sounds ---------- */
+  var AC = null;
+  function playSnd(steps) {
+    try {
+      AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume();
+      var t0 = AC.currentTime + .02;
+      steps.forEach(function (o) {
+        var at = t0 + (o.a || 0), g = AC.createGain(); g.connect(AC.destination);
+        g.gain.setValueAtTime(.0001, at); g.gain.exponentialRampToValueAtTime(Math.max(.0002, o.v), at + .01); g.gain.exponentialRampToValueAtTime(.0001, at + o.d);
+        if (o.k === 'n') {
+          var n = Math.max(1, Math.floor(AC.sampleRate * o.d)), b = AC.createBuffer(1, n, AC.sampleRate), ch = b.getChannelData(0);
+          for (var i = 0; i < n; i++) ch[i] = Math.random() * 2 - 1;
+          var s = AC.createBufferSource(); s.buffer = b; var hp = AC.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = o.hz || 1000;
+          s.connect(hp); hp.connect(g); s.start(at); s.stop(at + o.d + .02);
+        } else {
+          var os = AC.createOscillator(); os.type = o.w; os.frequency.setValueAtTime(o.f, at); if (o.to) os.frequency.exponentialRampToValueAtTime(o.to, at + o.d);
+          os.connect(g); os.start(at); os.stop(at + o.d + .02);
+        }
+      });
+    } catch (e) { alert('المتصفح مش قادر يشغل الصوت'); }
+  }
+  function soundBox(c, reload) {
+    var ta = h('textarea', { rows: 8, dir: 'ltr', style: 'width:100%;font-family:monospace;font-size:12px' });
+    ta.value = JSON.stringify(c.snd, null, 1).replace(/\n\s*/g, function (m, off, str) { return ''; }).replace(/\},\{/g, '},\n{').replace(/^\[/, '[\n').replace(/\]$/, '\n]');
+    var parse = function () { try { var v = JSON.parse(ta.value); if (!Array.isArray(v)) throw 0; return v; } catch (e) { alert('الصيغة غلط (لازم JSON صح).'); return null; } };
+    return h('div', {},
+      h('h3', { style: 'font-size:14px;margin:12px 0 6px' }, 'صوت الكارت ' + (c.sndCustom ? '(معدّل)' : '(الافتراضي)')),
+      h('p', { class: 'mute', style: 'margin:0 0 6px' }, 'كل خطوة: نغمة {"k":"t","f":تردد,"to":تردد نهاية(اختياري),"d":مدة,"w":sine|square|sawtooth|triangle,"v":علو,"a":تأخير} أو ضوضاء {"k":"n","d","v","a","hz"}.'),
+      ta,
+      h('div', { class: 'bar', style: 'margin-top:6px' },
+        h('button', { onclick: function () { var v = parse(); if (v) playSnd(v); } }, '▶ سمّع'),
+        h('button', { class: 'primary', onclick: function () { var v = parse(); if (v) act(api('PUT', 'cards/' + c.id + '/sound', { snd: v }), 'اتحفظ الصوت').then(reload, function () {}); } }, 'حفظ الصوت'),
+        c.sndCustom ? h('button', { onclick: function () { act(api('DELETE', 'cards/' + c.id + '/sound'), 'رجع للافتراضي').then(reload, function () {}); } }, 'رجّع الافتراضي') : null));
+  }
   /* ---------- cards ---------- */
   function cardEditor(c, list, reload, idx) {
     var isNew = !c.id, d = JSON.parse(JSON.stringify(c)); d.power = d.power || []; d.penalty = d.penalty || { loss: 1, drop: 0, gift: 0 };
@@ -260,6 +294,7 @@ ol { padding-inline-start: 20px; text-align: right; }
         h('div', { class: 'fields' }, h('label', {}, 'الاسم', f.name), h('label', {}, 'الرمز', f.symbol), h('label', {}, 'لون الرمز', f.color), h('label', {}, 'عدد النسخ في الكوتشينة', f.cnt), h('label', { class: 'row' }, f.active, 'شغّال في اللعبة'))),
       h('div', { class: 'grid', style: 'margin-top:10px' }, h('label', {}, 'وصف القوة (بيظهر للاعبين)', f.descr), h('label', {}, 'وصف عقوبة الكدب', f.penDescr)),
       h('h3', { style: 'font-size:14px;margin:12px 0 6px' }, 'قوة الكارت (بتتنفذ لو عدّت أو التحدي فشل)'), opsBox,
+      isNew ? null : soundBox(c, reload),
       h('h3', { style: 'font-size:14px;margin:12px 0 6px' }, 'عقوبة اللي يكدب بالكارت ده'),
       h('div', { class: 'bar' }, h('label', {}, 'نقط نفوذ يخسرها', f.loss), h('label', {}, 'كروت يرميها', f.drop), h('label', {}, 'نقط يديها للمتحدي', f.gift), h('label', {}, 'يخسر دوره الجاي (٠ أو ١)', f.skip), h('label', {}, 'تتكشف إيده للكل (٠ أو ١)', f.reveal)), tools);
   }

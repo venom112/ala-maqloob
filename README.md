@@ -190,3 +190,9 @@ npm start          # http://localhost:3000
 ## عداد الكروت المحدودة والأصوات
 - الكروت اللي بتتلعب مرة كل عدد أدوار (المحاسب كل ٢، المُهرِّب كل ٣) بيظهر جنب اسمها عداد: ⏳ وعدد أدوارك الباقية، أو ✓ لو جاهزة. بيظهر في قايمة اختيار القوة وعلى كارتك في إيدك وفي الكارت الكبير.
 - كل كارت له صوت خاص بيتحدد بنوع قوته (سرقة، تبديل، نشل، كشف، استرداد، علاج، تهريب، تفجير، حصانة، تزوير، مفتاح، محامي، ضابط، قاضي، عجوز). الصوت بيتشغل مع اسم الكارت اللي اتقال عند لعبه، فمبيفضحش لو الكارت حقيقي ولا لا.
+
+## Seat layout, sounds, match record (v38)
+- Each seat sits outside the table: letter circle, name, points circle with coins, number of cards. Tap the circle to see that player's record.
+- Target buttons show each player's coins and cards.
+- Card sounds are data (`DEFAULT_SOUNDS` in content.js, per power). The admin panel (Cards → a card → "صوت الكارت") edits, previews, saves and resets them (setting `sounds`).
+- Match record: table `user_stats`, counted at game over for human-vs-human rooms only (not practice with bots). Message `pstats`.

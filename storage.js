@@ -91,6 +91,7 @@ async function makeStore(db) {
     CREATE TABLE IF NOT EXISTS admins (email_key TEXT PRIMARY KEY, email TEXT NOT NULL, perms TEXT NOT NULL, added_by TEXT NOT NULL, created ${D.big} NOT NULL);
     CREATE TABLE IF NOT EXISTS audit (id ${D.id}, at ${D.big} NOT NULL, actor TEXT NOT NULL, action TEXT NOT NULL, target TEXT, detail TEXT);
     CREATE TABLE IF NOT EXISTS cards (id ${D.id}, name TEXT NOT NULL, symbol TEXT NOT NULL DEFAULT '', descr TEXT NOT NULL, pen_descr TEXT NOT NULL, cnt INTEGER NOT NULL, active INTEGER NOT NULL, color TEXT NOT NULL, power TEXT NOT NULL, penalty TEXT NOT NULL, sort INTEGER NOT NULL, default_img TEXT, deleted INTEGER NOT NULL DEFAULT 0, created ${D.big} NOT NULL, updated ${D.big} NOT NULL);
+    CREATE TABLE IF NOT EXISTS user_stats (uid INTEGER PRIMARY KEY, games INTEGER NOT NULL DEFAULT 0, wins INTEGER NOT NULL DEFAULT 0);
     CREATE TABLE IF NOT EXISTS assets (slot TEXT PRIMARY KEY, mime TEXT NOT NULL, data ${D.blob} NOT NULL, hash TEXT NOT NULL, updated ${D.big} NOT NULL, by TEXT NOT NULL);
   `);
   const uid = id => Number(String(id).slice(1));
@@ -100,6 +101,17 @@ async function makeStore(db) {
     /* settings */
     async getSetting(k) { const r = await db.get('SELECT v FROM settings WHERE k=?', [k]); return r ? r.v : null; },
     async setSetting(k, v) { await db.run('INSERT INTO settings(k,v) VALUES(?,?) ON CONFLICT(k) DO UPDATE SET v=excluded.v', [k, v]); },
+
+    /* match record */
+    async addResult(id, won) {
+      const n = uid(id); if (!Number.isInteger(n)) return;
+      await db.run('INSERT INTO user_stats(uid,games,wins) VALUES(?,1,?) ON CONFLICT(uid) DO UPDATE SET games=games+1, wins=wins+?', [n, won ? 1 : 0, won ? 1 : 0]);
+    },
+    async getStats(id) {
+      const n = uid(id); if (!Number.isInteger(n)) return { games: 0, wins: 0, losses: 0 };
+      const r = await db.get('SELECT games,wins FROM user_stats WHERE uid=?', [n]);
+      return r ? { games: r.games, wins: r.wins, losses: r.games - r.wins } : { games: 0, wins: 0, losses: 0 };
+    },
 
     /* accounts */
     async byKey(key) { const r = await db.get('SELECT id,name,salt,hash FROM users WHERE name_key=?', [key]); return r ? { id: 'u' + r.id, name: r.name, salt: r.salt, hash: r.hash } : null; },

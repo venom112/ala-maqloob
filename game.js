@@ -54,7 +54,7 @@ class Room {
         imm: this.immuneTo ? this.roster.map((r, j) => this.isImmune(j) ? this.immuneTo[j] - this.turnsN[j] + 1 : 0) : [],
         cd: i >= 0 && this.turnsN && this.cdAt[i] ? this.cfg.cards.map((c, x) => this.cdLeft(i, x)) : [],
         ban: i >= 0 && this.turnsN ? this.cfg.cards.map((c, x) => x).filter(x => this.claimBanned(i, x)) : [],
-        cfg: { cards: this.cfg.cards.map(c => ({ df: this.isDefCard(this.cfg.cards.indexOf(c)), jg: !!c.jg, win: (c.power.find(o => o.op === 'victory') || { n: 0 }).n, up: !!c.up, snd: (c.power[0] || {}).op || '', cdn: this.cdOf(this.cfg.cards.indexOf(c)), name: c.name, symbol: c.symbol, color: c.color, descr: c.descr, img: c.img, pen: c.pen })), set: { startInf: this.cfg.set.startInf, decideMs: this.cfg.set.decideMs, pickMs: this.cfg.set.pickMs, turnMs: this.cfg.set.turnMs || 0 }, v: this.cfg.v }
+        cfg: { cards: this.cfg.cards.map(c => ({ df: this.isDefCard(this.cfg.cards.indexOf(c)), jg: !!c.jg, win: (c.power.find(o => o.op === 'victory') || { n: 0 }).n, up: !!c.up, snd: c.snd || null, cdn: this.cdOf(this.cfg.cards.indexOf(c)), name: c.name, symbol: c.symbol, color: c.color, descr: c.descr, img: c.img, pen: c.pen })), set: { startInf: this.cfg.set.startInf, decideMs: this.cfg.set.decideMs, pickMs: this.cfg.set.pickMs, turnMs: this.cfg.set.turnMs || 0 }, v: this.cfg.v }
       };
     }
     return {
@@ -376,7 +376,15 @@ class Room {
     if (alive.length === 1) { this.finish(alive[0]); return; }
     this.E('victim', { i });
   }
-  finish(w) { this.over = w; this.E('win', { w }); }
+  finish(w) {
+    this.over = w; this.E('win', { w });
+    const st = this.content && this.content.store;   // practice games against bots are not counted
+    if (st && st.addResult && !this.bots && !this.statsDone) {
+      this.statsDone = true;
+      const humans = this.roster.filter(r => !r.bot && r.uid);
+      if (humans.length >= 2) for (const r of humans) Promise.resolve(st.addResult(r.uid, this.roster[w] === r)).catch(() => {});
+    }
+  }
   // Who a step of a power hits. 'pick' is the player the claimer chose; 'random' is drawn once, when the power starts.
   victims(target, P, picked, others) {
     if (target === 'self') return [P];

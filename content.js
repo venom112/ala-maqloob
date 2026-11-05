@@ -205,9 +205,108 @@ function deckCheck(cards, set) {
   return '';
 }
 
+const DEFAULT_SOUNDS = {"steal":[{"k":"n","d":0.08,"v":0.3,"a":0,"hz":300},
+  {"k":"t","f":110,"d":0.2,"w":"square","v":0.3,"a":0,"to":45},
+  {"k":"n","d":0.08,"v":0.3,"a":0.22,"hz":300},
+  {"k":"t","f":90,"d":0.26,"w":"square","v":0.3,"a":0.22,"to":40},
+  {"k":"t","f":1568,"d":0.08,"w":"square","v":0.1,"a":0.55},
+  {"k":"t","f":2093,"d":0.22,"w":"square","v":0.1,"a":0.63}],
+"swap":[{"k":"t","f":280,"d":0.38,"w":"sine","v":0.2,"a":0,"to":950},
+  {"k":"t","f":950,"d":0.38,"w":"sine","v":0.2,"a":0.22,"to":280},
+  {"k":"n","d":0.45,"v":0.07,"a":0.05,"hz":2600}],
+"take":[{"k":"t","f":1800,"d":0.04,"w":"square","v":0.1,"a":0},
+  {"k":"t","f":1500,"d":0.04,"w":"square","v":0.1,"a":0.09},
+  {"k":"t","f":2100,"d":0.04,"w":"square","v":0.1,"a":0.18},
+  {"k":"n","d":0.18,"v":0.1,"a":0.24,"hz":3800},
+  {"k":"t","f":500,"d":0.3,"w":"sine","v":0.06,"a":0.3,"to":200}],
+"peek":[{"k":"t","f":2000,"d":0.09,"w":"sine","v":0.15,"a":0,"to":2900},
+  {"k":"t","f":2600,"d":0.09,"w":"sine","v":0.15,"a":0.13,"to":3300},
+  {"k":"t","f":2200,"d":0.12,"w":"sine","v":0.15,"a":0.27,"to":3100}],
+"regain":[{"k":"n","d":0.05,"v":0.22,"a":0,"hz":5000},
+  {"k":"t","f":1568,"d":0.55,"w":"sine","v":0.2,"a":0.05},
+  {"k":"t","f":2093,"d":0.7,"w":"sine","v":0.14,"a":0.12},
+  {"k":"n","d":0.05,"v":0.12,"a":0.32,"hz":6000},
+  {"k":"n","d":0.05,"v":0.12,"a":0.39,"hz":6000},
+  {"k":"n","d":0.05,"v":0.12,"a":0.46,"hz":6000}],
+"inf_gain":[{"k":"t","f":659,"d":0.3,"w":"triangle","v":0.15,"a":0},
+  {"k":"t","f":880,"d":0.3,"w":"triangle","v":0.15,"a":0.1},
+  {"k":"t","f":1175,"d":0.3,"w":"triangle","v":0.15,"a":0.2},
+  {"k":"t","f":1568,"d":0.3,"w":"triangle","v":0.15,"a":0.30000000000000004},
+  {"k":"t","f":330,"d":0.9,"w":"sine","v":0.08,"a":0,"to":440},
+  {"k":"n","d":0.3,"v":0.05,"a":0.35,"hz":5000}],
+"smuggle":[{"k":"t","f":120,"d":0.55,"w":"sawtooth","v":0.1,"a":0,"to":70},
+  {"k":"n","d":0.45,"v":0.08,"a":0.05,"hz":700},
+  {"k":"t","f":330,"d":0.06,"w":"square","v":0.08,"a":0.55},
+  {"k":"t","f":90,"d":0.2,"w":"sine","v":0.3,"a":0.72,"to":45}],
+"recycle":[{"k":"n","d":0.28,"v":0.08,"a":0,"hz":6000},
+  {"k":"t","f":1400,"d":0.26,"w":"sine","v":0.06,"a":0,"to":3000},
+  {"k":"n","d":0.7,"v":0.42,"a":0.3,"hz":250},
+  {"k":"t","f":70,"d":0.8,"w":"sawtooth","v":0.32,"a":0.3,"to":25},
+  {"k":"n","d":0.4,"v":0.18,"a":0.4,"hz":1200}],
+"immune":[{"k":"t","f":392,"d":0.17,"w":"sawtooth","v":0.13,"a":0},
+  {"k":"t","f":392,"d":0.17,"w":"sawtooth","v":0.13,"a":0.2},
+  {"k":"t","f":523,"d":0.17,"w":"sawtooth","v":0.13,"a":0.4},
+  {"k":"t","f":659,"d":0.6,"w":"sawtooth","v":0.13,"a":0.6000000000000001},
+  {"k":"t","f":784,"d":0.7,"w":"triangle","v":0.1,"a":0.62}],
+"copy":[{"k":"t","f":620,"d":0.14,"w":"triangle","v":0.16,"a":0,"to":760},
+  {"k":"t","f":700,"d":0.14,"w":"sine","v":0.1,"a":0.08,"to":540},
+  {"k":"t","f":620,"d":0.14,"w":"triangle","v":0.12,"a":0.22,"to":760},
+  {"k":"t","f":700,"d":0.14,"w":"sine","v":0.07,"a":0.3,"to":540},
+  {"k":"t","f":620,"d":0.14,"w":"triangle","v":0.08,"a":0.44,"to":760},
+  {"k":"t","f":700,"d":0.14,"w":"sine","v":0.04000000000000001,"a":0.52,"to":540}],
+"victory":[{"k":"t","f":1200,"d":0.05,"w":"square","v":0.12,"a":0},
+  {"k":"t","f":800,"d":0.05,"w":"square","v":0.12,"a":0.08},
+  {"k":"n","d":0.1,"v":0.2,"a":0.15,"hz":500},
+  {"k":"t","f":392,"d":0.3,"w":"sawtooth","v":0.1,"a":0.3},
+  {"k":"t","f":523,"d":0.3,"w":"sawtooth","v":0.1,"a":0.4},
+  {"k":"t","f":659,"d":0.3,"w":"sawtooth","v":0.1,"a":0.5},
+  {"k":"t","f":784,"d":0.3,"w":"sawtooth","v":0.1,"a":0.6000000000000001},
+  {"k":"t","f":1047,"d":0.3,"w":"sawtooth","v":0.1,"a":0.7},
+  {"k":"t","f":1319,"d":0.8,"w":"triangle","v":0.12,"a":0.85}],
+"reflect":[{"k":"n","d":0.05,"v":0.2,"a":0,"hz":2500},
+  {"k":"t","f":880,"d":0.12,"w":"square","v":0.18,"a":0.05},
+  {"k":"t","f":660,"d":0.55,"w":"square","v":0.17,"a":0.2,"to":640},
+  {"k":"t","f":2400,"d":0.5,"w":"sine","v":0.05,"a":0.2,"to":3200}],
+"guard":[{"k":"t","f":700,"d":0.28,"w":"square","v":0.1,"a":0,"to":950},
+  {"k":"t","f":950,"d":0.28,"w":"square","v":0.1,"a":0.3,"to":700},
+  {"k":"t","f":700,"d":0.28,"w":"square","v":0.1,"a":0.6,"to":950},
+  {"k":"t","f":950,"d":0.28,"w":"square","v":0.1,"a":0.8999999999999999,"to":700}],
+"judge":[{"k":"t","f":170,"d":0.13,"w":"sine","v":0.45,"a":0,"to":60},
+  {"k":"n","d":0.05,"v":0.35,"a":0,"hz":1800},
+  {"k":"t","f":170,"d":0.13,"w":"sine","v":0.45,"a":0.24,"to":60},
+  {"k":"n","d":0.05,"v":0.35,"a":0.24,"hz":1800},
+  {"k":"t","f":880,"d":0.55,"w":"sine","v":0.06,"a":0.5}],
+"elder":[{"k":"t","f":110,"d":1.3,"w":"sine","v":0.3,"a":0,"to":98},
+  {"k":"t","f":220,"d":1.1,"w":"sine","v":0.14,"a":0},
+  {"k":"t","f":330,"d":0.9,"w":"triangle","v":0.07,"a":0.03},
+  {"k":"n","d":0.22,"v":0.1,"a":0,"hz":400}],
+"_":[{"k":"t","f":520,"d":0.14,"w":"triangle","v":0.14,"a":0},
+  {"k":"t","f":660,"d":0.2,"w":"triangle","v":0.12,"a":0.1}]};
+
+// A card sound is a short list of steps: a tone {k:"t", f:Hz, to:Hz?, d:sec, w:wave, v:volume, a:start} or a noise burst {k:"n", d, v, a, hz:high-pass Hz}.
+const SND_WAVES = ["sine", "square", "sawtooth", "triangle"];
+function cleanSound(x) {
+  if (!Array.isArray(x) || !x.length || x.length > 24) return null;
+  const num = (v, lo, hi) => { v = Number(v); return Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : null; };
+  const out = [];
+  for (const o of x) {
+    if (!o || (o.k !== "t" && o.k !== "n")) return null;
+    const d = num(o.d, 0.02, 2), v = num(o.v, 0, 0.6), a = num(o.a == null ? 0 : o.a, 0, 3);
+    if (d == null || v == null || a == null) return null;
+    if (o.k === "n") { const hz = num(o.hz == null ? 1000 : o.hz, 50, 12000); if (hz == null) return null; out.push({ k: "n", d, v, a, hz }); continue; }
+    const f = num(o.f, 30, 6000); if (f == null || SND_WAVES.indexOf(o.w) < 0) return null;
+    const e = { k: "t", f, d, w: o.w, v, a }; if (o.to != null && o.to !== "") { const to = num(o.to, 20, 8000); if (to == null) return null; e.to = to; }
+    out.push(e);
+  }
+  return out;
+}
+
 /* ---------- the live copy ---------- */
 class Content {
-  constructor(store) { this.store = store; this.version = 1; this.cards = []; this.settings = Object.assign({}, DEFAULT_SETTINGS); this.assets = {}; }
+  constructor(store) { this.store = store; this.version = 1; this.cards = []; this.settings = Object.assign({}, DEFAULT_SETTINGS); this.assets = {}; this.sounds = {}; }
+
+  soundFor(c) { return this.sounds[c.id] || DEFAULT_SOUNDS[(c.power[0] || {}).op] || DEFAULT_SOUNDS._; }
+  defaultSound(c) { return DEFAULT_SOUNDS[(c.power[0] || {}).op] || DEFAULT_SOUNDS._; }
 
   static fixed() {   // no database: the built-in defaults (used by the rules test)
     const c = new Content(null);
@@ -374,6 +473,7 @@ class Content {
     this.cards = rows.map(r => ({ id: r.id, name: r.name, symbol: r.symbol || '', color: r.color, cnt: r.cnt, descr: r.descr, penDescr: r.pen_descr, active: !!r.active, power: JSON.parse(r.power), penalty: JSON.parse(r.penalty), sort: r.sort, defaultImg: r.default_img || '', deleted: false }));
     let s = {}; try { s = JSON.parse((await st.getSetting('cfg')) || '{}'); } catch (e) {}
     this.settings = Object.assign({}, DEFAULT_SETTINGS, s);
+    this.sounds = {}; try { const sj = JSON.parse((await st.getSetting('sounds')) || '{}'); for (const k of Object.keys(sj)) { const c = cleanSound(sj[k]); if (c) this.sounds[k] = c; } } catch (e) {}
     this.assets = {}; for (const a of await st.assetMeta()) this.assets[a.slot] = a.hash;
     this.version++;
   }
@@ -391,7 +491,7 @@ class Content {
   snapshot() {
     const set = this.settings;
     const cards = this.cards.filter(c => c.active).map(c => ({
-      up: c.power.some(o => o.op === 'immune' || o.op === 'victory'), jg: c.power.some(o => o.op === 'judge'), df: c.power.some(o => o.op === 'reflect' || o.op === 'guard' || o.op === 'judge' || o.op === 'elder'), id: c.id, name: c.name, symbol: c.symbol, color: c.color, cnt: c.cnt, descr: c.descr, img: this.cardImg(c),
+      up: c.power.some(o => o.op === 'immune' || o.op === 'victory'), jg: c.power.some(o => o.op === 'judge'), df: c.power.some(o => o.op === 'reflect' || o.op === 'guard' || o.op === 'judge' || o.op === 'elder'), id: c.id, snd: this.soundFor(c), name: c.name, symbol: c.symbol, color: c.color, cnt: c.cnt, descr: c.descr, img: this.cardImg(c),
       pen: c.penDescr || penText(c.penalty), power: c.power.map(o => Object.assign({}, o)), penalty: Object.assign({}, c.penalty)
     }));
     return {
@@ -408,4 +508,4 @@ class Content {
   }
 }
 
-module.exports = { Content, OPS, TARGET_LABEL, IMAGE_SLOTS, DEFAULT_SETTINGS, SETTING_RANGE, SEED_CARDS, cleanCard, cleanSettings, cleanPower, cleanPenalty, penText, deckCheck, cardSlot, slotOk };
+module.exports = { DEFAULT_SOUNDS, cleanSound, Content, OPS, TARGET_LABEL, IMAGE_SLOTS, DEFAULT_SETTINGS, SETTING_RANGE, SEED_CARDS, cleanCard, cleanSettings, cleanPower, cleanPenalty, penText, deckCheck, cardSlot, slotOk };

@@ -175,7 +175,7 @@ function install(ctx) {
       if (route[0] === 'cards') {
         if (route.length === 1 && m === 'GET') {
           if (!can(me, 'cards.edit')) return fail(res, 403, 'مفيش عندك صلاحية لده.'), true;
-          return json(res, 200, { cards: content.cards.map(c => Object.assign({}, c, { img: content.cardImg(c), customImg: !!content.assets['card-' + c.id] })), settings: content.settings, version: content.version }), true;
+          return json(res, 200, { cards: content.cards.map(c => Object.assign({}, c, { img: content.cardImg(c), customImg: !!content.assets['card-' + c.id], snd: content.soundFor(c), sndCustom: !!content.sounds[c.id] })), settings: content.settings, version: content.version }), true;
         }
         if (!need('cards.edit')) return true;
         if (route.length === 1 && m === 'POST') {
@@ -195,6 +195,14 @@ function install(ctx) {
         }
         const id = Number(route[1]), card = content.cards.find(c => c.id === id);
         if (!card) return fail(res, 404, 'الكارت مش موجود.'), true;
+        if (route[2] === 'sound' && route.length === 3 && (m === 'PUT' || m === 'DELETE')) {
+          const all = Object.assign({}, content.sounds);
+          if (m === 'PUT') { const b = await readBody(req, 16384); const sn = C.cleanSound(b.snd); if (!sn) return fail(res, 400, 'الصوت مش مظبوط: لازم قايمة خطوات (١–٢٤) كل واحدة k=t أو n وأرقام في الحدود.'), true; all[id] = sn; }
+          else delete all[id];
+          await store.setSetting('sounds', JSON.stringify(all));
+          await content.reload(); await store.log(actor(me), m === 'PUT' ? 'card.sound' : 'card.sound.reset', card.name + ' (#' + id + ')', m === 'PUT' ? all[id] : null);
+          return json(res, 200, { ok: true }), true;
+        }
         if (m === 'PATCH' && route.length === 2) {
           const r = C.cleanCard(await readBody(req, 16384), false); if (r.err) return fail(res, 400, r.err), true;
           const next = Object.assign({}, card, r.v);
