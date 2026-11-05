@@ -38,6 +38,7 @@
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
+html, body { overflow-x: clip; }
 body {
   background: var(--ink);
   color: var(--bone);
@@ -1824,6 +1825,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     var k = PV; pvClose();
     S.sel = k; S.decl = (S.ban.indexOf(S.hands[0][k]) >= 0 || S.lock.indexOf(S.hands[0][k]) >= 0 || cd(S.hands[0][k]).df) ? -1 : S.hands[0][k]; handSig = ''; renderRoom();
   };
+  /* every dialog hangs straight off <body>, so no screen shake, transform or containment on a parent can drag it out of the viewport */
+  Array.prototype.forEach.call(document.querySelectorAll('.modal'), function (m) { document.body.appendChild(m); });
   /* open on press-and-release of the same card slot, even if the hand was redrawn between the two (a redraw used to swallow the click) */
   var hcDown = -1, hcAt = 0;
   $('handRow').addEventListener('pointerdown', function (e) { var b = e.target.closest('.hc'); hcDown = b ? +b.dataset.k : -1; });
