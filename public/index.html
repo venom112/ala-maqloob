@@ -291,6 +291,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .ov-actions { display: grid; gap: 10px; }
 
 /* challenge box, hand, speech bubbles */
+.modal[popover] { margin: 0; border: 0; width: auto; height: auto; max-width: none; max-height: none; overflow: visible; color: inherit; }
 .modal { position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-end; justify-content: center; padding: 12px; background: rgba(0,0,0,.62); }
 .modal .sheet { width: 100%; max-width: 560px; max-height: 88vh; overflow: auto; box-shadow: 0 -6px 30px rgba(0,0,0,.6); border-color: var(--brass); }
 .modal .sheet h3 { margin: 0; font-family: var(--font-display); font-size: 18px; color: var(--brass); }
@@ -1827,6 +1828,35 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   };
   /* every dialog hangs straight off <body>, so no screen shake, transform or containment on a parent can drag it out of the viewport */
   Array.prototype.forEach.call(document.querySelectorAll('.modal'), function (m) { document.body.appendChild(m); });
+  /* ...and they live in the browser's top layer (popover), which ignores every parent and always spans the real viewport */
+  if (HTMLElement.prototype.showPopover) {
+    var syncPop = function (m) {
+      try {
+        var open = !m.hidden, on = m.matches(':popover-open');
+        if (open && !on) m.showPopover(); else if (!open && on) m.hidePopover();
+      } catch (e) {}
+    };
+    var popObs = new MutationObserver(function (list) { list.forEach(function (r) { syncPop(r.target); }); });
+    Array.prototype.forEach.call(document.querySelectorAll('.modal'), function (m) {
+      m.setAttribute('popover', 'manual'); popObs.observe(m, { attributes: true, attributeFilter: ['hidden'] }); syncPop(m);
+    });
+  }
+  /* safety net: if a dialog ever lands outside the screen, pin it to the middle of the real viewport and say so */
+  function rescueModal(m) {
+    requestAnimationFrame(function () { requestAnimationFrame(function () {
+      if (m.hidden) return;
+      var sh = m.firstElementChild; if (!sh) return;
+      var r = sh.getBoundingClientRect(), vh = window.innerHeight, vw = window.innerWidth;
+      if (r.top < -1 || r.bottom > vh + 1 || r.left < -1 || r.right > vw + 1 || r.height < 40) {
+        sh.style.cssText = 'position:fixed;left:50%;top:50%;translate:none;transform:translate(-50%,-50%);width:min(560px,94vw);max-height:92vh;overflow:auto;margin:0;z-index:70';
+        try { console.warn('dialog was off-screen', m.id, r.top, r.bottom, vh); } catch (e) {}
+      } else if (sh.style.position === 'fixed' && sh.style.transform) sh.style.cssText = '';
+    }); });
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.modal'), function (m) {
+    new MutationObserver(function () { if (!m.hidden) rescueModal(m); }).observe(m, { attributes: true, attributeFilter: ['hidden'] });
+  });
+  window.addEventListener('error', function (e) { try { var t = $('exitToast'); t.textContent = 'خطأ في اللعبة: ' + (e.message || '') + (e.lineno ? ' (سطر ' + e.lineno + ')' : ''); t.classList.add('on'); setTimeout(function () { t.classList.remove('on'); }, 9000); } catch (x) {} });
   /* open on press-and-release of the same card slot, even if the hand was redrawn between the two (a redraw used to swallow the click) */
   var hcDown = -1, hcAt = 0;
   $('handRow').addEventListener('pointerdown', function (e) { var b = e.target.closest('.hc'); hcDown = b ? +b.dataset.k : -1; });
