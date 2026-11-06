@@ -1948,7 +1948,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     return '';
   }
   var showT = 0;
-  function fxd() { var a = arguments; setTimeout(function () { fx.apply(null, a); }, calm ? 0 : TM(750)); }   /* let the hologram act before the big stunt covers the table */
+  function fxd() {}   /* let the hologram act before the big stunt covers the table */
   function playEv(d) {
     var r;
     switch (d.k) {
@@ -1968,7 +1968,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
         fx('challenge', P === 0 ? nmR(j) + ' بيتحداك' : (j === 0 ? 'إنت بتتحدى ' + nmR(P) : nmR(j) + ' بيتحدى ' + nmR(P)), 'أتحداك!', 1900);
         SFX.challenge(); buzz();
         break;
-      case 'reveal': SFX.reveal(); fx('showcase', 'الكارت اتكشف', lab(d.t), 1700, d.t); flipTop(); break;
+      case 'reveal': SFX.reveal(); flipTop(); break;
       case 'honest':
         fx('honest', rel(d.j) === 0 ? 'إنت اتحديت وخسرت نقطة نفوذ' : nmR(rel(d.j)) + ' اتحدى وخسر نقطة نفوذ', 'الكارت صح!', 2300); SFX.honest(); break;
       case 'unreveal': break;
@@ -1976,7 +1976,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
         fx('liar', 'عقوبة الكدب: ' + cd(d.c).pen, 'كدّاب!', 2400); SFX.liar(); break;
       case 'power':
         holoPower(d);
-        (function (dd) { setTimeout(function () { fx('fatwa', (dd.cp != null ? 'نسخ قدرة ' + cd(dd.cp).name + ': ' : '') + stepsLine(dd, true), cd(dd.c).name + '!', 2000, dd.c); }, calm || !HOLO[rel(dd.P)] ? 0 : ((dd.steps || []).some(function (x) { return (x.T || []).some(function (y) { return y !== dd.P; }); }) ? TM(1100) : 1100)); })(d); SFX.fatwa(); buzz([80, 30, 80]);
+        /* no full-screen card announcement any more: the hologram shows the card */ SFX.fatwa(); buzz([80, 30, 80]);
         break;
       case 'reflect':
         holoDefend('reflect', d);
