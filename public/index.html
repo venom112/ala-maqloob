@@ -458,34 +458,21 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 /* ---------- holograms and card flights ---------- */
 .fxl { position: absolute; inset: 0; pointer-events: none; z-index: 8; }
 .fxl > * { position: absolute; left: 50%; top: 50%; }
-.holo { width: 18cqw; margin: -11cqw 0 0 -9cqw; --hg: color-mix(in srgb, var(--hc, #66ccff) 40%, #8ff); filter: drop-shadow(0 0 1.4cqw var(--hg)); }
-.hl-in { position: relative; animation: hl-in .6s cubic-bezier(.2, .9, .3, 1) both, hl-float 3.2s ease-in-out .6s infinite; transform-origin: 50% 100%; }
-.hl-body { position: relative; isolation: isolate; height: 16cqw; animation: hl-flick 2.6s steps(1) infinite; }
-.hl-fig { position: absolute; inset: 0; background-repeat: no-repeat; background-size: 150% auto; background-position: 50% 34%;
-  filter: saturate(.5) contrast(1.3) brightness(1.2);
-  -webkit-mask-image: radial-gradient(ellipse 68% 78% at 50% 44%, #000 50%, transparent 100%); mask-image: radial-gradient(ellipse 68% 78% at 50% 44%, #000 50%, transparent 100%); }
-.hl-fig.gl { display: grid; place-items: center; font-size: 12cqw; color: var(--hg); background: none; filter: none; }
-.hl-body::before { content: ''; position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, var(--hg), color-mix(in srgb, var(--hg) 40%, transparent)); mix-blend-mode: color; opacity: .95; }
-.hl-body::after { content: ''; position: absolute; inset: 0; z-index: 2;
-  background: repeating-linear-gradient(0deg, rgba(255,255,255,.2) 0 .25cqw, transparent .25cqw .8cqw), linear-gradient(180deg, transparent 0 40%, rgba(255,255,255,.28) 50%, transparent 60% 100%);
-  background-size: 100% .8cqw, 100% 300%; animation: hl-scan 2.2s linear infinite;
-  -webkit-mask-image: radial-gradient(ellipse 68% 78% at 50% 44%, #000 50%, transparent 100%); mask-image: radial-gradient(ellipse 68% 78% at 50% 44%, #000 50%, transparent 100%); }
-.hl-base { position: absolute; left: 6%; right: 6%; bottom: -1.2cqw; height: 4.2cqw; border-radius: 50%;
-  background: radial-gradient(ellipse, color-mix(in srgb, var(--hg) 90%, #fff) 0%, transparent 70%); }
+.holo { width: 21cqw; margin: -16cqw 0 0 -10.5cqw; --hg: color-mix(in srgb, var(--hc, #66ccff) 40%, #8ff); }
+.hl-in { position: relative; animation: hl-float 3.2s ease-in-out infinite; transform-origin: 50% 100%; }
+.hl-cv { display: block; width: 100%; height: auto; position: relative; z-index: 1; filter: drop-shadow(0 0 .7cqw var(--hg)) drop-shadow(0 0 2.2cqw var(--hg)); }
+.hl-base { position: absolute; left: 8%; right: 8%; bottom: -.4cqw; height: 4.6cqw; border-radius: 50%; background: radial-gradient(ellipse, color-mix(in srgb, var(--hg) 90%, #fff) 0%, transparent 70%); }
 .hl-base::before { content: ''; position: absolute; inset: 0; border-radius: 50%; border: .35cqw solid var(--hg); animation: hl-ring 2s ease-out infinite; }
-.hl-beam { position: absolute; left: 8%; right: 8%; bottom: .6cqw; height: 17cqw; opacity: .45; clip-path: polygon(18% 0, 82% 0, 100% 100%, 0 100%);
-  background: linear-gradient(to top, var(--hg), transparent); animation: hl-flick 1.7s steps(1) infinite; }
-.hl-name { position: absolute; left: 50%; bottom: -5.2cqw; translate: -50% 0; white-space: nowrap; font-size: clamp(9px, 2.5cqw, 16px); font-weight: 700; color: var(--hg); text-shadow: 0 0 .8cqw var(--hg), 0 0 .3cqw #000; letter-spacing: .03em; }
-.holo.glitch .hl-body { animation: hl-glitch .3s steps(2) 5; }
-.holo.ghost { filter: blur(.25cqw) drop-shadow(0 0 1cqw var(--hg)); }
+.hl-beam { position: absolute; left: 14%; right: 14%; bottom: 1cqw; height: 21cqw; opacity: .35; clip-path: polygon(18% 0, 82% 0, 100% 100%, 0 100%); background: linear-gradient(to top, var(--hg), transparent); animation: hl-flick 1.7s steps(1) infinite; }
+.hl-name { position: absolute; left: 50%; bottom: -5.4cqw; translate: -50% 0; white-space: nowrap; font-size: clamp(9px, 2.5cqw, 16px); font-weight: 700; color: var(--hg); text-shadow: 0 0 .8cqw var(--hg), 0 0 .3cqw #000; letter-spacing: .03em; z-index: 2; }
+.holo.ghost { filter: blur(.25cqw); }
 .holo.ghost .hl-in { animation: none; }
 .holo.ghost .hl-name, .holo.ghost .hl-base, .holo.ghost .hl-beam { display: none; }
-@keyframes hl-in { 0% { opacity: 0; transform: scaleY(.05) scaleX(1.3); filter: brightness(4); } 55% { opacity: 1; transform: scaleY(1.1) scaleX(.96); } 100% { opacity: 1; transform: none; filter: none; } }
-@keyframes hl-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -.9cqw; } }
+.emcard { width: 9cqw; height: 12.6cqw; margin: -6.3cqw 0 0 -4.5cqw; border-radius: 1cqw; background: center / cover no-repeat #0b0b0c; border: .25cqw solid rgba(255,214,120,.9); box-shadow: 0 0 2.4cqw rgba(255,214,120,.6), 0 .8cqw 1.6cqw rgba(0,0,0,.7); }
+@keyframes hl-emerge { 0% { opacity: 0; transform: scale(.25) translateY(6cqw); filter: brightness(4); } 55% { opacity: 1; transform: scale(1.08); filter: brightness(1.8); } 100% { opacity: 1; transform: none; filter: none; } }
+@keyframes hl-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -.8cqw; } }
 @keyframes hl-flick { 0%, 100% { opacity: .95; } 6% { opacity: .6; } 8% { opacity: 1; } 41% { opacity: .85; } 43% { opacity: .5; } 45% { opacity: 1; } 78% { opacity: .8; } }
-@keyframes hl-scan { to { background-position: 0 .8cqw, 0 -300%; } }
 @keyframes hl-ring { 0% { transform: scale(.4); opacity: .9; } 100% { transform: scale(1.6); opacity: 0; } }
-@keyframes hl-glitch { 0% { clip-path: inset(10% 0 60% 0); translate: -1.5cqw 0; filter: hue-rotate(60deg); } 50% { clip-path: inset(55% 0 12% 0); translate: 1.5cqw 0; filter: hue-rotate(-60deg); } 100% { clip-path: none; translate: 0 0; } }
 .fcard { width: 7cqw; height: 9.8cqw; margin: -4.9cqw 0 0 -3.5cqw; border-radius: 1cqw; border: .2cqw solid rgba(200,162,75,.7); background: var(--back) center / cover no-repeat #0b0b0c; box-shadow: 0 .8cqw 1.6cqw rgba(0,0,0,.7), 0 0 1.4cqw rgba(255,210,120,.35); }
 .pt { border-radius: 50%; box-shadow: 0 0 .9cqw currentColor; }
 .rg { width: 10cqw; height: 10cqw; margin: -5cqw 0 0 -5cqw; border: .5cqw solid; border-radius: 50%; }
@@ -1487,18 +1474,20 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   function flyFromDraw(i) {
     if (calm) return;
-    try {
-      var to = hpos(i, 1);
-      cardFly({ x: DRAW.x, y: DRAW.y }, to, { d: 640, arc: i === 0 ? -.18 : .22, rot: 160, r0: 8, r1: -6, done: function () { ring(to, 'rgba(255,214,120,.9)', 1.6, 420); } });
-    } catch (e) {}
+    setTimeout(function () {   // let the hand redraw first, then fly to where the new card sits among the others
+      try {
+        var to = handPt(i, 'end');
+        cardFly({ x: DRAW.x, y: DRAW.y }, to, { d: 800, arc: i === 0 ? -.2 : .22, rot: 160, r0: 8, r1: -6, done: function () { handPulse(i, to); } });
+      } catch (e) {}
+    }, 120);
   }
   function landOnPlay(i) {
     if (calm) return;
     try {
       var top = $('playPile').querySelector('.pcard:last-child'); if (!top) return;
-      var s = seatXY(i);
-      top.animate([{ translate: (s.x - PLAY.x) + 'cqw ' + (s.y - PLAY.y) + 'cqw', scale: .5, opacity: .3 }, { translate: '0 0', scale: 1, opacity: 1 }], { duration: 420, easing: 'cubic-bezier(.2,.9,.3,1)' });
-      setTimeout(function () { ring(PLAY, 'rgba(255,214,120,.9)', 2.2, 520); }, 380);
+      var s = i === 0 ? handPt(0, 'mid') : seatXY(i);
+      top.animate([{ translate: (s.x - PLAY.x) + 'cqw ' + (s.y - PLAY.y) + 'cqw', scale: .5, opacity: .3 }, { translate: '0 0', scale: 1, opacity: 1 }], { duration: 620, easing: 'cubic-bezier(.2,.9,.3,1)' });
+      setTimeout(function () { ring(PLAY, 'rgba(255,214,120,.9)', 2.2, 700); }, 560);
     } catch (e) {}
   }
   function flipTop() {
@@ -1510,8 +1499,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     } catch (e) {}
   }
 
-  /* ===== holograms: every played card appears as a living projection of its character ===== */
-  var HOLO = {};
+  var TS = 1.6; function TM(ms) { return Math.round(ms * TS); }   /* global animation tempo: >1 is slower and more deliberate */
+  /* ===== living holograms: the character steps out of the card, walks, fights and defends ===== */
+  var HOLO = {}, ACT = [], HRAF = 0, HIMG = {};
   var HOP = {
     steal: { mode: 'dash', imp: 'slash' }, inf_loss: { mode: 'dash', imp: 'blast' }, drop: { mode: 'dash', imp: 'blast' }, skip: { mode: 'dash', imp: 'freeze' },
     take: { mode: 'sneak' }, swap: { mode: 'swap' }, peek: { mode: 'scan' },
@@ -1519,44 +1509,155 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     immune: { mode: 'shield' }, copy: { mode: 'clone' }, victory: { mode: 'crown' }, _: { mode: 'aura' }
   };
   var HCOL = { gold: '#ffd25a', red: '#ff5a4a', cyan: '#6ff', green: '#7dff9a', ice: '#9fd8ff' };
-  function hpos(i, k) { var s = seatXY(i); k = k == null ? .56 : k; return { x: s.x * k, y: s.y * k }; }
+  function ease(p) { return p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2; }
+  function hpos(i, k) { var s = seatXY(i); k = k == null ? .45 : k; return { x: s.x * k, y: s.y * k }; }
   function tr(p, extra) { return 'translate(' + p.x + 'cqw,' + p.y + 'cqw)' + (extra ? ' ' + extra : ''); }
   function fxEl(cls, html) { var e = document.createElement('div'); e.className = cls; if (html) e.innerHTML = html; $('fxl').appendChild(e); return e; }
   function gone(e, ms) { setTimeout(function () { e.remove(); }, ms); }
-  function holoEl(c) {
-    var C = cd(c), e = document.createElement('div'); e.className = 'holo'; e.style.setProperty('--hc', C.color || '#66ccff');
-    var fig = C.img ? '<div class="hl-fig" style="background-image:url(\'' + esc(C.img) + '\')"></div>' : '<div class="hl-fig gl">' + esc(C.symbol) + '</div>';
-    e.innerHTML = '<div class="hl-in"><div class="hl-beam"></div><div class="hl-body">' + fig + '</div><div class="hl-base"></div><div class="hl-name">' + esc(C.name) + '</div></div>';
-    return e;
+
+  /* where a hand is: my real cards under the table, or the little fan at another player's seat */
+  function stagePt(r) { var sr = stage.getBoundingClientRect(), w = sr.width / 100; return { x: (r.left + r.width / 2 - sr.left - sr.width / 2) / w, y: (r.top + r.height / 2 - sr.top - sr.height / 2) / w }; }
+  function fanPos(i) { var a = angle(i, S.cap) * Math.PI / 180; return { x: Math.sin(a) * 23, y: -Math.cos(a) * 23 }; }
+  function handPt(i, which) {   // which: 'end' (newest card), 'mid' (somewhere among the cards)
+    if (i !== 0) return fanPos(i);
+    var hs = $('handRow').querySelectorAll('.hc');
+    if (!hs.length) return stagePt($('handRow').getBoundingClientRect());
+    var el = which === 'end' ? hs[hs.length - 1] : hs[Math.floor(hs.length / 2)];
+    return stagePt(el.getBoundingClientRect());
   }
+  function handPulse(i, p) { ring(p, 'rgba(255,214,120,.95)', i === 0 ? 1.6 : 1.3, 480); }
+
+  /* ----- cut-out characters (made from the card art) ----- */
+  function holoSrc(C) { var m = C.img && /\/img\/(\w+)\.jpg/.exec(C.img); return m ? '/img/holo/' + m[1] + '.webp' : ''; }
+  function holoImg(src, cb) {
+    if (!src) return cb(null);
+    var r = HIMG[src]; if (r && r.ok) return cb(r); if (r === false) return cb(null); if (r && r.q) return r.q.push(cb);
+    var q = [cb], im = new Image(); HIMG[src] = { q: q };
+    im.onload = function () { HIMG[src] = { ok: 1, im: im, ar: im.width / im.height }; q.forEach(function (f) { f(HIMG[src]); }); };
+    im.onerror = function () { HIMG[src] = false; q.forEach(function (f) { f(null); }); };
+    im.src = src;
+  }
+  function holoPreload() { if (!CFG) return; CFG.cards.forEach(function (C) { holoImg(holoSrc(C), function () {}); }); }
+
+  function mkActor(c, delayMs) {
+    var C = cd(c), el = document.createElement('div'); el.className = 'holo'; el.style.setProperty('--hc', C.color || '#66ccff');
+    el.innerHTML = '<div class="hl-in"><div class="hl-beam"></div><canvas class="hl-cv"></canvas><div class="hl-base"></div><div class="hl-name">' + esc(C.name) + '</div></div>';
+    var a = { c: c, el: el, cv: el.querySelector('canvas'), seed: Math.random() * 100, born: performance.now() + TM(delayMs || 0), act: null, glitchUntil: 0, flash: 0, img: null, fb: null, obj: /citykey/.test(C.img || '') };
+    var dpr = Math.min(2, window.devicePixelRatio || 1), w = Math.max(60, Math.round(stage.clientWidth * .24 * dpr)), h = Math.round(w * 1.18);
+    a.cv.width = w; a.cv.height = h; a.ctx = a.cv.getContext('2d');
+    holoImg(holoSrc(C), function (r) { a.img = r; if (!r && C.img) holoImg(C.img, function (r2) { a.fb = r2; }); });
+    ACT.push(a); if (!HRAF) HRAF = requestAnimationFrame(holoTick);
+    return a;
+  }
+  function holoTick(now) {
+    HRAF = 0; ACT = ACT.filter(function (a) { return a.el.isConnected; });
+    ACT.forEach(function (a) { try { drawActor(a, now); } catch (e) {} });
+    if (ACT.length) HRAF = requestAnimationFrame(holoTick);
+  }
+  /* body language: every move is a pose curve applied to the figure (lean, bob, stretch, spin, glow) */
+  var POSE = {
+    run: function (P, p, k, t) { var e = Math.sin(Math.PI * Math.min(1, p * 1.15)); P.lean += k.dir * .5 * e; P.bob = Math.abs(Math.sin(t * 13)) * .055 * e; P.sy *= 1 + Math.sin(t * 26) * .014 * e; P.glow = .3 * e; },
+    windup: function (P, p, k) { var e = Math.sin(Math.PI * p / 2); P.lean -= k.dir * .38 * e; P.sy *= 1 - .05 * e; P.sx *= 1 + .04 * e; },
+    strike: function (P, p, k) { var d = Math.pow(1 - p, 2); P.lean += k.dir * .85 * d; P.sx *= 1 + .16 * d; P.sy *= 1 + .1 * d; P.glow = d * 1.2; },
+    hit: function (P, p, k) { var d = Math.sin(Math.PI * p); P.lean -= k.dir * .55 * d; P.sy *= 1 - .05 * d; a_flash(k, 1 - p); P.glow = (1 - p); },
+    cast: function (P, p) { var e = Math.sin(Math.PI * Math.min(1, p)); P.sy *= 1 + .08 * e; P.bob = -.05 * e; P.glow = e; P.head += .03 * e; },
+    block: function (P, p, k, t) { P.sx *= 1.07; P.sy *= .96; P.glow = .7; P.lean += Math.sin(t * 38) * .012 * (k.trem || 0); },
+    spin: function (P, p, k) { P.spin = ease(p) * Math.PI * 2 * (k.turns || 1); P.glow = .5; P.bob = -.04 * Math.sin(Math.PI * p); },
+    sneak: function (P, p, k, t) { P.alpha = .42; P.lean += k.dir * .22; P.bob = Math.abs(Math.sin(t * 7)) * .025; P.sy *= .96; },
+    grab: function (P, p, k) { var e = Math.sin(Math.PI * p); P.lean += k.dir * .5 * e; P.sy *= 1 + .06 * e; P.glow = e; },
+    crown: function (P, p) { var e = Math.sin(Math.PI * p); P.sy *= 1 + .12 * e; P.sx *= 1 + .06 * e; P.glow = 1.1 * e; P.bob = -.06 * e; },
+    die: function (P, p) { P.alpha = 1 - p; P.glow = p * 1.4; P.sy *= 1 - .25 * p; }
+  };
+  function a_flash(k, v) { if (k.a) k.a.flash = v; }
+  function holoAct(h, name, dur, extra) { var a = h.a || h; a.act = Object.assign({ k: name, t0: performance.now(), dur: TM(dur), a: a }, extra || {}); return a.act; }
+  function poseOf(a, now) {
+    var t = (now - a.born) / 1000 + a.seed, P = { lean: 0, bob: 0, sx: 1, sy: 1, spin: 0, glow: 0, alpha: 1, head: 0, sway: Math.sin(t * .85), breath: Math.sin(t * 1.9) };
+    P.lean = Math.sin(t * .6) * .014; P.head = Math.sin(t * .45) * .022 + Math.sin(t * 1.3) * .007;
+    if (a.obj) { P.spin = t * 1.1; P.bob = Math.sin(t * 1.6) * .03; }
+    a.flash = 0;
+    var k = a.act;
+    if (k) { var p = (now - k.t0) / k.dur; if (p >= 1) { a.act = null; if (k.done) k.done(); } else POSE[k.k](P, Math.max(0, p), k, t); }
+    return P;
+  }
+  function drawActor(a, now) {
+    var P = poseOf(a, now), cv = a.cv, ctx = a.ctx, cw = cv.width, ch = cv.height, age = (now - a.born) / 1000;
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.clearRect(0, 0, cw, ch);
+    if (age < 0) { cv.style.opacity = 0; return; }
+    var src, sx0 = 0, sy0 = 0, sw, sh, ar;
+    if (a.img) { src = a.img.im; sw = src.width; sh = src.height; ar = a.img.ar; }
+    else if (a.fb) { src = a.fb.im; sx0 = src.width * .12; sy0 = src.height * .2; sw = src.width * .76; sh = src.height * .56; ar = sw / sh; }
+    else { cv.style.opacity = 0; return; }
+    var Hf = ch * .84, Wf = Hf * ar; if (Wf > cw * .94) { Wf = cw * .94; Hf = Wf / ar; }
+    var cs = Math.cos(P.spin); if (Math.abs(cs) < .07) cs = .07 * (cs < 0 ? -1 : 1); var fcs = Math.abs(cs);
+    var cx = cw / 2, base = ch * .96 - P.bob * Hf, hh = Hf * P.sy, top = base - hh, N = 34;
+    var bright = 1.12 + P.glow * .7 + (a.flash || 0) * 1.4;
+    function fig(ox, oy) {
+      for (var k = 0; k < N; k++) {
+        var v = (k + .5) / N, y0 = top + hh * k / N + (oy || 0);
+        var w = Wf * fcs * P.sx * (1 + P.breath * .015 * Math.exp(-Math.pow((v - .42) / .2, 2)));
+        var dx = P.lean * Wf * .42 * Math.pow(1 - v, 1.4) + P.sway * Wf * .014 * (1 - v) + P.head * Wf * Math.exp(-Math.pow(v / .22, 2)) + (ox || 0);
+        ctx.drawImage(src, sx0, sy0 + sh * k / N, sw, sh / N + .6, cx + dx - w / 2, y0, w, hh / N + 1.2);
+      }
+    }
+    var gl = now < a.glitchUntil;
+    ctx.filter = 'saturate(.8) contrast(1.15) brightness(' + bright.toFixed(2) + ')'; fig(0, 0); ctx.filter = 'none';
+    if (gl) {   // colour split and torn slices
+      ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = .45; ctx.filter = 'hue-rotate(170deg) saturate(2) brightness(1.1)'; fig(Wf * .03, 0); ctx.filter = 'hue-rotate(-60deg) saturate(2)'; fig(-Wf * .03, 0); ctx.filter = 'none';
+      ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+      for (var s = 0; s < 3; s++) { var sy = Math.random() * ch * .8, shh = ch * (.03 + Math.random() * .06); ctx.drawImage(cv, 0, sy, cw, shh, (Math.random() - .5) * Wf * .25, sy, cw, shh); }
+    }
+    ctx.globalCompositeOperation = 'source-atop';   // projector tint
+    var g = ctx.createLinearGradient(0, top, 0, base); g.addColorStop(0, 'rgba(130,255,255,.2)'); g.addColorStop(1, 'rgba(70,150,255,.34)'); ctx.fillStyle = g; ctx.fillRect(0, 0, cw, ch);
+    var bandY = top + ((now / 2600 + a.seed) % 1.25 - .1) * hh;   // slow bright sweep
+    var g2 = ctx.createLinearGradient(0, bandY - hh * .1, 0, bandY + hh * .1); g2.addColorStop(0, 'rgba(255,255,255,0)'); g2.addColorStop(.5, 'rgba(255,255,255,.34)'); g2.addColorStop(1, 'rgba(255,255,255,0)'); ctx.fillStyle = g2; ctx.fillRect(0, bandY - hh * .1, cw, hh * .2);
+    ctx.globalCompositeOperation = 'destination-out';   // scan lines
+    var step = Math.max(2, Math.round(ch / 110)), off = (now / 40) % (step * 2); ctx.fillStyle = 'rgba(0,0,0,.2)';
+    for (var y = -off; y < ch; y += step * 2) ctx.fillRect(0, y, cw, step * .9);
+    if (age < .9 * TS) {   // materialise from the feet up
+      var rv = ease(Math.min(1, age / (.9 * TS))), ry = base - (base - top + 6) * rv;
+      ctx.globalCompositeOperation = 'destination-in'; ctx.fillStyle = '#000'; ctx.fillRect(0, ry, cw, ch);
+      ctx.globalCompositeOperation = 'lighter'; var g3 = ctx.createLinearGradient(0, ry - 6, 0, ry + 6); g3.addColorStop(0, 'rgba(150,255,255,0)'); g3.addColorStop(.5, 'rgba(200,255,255,.95)'); g3.addColorStop(1, 'rgba(150,255,255,0)');
+      ctx.fillStyle = g3; ctx.fillRect(cw * .15, ry - 6, cw * .7, 12);
+    }
+    ctx.globalCompositeOperation = 'source-over';
+    var fl = Math.random() < .015 ? .55 : 1; cv.style.opacity = String(P.alpha * fl * (gl ? .9 : 1));
+  }
+  function glitchActor(h, ms) { if (h && h.a) h.a.glitchUntil = performance.now() + ms; }
+
   function holoSpawn(i, c) {
     if (calm || !$('fxl') || !CFG || !CFG.cards[c] || !slots[i]) return null;
     holoEnd(HOLO[i]);
-    var e = holoEl(c), p = hpos(i); e.style.transform = tr(p); e._p = p; $('fxl').appendChild(e);
-    var h = { el: e, c: c, i: i, t: 0 }; HOLO[i] = h; holoLife(h, 7000); return h;
+    var a = mkActor(c, 380), e = a.el, p = hpos(i); e.style.transform = tr(p); e._p = p; $('fxl').appendChild(e);
+    var h = { el: e, a: a, c: c, i: i, t: 0 }; HOLO[i] = h; holoLife(h, TM(7000));
+    // the card itself rises at the seat, glows, and the character steps out of it
+    var C = cd(c), em = fxEl('emcard'); if (C.img) em.style.backgroundImage = 'url("' + C.img + '")';
+    em.animate([{ transform: tr({ x: p.x, y: p.y + 7 }, 'scale(.6) rotateY(90deg)'), opacity: 0 }, { transform: tr({ x: p.x, y: p.y + 1 }, 'scale(1) rotateY(0)'), opacity: 1, offset: .35 }, { transform: tr({ x: p.x, y: p.y - 1 }, 'scale(1.05)'), opacity: 1, offset: .65, filter: 'brightness(1.6)' }, { transform: tr({ x: p.x, y: p.y - 3 }, 'scale(1.4)'), opacity: 0, filter: 'brightness(3)' }], { duration: TM(760), easing: 'ease-out', fill: 'both' }); gone(em, TM(820));
+    ring(p, C.color || HCOL.cyan, 3.2, 800, 300); burst({ x: p.x, y: p.y + 4 }, HCOL.cyan, 12, 8, 800, 1.1);
+    e.querySelector('.hl-in').style.animation = 'hl-emerge ' + (.75 * TS) + 's cubic-bezier(.2,.9,.3,1) ' + (.38 * TS) + 's both, hl-float 4s ease-in-out ' + (1.2 * TS) + 's infinite';
+    return h;
   }
   function holoLife(h, ms) { clearTimeout(h.t); h.t = setTimeout(function () { holoEnd(h, true); }, ms); }
   function holoEnd(h, fade) {
     if (!h) return; clearTimeout(h.t); if (HOLO[h.i] === h) delete HOLO[h.i];
-    if (fade && h.el.animate) h.el.animate([{ opacity: 1, filter: 'brightness(1)' }, { opacity: 0, filter: 'brightness(3)' }], { duration: 500, fill: 'forwards' }).onfinish = function () { h.el.remove(); }; else h.el.remove();
+    if (fade && h.el.animate) { holoAct(h, 'die', 500); h.el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: TM(500), fill: 'forwards' }).onfinish = function () { h.el.remove(); }; } else h.el.remove();
   }
-  function holoClear() { Object.keys(HOLO).forEach(function (k) { holoEnd(HOLO[k]); }); var l = $('fxl'); if (l) l.innerHTML = ''; }
-  function glide(el, a, b, ms, ease, extra) {
-    var an = el.animate([{ transform: tr(a, extra && extra[0]) }, { transform: tr(b, extra && extra[1]) }], { duration: ms, easing: ease || 'ease-in-out', fill: 'forwards' });
+  function holoClear() { Object.keys(HOLO).forEach(function (k) { holoEnd(HOLO[k]); }); var l = $('fxl'); if (l) l.innerHTML = ''; ACT = []; }
+  function glideEl(el, a, b, ms, ease2, scaleB) {
+    var an = el.animate([{ transform: tr(a) }, { transform: tr(b, scaleB ? 'scale(' + scaleB + ')' : '') }], { duration: TM(ms), easing: ease2 || 'ease-in-out', fill: 'forwards' });
     el._p = b; return an;
   }
-  function trail(src, a, b, ms, ease) {
+  function ghostTrail(h, a, b, ms) {   // frozen after-images of the figure along the dash
     for (var k = 1; k <= 3; k++) (function (k) {
-      var g = src.cloneNode(true); g.classList.add('ghost'); g.style.opacity = String(.34 - k * .07); $('fxl').appendChild(g);
-      var an = g.animate([{ transform: tr(a) }, { transform: tr(b) }], { duration: ms, delay: k * 45, easing: ease, fill: 'both' });
-      an.onfinish = function () { g.remove(); };
+      var g = document.createElement('div'); g.className = 'holo ghost'; g.style.setProperty('--hc', h.el.style.getPropertyValue('--hc'));
+      var c2 = document.createElement('canvas'); c2.className = 'hl-cv'; c2.width = h.a.cv.width; c2.height = h.a.cv.height; c2.getContext('2d').drawImage(h.a.cv, 0, 0); g.appendChild(c2); g.style.opacity = String(.38 - k * .08); $('fxl').appendChild(g);
+      g.animate([{ transform: tr(a) }, { transform: tr(b) }], { duration: TM(ms), delay: TM(k * 55), easing: 'cubic-bezier(.5,0,.9,.4)', fill: 'both' }).onfinish = function () { g.animate([{ opacity: g.style.opacity }, { opacity: 0 }], { duration: TM(220), fill: 'forwards' }).onfinish = function () { g.remove(); }; };
     })(k);
   }
   function burst(p, color, n, dist, ms, size) {
     for (var k = 0; k < n; k++) {
       var d = fxEl('pt'), a = Math.random() * 6.283, r = dist * (.5 + Math.random() * .6), s = size || 1.3;
       d.style.cssText = 'background:' + color + ';color:' + color + ';width:' + s + 'cqw;height:' + s + 'cqw;margin:' + (-s / 2) + 'cqw 0 0 ' + (-s / 2) + 'cqw';
-      d.animate([{ transform: tr(p), opacity: 1 }, { transform: tr({ x: p.x + Math.cos(a) * r, y: p.y + Math.sin(a) * r }, 'scale(.2)'), opacity: 0 }], { duration: ms || 700, easing: 'ease-out', fill: 'forwards' });
+      d.animate([{ transform: tr(p), opacity: 1 }, { transform: tr({ x: p.x + Math.cos(a) * r, y: p.y + Math.sin(a) * r }, 'scale(.2)'), opacity: 0 }], { duration: TM(ms || 700), easing: 'ease-out', fill: 'forwards' });
       gone(d, (ms || 700) + 60);
     }
   }
@@ -1564,39 +1665,43 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     for (var k = 0; k < n; k++) {
       var d = fxEl('pt'), x = p.x + (Math.random() - .5) * 12, s = 1 + Math.random() * 1.2;
       d.style.cssText = 'background:' + color + ';color:' + color + ';width:' + s + 'cqw;height:' + s + 'cqw;margin:' + (-s / 2) + 'cqw 0 0 ' + (-s / 2) + 'cqw';
-      d.animate([{ transform: tr({ x: x, y: p.y + 4 }), opacity: 0 }, { opacity: 1, offset: .2 }, { transform: tr({ x: x + (Math.random() - .5) * 4, y: p.y - 16 - Math.random() * 6 }), opacity: 0 }], { duration: ms || 1300, delay: k * 70, easing: 'ease-out', fill: 'both' });
+      d.animate([{ transform: tr({ x: x, y: p.y + 4 }), opacity: 0 }, { opacity: 1, offset: .2 }, { transform: tr({ x: x + (Math.random() - .5) * 4, y: p.y - 16 - Math.random() * 6 }), opacity: 0 }], { duration: TM(ms || 1300), delay: TM(k * 70), easing: 'ease-out', fill: 'both' });
       gone(d, (ms || 1300) + k * 70 + 80);
     }
   }
   function ring(p, color, big, ms, delay) {
     var e = fxEl('rg'); e.style.borderColor = color; e.style.boxShadow = '0 0 1.6cqw ' + color + ', inset 0 0 1.2cqw ' + color;
-    e.animate([{ transform: tr(p, 'scale(.2)'), opacity: 1 }, { transform: tr(p, 'scale(' + (big || 3) + ')'), opacity: 0 }], { duration: ms || 700, delay: delay || 0, easing: 'ease-out', fill: 'both' }); gone(e, (ms || 700) + (delay || 0) + 60);
+    e.animate([{ transform: tr(p, 'scale(.2)'), opacity: 1 }, { transform: tr(p, 'scale(' + (big || 3) + ')'), opacity: 0 }], { duration: TM(ms || 700), delay: TM(delay || 0), easing: 'ease-out', fill: 'both' }); gone(e, (ms || 700) + (delay || 0) + 60);
   }
   function slash(p, color) {
     [[-35, 0], [38, 90]].forEach(function (sa) {
       var e = fxEl('sl'); e.style.color = color;
-      e.animate([{ transform: tr(p, 'rotate(' + sa[0] + 'deg) scaleX(0)'), opacity: 1 }, { transform: tr(p, 'rotate(' + sa[0] + 'deg) scaleX(1.1)'), opacity: 1, offset: .35 }, { transform: tr(p, 'rotate(' + sa[0] + 'deg) scaleX(1.2)'), opacity: 0 }], { duration: 520, delay: sa[1], easing: 'ease-out', fill: 'both' }); gone(e, 700);
+      e.animate([{ transform: tr(p, 'rotate(' + sa[0] + 'deg) scaleX(0)'), opacity: 1 }, { transform: tr(p, 'rotate(' + sa[0] + 'deg) scaleX(1.1)'), opacity: 1, offset: .35 }, { transform: tr(p, 'rotate(' + sa[0] + 'deg) scaleX(1.2)'), opacity: 0 }], { duration: TM(520), delay: TM(sa[1]), easing: 'ease-out', fill: 'both' }); gone(e, TM(700));
     });
   }
   function beamBetween(a, b, color, ms, delay) {
     var dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy), ang = Math.atan2(dy, dx) * 180 / Math.PI, e = fxEl('beam');
     e.style.width = len + 'cqw'; e.style.setProperty('--bc', color);
-    e.animate([{ transform: tr(a, 'rotate(' + ang + 'deg) scaleX(0)'), opacity: 1 }, { transform: tr(a, 'rotate(' + ang + 'deg) scaleX(1)'), opacity: 1, offset: .4 }, { transform: tr(a, 'rotate(' + ang + 'deg) scaleX(1)'), opacity: 0 }], { duration: ms || 800, delay: delay || 0, easing: 'ease-out', fill: 'both' }); gone(e, (ms || 800) + (delay || 0) + 60);
+    e.animate([{ transform: tr(a, 'rotate(' + ang + 'deg) scaleX(0)'), opacity: 1 }, { transform: tr(a, 'rotate(' + ang + 'deg) scaleX(1)'), opacity: 1, offset: .4 }, { transform: tr(a, 'rotate(' + ang + 'deg) scaleX(1)'), opacity: 0 }], { duration: TM(ms || 800), delay: TM(delay || 0), easing: 'ease-out', fill: 'both' }); gone(e, (ms || 800) + (delay || 0) + 60);
   }
   function shake(i) {
     var sl = slots[i], t = sl && sl.querySelector('.tag'); if (!t || !t.animate) return;
-    t.animate([{ translate: '0 0', filter: 'none' }, { translate: '-1.4cqw 0', filter: 'brightness(2) drop-shadow(0 0 1cqw #f44)', offset: .15 }, { translate: '1.4cqw 0', offset: .3 }, { translate: '-1cqw 0', offset: .45 }, { translate: '.8cqw 0', offset: .6 }, { translate: '0 0', filter: 'none' }], { duration: 650 });
+    t.animate([{ translate: '0 0', filter: 'none' }, { translate: '-1.4cqw 0', filter: 'brightness(2) drop-shadow(0 0 1cqw #f44)', offset: .15 }, { translate: '1.4cqw 0', offset: .3 }, { translate: '-1cqw 0', offset: .45 }, { translate: '.8cqw 0', offset: .6 }, { translate: '0 0', filter: 'none' }], { duration: TM(650)});
+    var f = HOLO[i]; if (f) holoAct(f, 'hit', 600, { dir: 1 });
   }
-  function stageShake() { if (stage.animate) stage.animate([{ translate: '0 0' }, { translate: '0 .9cqw', offset: .2 }, { translate: '0 -.7cqw', offset: .45 }, { translate: '0 .4cqw', offset: .7 }, { translate: '0 0' }], { duration: 420 }); }
+  function stageShake() { if (stage.animate) stage.animate([{ translate: '0 0' }, { translate: '0 .9cqw', offset: .2 }, { translate: '0 -.7cqw', offset: .45 }, { translate: '0 .4cqw', offset: .7 }, { translate: '0 0' }], { duration: TM(420)}); }
+  /* a card flying between two places: arc, tumble, motion blur ghosts, soft shadow */
   function cardFly(a, b, o) {
-    o = o || {}; var e = fxEl('fcard'), dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1, ar = (o.arc == null ? .25 : o.arc) * len, r0 = o.r0 == null ? -12 : o.r0, r1 = o.r1 == null ? 8 : o.r1;
-    var m = { x: (a.x + b.x) / 2 - dy / len * ar, y: (a.y + b.y) / 2 + dx / len * ar };
-    var an = e.animate([
-      { transform: tr(a, 'rotate(' + r0 + 'deg) scale(.5)'), opacity: 0 },
-      { transform: tr(a, 'rotate(' + r0 + 'deg) scale(.75)'), opacity: 1, offset: .1 },
-      { transform: tr(m, 'rotate(' + ((r0 + r1) / 2 + (o.rot || 0)) + 'deg) scale(1.25)'), opacity: 1, offset: .5 },
-      { transform: tr(b, 'rotate(' + r1 + 'deg) scale(.6)'), opacity: .9 }
-    ], { duration: o.d || 650, delay: o.delay || 0, easing: 'cubic-bezier(.45,.05,.25,1)', fill: 'both' });
+    o = o || {}; var dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1, ar = (o.arc == null ? .25 : o.arc) * len, r0 = o.r0 == null ? -12 : o.r0, r1 = o.r1 == null ? 8 : o.r1;
+    var m = { x: (a.x + b.x) / 2 - dy / len * ar, y: (a.y + b.y) / 2 + dx / len * ar }, ms = o.d || 650;
+    function frames(sc) { return [
+      { transform: tr(a, 'rotate(' + r0 + 'deg) scale(' + (.5 * sc) + ')'), opacity: 0 },
+      { transform: tr(a, 'rotate(' + r0 + 'deg) scale(' + (.75 * sc) + ')'), opacity: 1, offset: .1 },
+      { transform: tr(m, 'rotate(' + ((r0 + r1) / 2 + (o.rot || 0)) + 'deg) scale(' + (1.25 * sc) + ')'), opacity: 1, offset: .5 },
+      { transform: tr(b, 'rotate(' + r1 + 'deg) scale(' + (.62 * sc) + ')'), opacity: .95 }]; }
+    var opts = { duration: TM(ms), delay: TM(o.delay || 0), easing: 'cubic-bezier(.45,.05,.25,1)', fill: 'both' };
+    for (var g = 3; g >= 1; g--) (function (g) { var e = fxEl('fcard ghost'); e.style.opacity = '.2'; var an = e.animate(frames(1), { duration: TM(ms), delay: TM((o.delay || 0) + g * 38), easing: opts.easing, fill: 'both' }); an.onfinish = function () { e.remove(); }; })(g);
+    var e = fxEl('fcard'), an = e.animate(frames(1), opts);
     an.onfinish = function () { e.remove(); if (o.done) o.done(); };
   }
   function impact(p, kind, T) {
@@ -1608,6 +1713,10 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   }
   function holoFor(i, c) { var h = HOLO[i]; return (h && h.c === c) ? h : holoSpawn(i, c); }
   function uniqRel(arr, P) { var o = [], seen = {}; (arr || []).forEach(function (x) { if (x !== P && !seen[x]) { seen[x] = 1; o.push(rel(x)); } }); return o; }
+  function sgn(a, b) { return b.x >= a.x ? 1 : -1; }
+  function walk(h, a, b, ms, then) {   // the character really walks: lean, bob, stride squash while the body travels
+    var d = sgn(a, b); holoAct(h, 'run', ms, { dir: d }); var an = glideEl(h.el, a, b, ms, 'cubic-bezier(.45,0,.35,1)'); an.onfinish = function () { if (then) then(); }; return an;
+  }
 
   function holoPower(d) {
     if (calm) return;
@@ -1615,113 +1724,124 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     var steps = d.steps || [], st = null;
     steps.forEach(function (s) { if (!st && (s.T || []).some(function (x) { return x !== d.P; })) st = s; });
     st = st || steps[0] || { op: '' };
-    var cfg = HOP[st.op] || HOP._, tg = uniqRel(st.T, d.P), a = h.el._p, delay = 0, el = h.el;
-    if (d.cp != null) {   // the forger: the hologram splits into two copies and merges before acting
-      delay = 900;
-      [-1, 1].forEach(function (sg) { var g = el.cloneNode(true); g.classList.add('ghost'); g.style.opacity = '.6'; $('fxl').appendChild(g);
-        g.animate([{ transform: tr(a) }, { transform: tr({ x: a.x + sg * 9, y: a.y }), offset: .45 }, { transform: tr(a) }], { duration: 800, easing: 'ease-in-out', fill: 'both' }).onfinish = function () { g.remove(); }; });
-      burst(a, HCOL.cyan, 10, 8, 800, 1.2);
+    var cfg = HOP[st.op] || HOP._, tg = uniqRel(st.T, d.P), home = h.el._p, el = h.el, delay = 500;
+    if (d.cp != null) {   // the forger: a second self splits off, writes, and merges back
+      delay = 1400;
+      var twin = mkActor(d.c); twin.el.style.transform = tr(home); twin.el.classList.add('twin'); $('fxl').appendChild(twin.el); twin.born = performance.now() - 3000;
+      twin.el.animate([{ transform: tr(home), opacity: 0 }, { transform: tr({ x: home.x + 10, y: home.y }), opacity: .75, offset: .4 }, { transform: tr({ x: home.x + 10, y: home.y }), opacity: .75, offset: .7 }, { transform: tr(home), opacity: 0 }], { duration: TM(1300), easing: 'ease-in-out', fill: 'both' }).onfinish = function () { twin.el.remove(); };
+      burst(home, HCOL.cyan, 10, 8, 800, 1.2); holoAct(h, 'cast', 1200);
     }
     var mode = cfg.mode; if ((mode === 'dash' || mode === 'sneak' || mode === 'swap' || mode === 'scan') && !tg.length) mode = 'aura';
+    var hgc = function () { return (getComputedStyle(el).getPropertyValue('--hg') || HCOL.cyan).trim(); };
     setTimeout(function () {
       if (!el.isConnected) return;
-      var hg = getComputedStyle(el).getPropertyValue('--hg') || HCOL.cyan;
       switch (mode) {
         case 'dash':
           tg.forEach(function (T, k) {
-            var src = k === 0 ? el : el.cloneNode(true), b = hpos(T, .8);
-            if (k) { src.style.transform = tr(a); $('fxl').appendChild(src); }
-            trail(src, a, b, 520, 'cubic-bezier(.6,0,.9,.4)');
-            var an = src.animate([{ transform: tr(a, 'scale(1)') }, { transform: tr(a, 'scale(1.15)'), offset: .18 }, { transform: tr(b, 'scale(1.25)') }], { duration: 520, easing: 'cubic-bezier(.6,0,.9,.4)', fill: 'forwards' });
-            if (k === 0) el._p = b;
-            an.onfinish = function () { impact(b, cfg.imp, T); if (k) setTimeout(function () { src.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 400, fill: 'forwards' }).onfinish = function () { src.remove(); }; }, 700); };
+            var who = h;
+            if (k) { var a2 = mkActor(d.c); a2.born = performance.now() - 3000; a2.el.style.transform = tr(home); $('fxl').appendChild(a2.el); a2.el._p = home; who = { el: a2.el, a: a2, i: -1 - k }; }
+            var b = hpos(T, .5), dir = sgn(home, b);
+            holoAct(who, 'windup', 220, { dir: dir });
+            setTimeout(function () {
+              ghostTrail(who, home, b, 480);
+              walk(who, home, b, 480, function () {
+                impact(b, cfg.imp, T); holoAct(who, 'strike', 420, { dir: dir });
+                setTimeout(function () { walk(who, b, home, 520, function () { if (k) who.el.remove(); }); }, TM(900));
+              });
+            }, TM(230));
           });
-          holoLife(h, 520 + 1700); break;
+          holoLife(h, TM(3700)); break;
         case 'sneak':
           tg.forEach(function (T, k) {
-            var src = k === 0 ? el : el.cloneNode(true), b = hpos(T, .8); if (k) { src.style.transform = tr(a); $('fxl').appendChild(src); }
-            src.style.opacity = '.35';
-            var an = src.animate([{ transform: tr(a) }, { transform: tr({ x: (a.x + b.x) / 2 + 6, y: (a.y + b.y) / 2 - 4 }), offset: .5 }, { transform: tr(b) }], { duration: 850, easing: 'ease-in-out', fill: 'forwards' });
-            if (k === 0) el._p = b;
-            an.onfinish = function () { src.style.opacity = '1'; burst(b, HCOL.green, 8, 6, 600, 1.1); shake(T); cardFly(hpos(T, 1), hpos(P, 1), { d: 650, arc: .3 }); if (k) setTimeout(function () { src.remove(); }, 800); };
+            var who = h; if (k) { var a2 = mkActor(d.c); a2.born = performance.now() - 3000; a2.el.style.transform = tr(home); $('fxl').appendChild(a2.el); a2.el._p = home; who = { el: a2.el, a: a2, i: -1 - k }; }
+            var b = hpos(T, .5), dir = sgn(home, b);
+            holoAct(who, 'sneak', 1000, { dir: dir });
+            glideEl(who.el, home, b, 1000, 'ease-in-out').onfinish = function () {
+              holoAct(who, 'grab', 450, { dir: dir }); burst(b, HCOL.green, 8, 6, 600, 1.1); shake(T);
+              var from = handPt(T, 'mid'), to = handPt(P, 'mid');
+              cardFly(from, to, { d: 700, arc: .3, done: function () { handPulse(P, to); } });
+              setTimeout(function () { holoAct(who, 'sneak', 900, { dir: -dir }); glideEl(who.el, b, home, 900, 'ease-in-out').onfinish = function () { if (k) who.el.remove(); }; }, TM(520));
+            };
           });
-          holoLife(h, 850 + 1800); break;
+          holoLife(h, TM(3600)); break;
         case 'swap':
-          tg.forEach(function (T, k) {
-            var sa = hpos(P, 1), sb = hpos(T, 1);
-            cardFly(sa, sb, { d: 800, arc: .35, rot: 200, delay: 120 }); cardFly(sb, sa, { d: 800, arc: .35, rot: -200, delay: 120, r0: 10, r1: -8 });
+          tg.forEach(function (T) {
+            var sa = handPt(P, 'mid'), sb = handPt(T, 'mid');
+            cardFly(sa, sb, { d: 900, arc: .32, rot: 200, delay: TM(150), done: function () { handPulse(T, sb); } });
+            cardFly(sb, sa, { d: 900, arc: .32, rot: -200, delay: TM(150), r0: 10, r1: -8, done: function () { handPulse(P, sa); } });
             var mid = { x: (sa.x + sb.x) / 2, y: (sa.y + sb.y) / 2 };
-            setTimeout(function () { ring(mid, HCOL.cyan, 3.4, 700); burst(mid, HCOL.cyan, 10, 7, 700, 1.2); }, 560);
-            setTimeout(function () { shake(T); }, 920);
+            setTimeout(function () { ring(mid, HCOL.cyan, 3.4, 700); burst(mid, HCOL.cyan, 12, 8, 700, 1.2); }, TM(640));
+            setTimeout(function () { shake(T); }, TM(1000));
           });
-          el.querySelector('.hl-in').animate([{ transform: 'rotateY(0)' }, { transform: 'rotateY(720deg)' }], { duration: 1000, easing: 'ease-in-out' });
-          holoLife(h, 2400); break;
+          holoAct(h, 'spin', 1100, { turns: 2 }); holoLife(h, TM(2600)); break;
         case 'scan':
-          tg.forEach(function (T) { var b = hpos(T, .85); beamBetween(a, b, HCOL.cyan, 1100); setTimeout(function () { ring(b, HCOL.cyan, 2.6, 800); ring(b, HCOL.cyan, 2, 800, 220); }, 360); });
-          holoLife(h, 2300); break;
+          var eye = { x: home.x, y: home.y - 6 };
+          holoAct(h, 'cast', 1200);
+          tg.forEach(function (T) { var b = hpos(T, .85); beamBetween(eye, b, HCOL.cyan, 1200, 150); setTimeout(function () { ring(b, HCOL.cyan, 2.6, 800); ring(b, HCOL.cyan, 2, 800, 220); }, TM(500)); });
+          holoLife(h, TM(2500)); break;
         case 'shield':
-          var dm = fxEl('dome'); dm.style.setProperty('--bc', hg.trim() || HCOL.cyan);
-          dm.animate([{ transform: tr(a, 'scale(.2)'), opacity: 0 }, { transform: tr(a, 'scale(1)'), opacity: .95, offset: .3 }, { transform: tr(a, 'scale(1.06)'), opacity: .6, offset: .6 }, { transform: tr(a, 'scale(1)'), opacity: .85, offset: .8 }, { transform: tr(a, 'scale(1.1)'), opacity: 0 }], { duration: 2200, fill: 'both' }); gone(dm, 2300);
-          ring(a, HCOL.gold, 3.5, 900); holoLife(h, 2400); break;
+          var dm = fxEl('dome'); dm.style.setProperty('--bc', hgc() || HCOL.cyan);
+          dm.animate([{ transform: tr(home, 'scale(.2)'), opacity: 0 }, { transform: tr(home, 'scale(1)'), opacity: .95, offset: .3 }, { transform: tr(home, 'scale(1.06)'), opacity: .6, offset: .6 }, { transform: tr(home, 'scale(1)'), opacity: .85, offset: .8 }, { transform: tr(home, 'scale(1.1)'), opacity: 0 }], { duration: TM(2200), fill: 'both' }); gone(dm, TM(2300));
+          holoAct(h, 'block', 2000, { trem: 0 }); ring(home, HCOL.gold, 3.5, 900); holoLife(h, TM(2500)); break;
         case 'crown':
           var pl = fxEl('pillar');
-          pl.animate([{ transform: tr(a, 'scaleY(0)'), opacity: 1 }, { transform: tr(a, 'scaleY(1)'), opacity: .95, offset: .3 }, { transform: tr(a, 'scaleY(1)'), opacity: 0 }], { duration: 1600, easing: 'ease-out', fill: 'both' }); gone(pl, 1700);
-          ring(a, HCOL.gold, 4, 1000); ring(a, HCOL.gold, 3, 1000, 250); burst(a, HCOL.gold, 18, 14, 1100, 1.6);
-          el.querySelector('.hl-in').animate([{ transform: 'scale(1)' }, { transform: 'scale(1.28)', offset: .35 }, { transform: 'scale(1)' }], { duration: 1200, easing: 'ease-in-out' });
-          holoLife(h, 2400); break;
+          pl.animate([{ transform: tr(home, 'scaleY(0)'), opacity: 1 }, { transform: tr(home, 'scaleY(1)'), opacity: .95, offset: .3 }, { transform: tr(home, 'scaleY(1)'), opacity: 0 }], { duration: TM(1600), easing: 'ease-out', fill: 'both' }); gone(pl, TM(1700));
+          ring(home, HCOL.gold, 4, 1000); ring(home, HCOL.gold, 3, 1000, 250); burst(home, HCOL.gold, 18, 14, 1100, 1.6);
+          holoAct(h, 'crown', 1400); holoLife(h, TM(2600)); break;
         case 'pile':
           var c0 = { x: 0, y: 4 };
           cardFly(hpos(P, 1), c0, { d: 560, arc: .2 });
-          el.animate([{ transform: tr(a) }, { transform: tr({ x: c0.x * .6 + a.x * .4, y: c0.y * .6 + a.y * .4 }), offset: .45 }, { transform: tr(a) }], { duration: 1200, easing: 'ease-in-out' });
-          setTimeout(function () { ring(c0, HCOL.gold, 2.6, 700); burst(c0, HCOL.gold, 8, 7, 700, 1.1); cardFly(c0, hpos(P, 1), { d: 600, arc: -.2 }); }, 620);
-          holoLife(h, 2400); break;
+          walk(h, home, { x: c0.x * .55 + home.x * .45, y: c0.y * .55 + home.y * .45 }, 600, function () {
+            ring(c0, HCOL.gold, 2.6, 700); burst(c0, HCOL.gold, 8, 7, 700, 1.1); cardFly(c0, handPt(P, 'mid'), { d: 600, arc: -.2, done: function () { handPulse(P, handPt(P, 'mid')); } });
+            walk(h, h.el._p, home, 600);
+          });
+          holoLife(h, TM(2800)); break;
         case 'spin':
-          el.querySelector('.hl-in').animate([{ transform: 'rotateY(0)' }, { transform: 'rotateY(720deg)' }], { duration: 1100, easing: 'ease-in-out' });
-          for (var q = 0; q < 4; q++) cardFly(PLAY, DRAW, { d: 700, delay: q * 130, arc: .5, rot: 300, r0: q * 20, r1: -q * 10 });
-          ring(a, HCOL.green, 3.2, 900); holoLife(h, 2300); break;
-        default:   // aura: the card works on itself or sends something good to others
-          ring(a, hg.trim() || HCOL.cyan, 3, 900); ring(a, HCOL.gold, 2.2, 900, 250); rise(a, HCOL.gold, 12, 1300);
-          el.querySelector('.hl-in').animate([{ transform: 'scale(1)' }, { transform: 'scale(1.18)', offset: .3 }, { transform: 'scale(1)' }], { duration: 900, easing: 'ease-in-out' });
+          holoAct(h, 'spin', 1200, { turns: 2 });
+          for (var q = 0; q < 4; q++) cardFly(PLAY, DRAW, { d: 700, delay: TM(q * 130), arc: .5, rot: 300, r0: q * 20, r1: -q * 10 });
+          ring(home, HCOL.green, 3.2, 900); holoLife(h, TM(2500)); break;
+        default:   // aura: gives strength to itself, or sends a gift of light to the others
+          ring(home, hgc() || HCOL.cyan, 3, 900); ring(home, HCOL.gold, 2.2, 900, 250); rise(home, HCOL.gold, 12, 1300);
+          holoAct(h, 'cast', 1100);
           tg.forEach(function (T) {
             var b = hpos(T, .85), o = fxEl('pt'); o.style.cssText = 'background:' + HCOL.gold + ';color:' + HCOL.gold + ';width:2.4cqw;height:2.4cqw;margin:-1.2cqw 0 0 -1.2cqw';
-            o.animate([{ transform: tr(a) }, { transform: tr({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 - 8 }) + ' scale(1.5)', offset: .5 }, { transform: tr(b) }], { duration: 800, delay: 300, easing: 'ease-in-out', fill: 'both' }).onfinish = function () { o.remove(); burst(b, HCOL.gold, 8, 7, 700, 1.2); };
+            o.animate([{ transform: tr(home) }, { transform: tr({ x: (home.x + b.x) / 2, y: (home.y + b.y) / 2 - 8 }) + ' scale(1.5)', offset: .5 }, { transform: tr(b) }], { duration: TM(800), delay: TM(300), easing: 'ease-in-out', fill: 'both' }).onfinish = function () { o.remove(); burst(b, HCOL.gold, 8, 7, 700, 1.2); };
           });
-          holoLife(h, 2300);
+          holoLife(h, TM(2400));
       }
-    }, delay);
+    }, TM(delay));
   }
 
   function holoDefend(kind, d) {
     if (calm) return;
     var D = rel(d.D), A = rel(d.A), h = holoFor(D, d.c); if (!h) return; clearTimeout(h.t);
-    var el = h.el, a = el._p, b = hpos(A, .6), foe = HOLO[A], toward = { x: a.x + (b.x - a.x) * .18, y: a.y + (b.y - a.y) * .18 };
+    var el = h.el, a0 = el._p, b = hpos(A, .5), foe = HOLO[A], toward = { x: a0.x + (b.x - a0.x) * .2, y: a0.y + (b.y - a0.y) * .2 }, dir = sgn(a0, b);
     var hg = (getComputedStyle(el).getPropertyValue('--hg') || HCOL.cyan).trim();
-    var recoil = function () { if (!foe) return; var fa = foe.el._p; foe.el.classList.add('glitch'); foe.el.animate([{ transform: tr(fa) }, { transform: tr({ x: fa.x + (fa.x - b.x) * .35, y: fa.y + (fa.y - b.y) * .35 }), offset: .3 }, { transform: tr(fa) }], { duration: 700, easing: 'ease-out' }); holoLife(foe, 1500); };
-    el.animate([{ transform: tr(a) }, { transform: tr(toward, 'scale(1.15)') }], { duration: 300, easing: 'ease-out', fill: 'forwards' }); el._p = toward;
+    var recoil = function () { if (!foe) return; glitchActor(foe, 900); holoAct(foe, 'hit', 700, { dir: sgn(b, a0) }); var fa = foe.el._p; foe.el.animate([{ transform: tr(fa) }, { transform: tr({ x: fa.x + (fa.x - b.x) * .35, y: fa.y + (fa.y - b.y) * .35 }), offset: .3 }, { transform: tr(fa) }], { duration: TM(700), easing: 'ease-out' }); holoLife(foe, TM(1600)); };
     var dm = function (col) {
       var e = fxEl('dome'); e.style.setProperty('--bc', col);
-      e.animate([{ transform: tr(toward, 'scale(.2)'), opacity: 0 }, { transform: tr(toward, 'scale(1)'), opacity: 1, offset: .25 }, { transform: tr(toward, 'scale(.96)'), opacity: .7, offset: .55 }, { transform: tr(toward, 'scale(1.04)'), opacity: .9, offset: .75 }, { transform: tr(toward, 'scale(1.1)'), opacity: 0 }], { duration: 1700, fill: 'both' }); gone(e, 1800);
+      e.animate([{ transform: tr(toward, 'scale(.2)'), opacity: 0 }, { transform: tr(toward, 'scale(1)'), opacity: 1, offset: .25 }, { transform: tr(toward, 'scale(.96)'), opacity: .7, offset: .55 }, { transform: tr(toward, 'scale(1.04)'), opacity: .9, offset: .75 }, { transform: tr(toward, 'scale(1.1)'), opacity: 0 }], { duration: TM(1700), fill: 'both' }); gone(e, TM(1800));
     };
+    if (kind !== 'judge') walk(h, a0, toward, 360, function () { holoAct(h, 'block', 1800, { trem: 1 }); });
     switch (kind) {
       case 'reflect':
-        dm(hg);
-        setTimeout(function () { beamBetween(toward, b, '#ffffff', 700); }, 350);
-        setTimeout(function () { ring(b, HCOL.cyan, 3.2, 700); burst(b, '#fff', 10, 8, 700, 1.2); shake(A); recoil(); try { SFX.thud(); } catch (e) {} }, 800); break;
+        setTimeout(function () { dm(hg); }, TM(300));
+        setTimeout(function () { beamBetween({ x: toward.x, y: toward.y - 5 }, b, '#ffffff', 700); }, TM(700));
+        setTimeout(function () { ring(b, HCOL.cyan, 3.2, 700); burst(b, '#fff', 10, 8, 700, 1.2); shake(A); recoil(); try { SFX.thud(); } catch (e) {} }, TM(1150)); break;
       case 'elder':
-        ring(toward, HCOL.gold, 4.4, 1100); ring(toward, HCOL.gold, 3, 1100, 280); ring(toward, HCOL.gold, 2, 1100, 560);
-        el.querySelector('.hl-in').animate([{ transform: 'scale(1)' }, { transform: 'scale(1.22)', offset: .3 }, { transform: 'scale(1)' }], { duration: 1000 });
-        setTimeout(function () { recoil(); shake(A); }, 500); break;
+        setTimeout(function () { ring(toward, HCOL.gold, 4.4, 1100); ring(toward, HCOL.gold, 3, 1100, 280); ring(toward, HCOL.gold, 2, 1100, 560); holoAct(h, 'cast', 1100); }, TM(350));
+        setTimeout(function () { recoil(); shake(A); }, TM(900)); break;
       case 'judge':
-        el.animate([{ transform: tr({ x: toward.x, y: toward.y - 26 }, 'scale(1.3)'), opacity: 0 }, { transform: tr(toward, 'scale(1.2)'), opacity: 1, offset: .55 }, { transform: tr(toward, 'scale(1.15)') }], { duration: 480, easing: 'cubic-bezier(.6,0,1,.6)', fill: 'forwards' });
-        setTimeout(function () { ring(toward, HCOL.gold, 5, 900); ring(toward, '#fff', 3, 700); burst(toward, HCOL.gold, 14, 12, 800, 1.5); stageShake(); try { SFX.thud(); } catch (e) {} if (foe) { burst(foe.el._p, HCOL.red, 12, 8, 800, 1.3); holoEnd(foe); shake(A); } }, 460); break;
+        el.animate([{ transform: tr({ x: toward.x, y: toward.y - 28 }, 'scale(1.3)'), opacity: 0 }, { transform: tr(toward, 'scale(1.2)'), opacity: 1, offset: .6 }, { transform: tr(toward, 'scale(1.1)') }], { duration: TM(500), easing: 'cubic-bezier(.6,0,1,.6)', fill: 'forwards' }); el._p = toward;
+        setTimeout(function () { holoAct(h, 'strike', 600, { dir: dir }); ring(toward, HCOL.gold, 5, 900); ring(toward, '#fff', 3, 700); burst(toward, HCOL.gold, 14, 12, 800, 1.5); stageShake(); try { SFX.thud(); } catch (e) {} if (foe) { burst(foe.el._p, HCOL.red, 12, 8, 800, 1.3); holoEnd(foe); shake(A); } }, TM(480)); break;
       default:   // block (guard): a wall of light between the two
-        dm(hg);
+        setTimeout(function () { dm(hg); }, TM(300));
         var mid = { x: (toward.x + b.x) / 2, y: (toward.y + b.y) / 2 }, ang = Math.atan2(b.y - toward.y, b.x - toward.x) * 180 / Math.PI;
         var w = fxEl('wall'); w.style.setProperty('--bc', hg);
-        w.animate([{ transform: tr(mid, 'rotate(' + ang + 'deg) scaleY(0)'), opacity: 0 }, { transform: tr(mid, 'rotate(' + ang + 'deg) scaleY(1)'), opacity: 1, offset: .3 }, { transform: tr(mid, 'rotate(' + ang + 'deg) scaleY(1)'), opacity: 0 }], { duration: 1500, fill: 'both' }); gone(w, 1600);
-        setTimeout(function () { ring(mid, hg, 2.6, 700); recoil(); }, 600);
+        w.animate([{ transform: tr(mid, 'rotate(' + ang + 'deg) scaleY(0)'), opacity: 0 }, { transform: tr(mid, 'rotate(' + ang + 'deg) scaleY(1)'), opacity: 1, offset: .3 }, { transform: tr(mid, 'rotate(' + ang + 'deg) scaleY(1)'), opacity: 0 }], { duration: TM(1500), delay: TM(300), fill: 'both' }); gone(w, TM(1900));
+        setTimeout(function () { ring(mid, hg, 2.6, 700); recoil(); }, TM(900));
     }
-    holoLife(h, 2300);
+    holoLife(h, TM(3000));
   }
 
   /* speech bubbles above a seat, and full-screen stunts */
@@ -1828,7 +1948,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     return '';
   }
   var showT = 0;
-  function fxd() { var a = arguments; setTimeout(function () { fx.apply(null, a); }, calm ? 0 : 1100); }   /* let the hologram act before the big stunt covers the table */
+  function fxd() { var a = arguments; setTimeout(function () { fx.apply(null, a); }, calm ? 0 : TM(750)); }   /* let the hologram act before the big stunt covers the table */
   function playEv(d) {
     var r;
     switch (d.k) {
@@ -1856,7 +1976,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
         fx('liar', 'عقوبة الكدب: ' + cd(d.c).pen, 'كدّاب!', 2400); SFX.liar(); break;
       case 'power':
         holoPower(d);
-        (function (dd) { setTimeout(function () { fx('fatwa', (dd.cp != null ? 'نسخ قدرة ' + cd(dd.cp).name + ': ' : '') + stepsLine(dd, true), cd(dd.c).name + '!', 2000, dd.c); }, calm || !HOLO[rel(dd.P)] ? 0 : 1100); })(d); SFX.fatwa(); buzz([80, 30, 80]);
+        (function (dd) { setTimeout(function () { fx('fatwa', (dd.cp != null ? 'نسخ قدرة ' + cd(dd.cp).name + ': ' : '') + stepsLine(dd, true), cd(dd.c).name + '!', 2000, dd.c); }, calm || !HOLO[rel(dd.P)] ? 0 : ((dd.steps || []).some(function (x) { return (x.T || []).some(function (y) { return y !== dd.P; }); }) ? TM(1100) : 1100)); })(d); SFX.fatwa(); buzz([80, 30, 80]);
         break;
       case 'reflect':
         holoDefend('reflect', d);
@@ -2067,7 +2187,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     var g = m.g, n = R.roster.length, rr, a;
     if (!g || !g.dealt) { S.dealt = false; renderRoom(); return; }
     S.dealt = true;
-    CFG = g.cfg; DECIDE_MS = CFG.set.decideMs; PICK_MS = CFG.set.pickMs; buildDecl();
+    CFG = g.cfg; holoPreload(); DECIDE_MS = CFG.set.decideMs; PICK_MS = CFG.set.pickMs; buildDecl();
     if (CFG.v && CFG.v !== cfgV) loadConfig();
     S.inf = []; S.out = []; S.hands = []; S.imm = [];
     for (rr = 0; rr < n; rr++) {

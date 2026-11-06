@@ -200,3 +200,6 @@ npm start          # http://localhost:3000
 ## Card animations and holograms (v46)
 - Drawing, playing and swapping cards animate as flying cards (`cardFly`).
 - When a card is played, a hologram of its character appears at the player's seat (`holoSpawn`). Attack cards send it to the chosen target (dash, sneak, swap, scan...), self cards show an aura/shield/crown, defence cards make it stand and defend (shield, wall, gavel, shockwave). A lie shatters it. Animation depends on the power (`HOP` table) and uses the card colour. Disabled under prefers-reduced-motion.
+
+### v47: living characters
+`public/img/holo/*.webp` are cut-outs of each card's character (made once with the ISNet segmentation model from the card art; custom admin images fall back to a crop). Each hologram is a canvas actor (`mkActor`): strip-warped body with breathing, sway, walk bob, lean, strike, hit, spin, block, cast poses, projector tint, scan lines, materialise-from-feet and glitch. Drawn and swapped cards fly to the real cards in your hand (`handPt`).
