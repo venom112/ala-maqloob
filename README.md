@@ -196,3 +196,7 @@ npm start          # http://localhost:3000
 - Target buttons show each player's coins and cards.
 - Card sounds are data (`DEFAULT_SOUNDS` in content.js, per power). The admin panel (Cards → a card → "صوت الكارت") edits, previews, saves and resets them (setting `sounds`).
 - Match record: table `user_stats`, counted at game over for human-vs-human rooms only (not practice with bots). Message `pstats`.
+
+## Card animations and holograms (v46)
+- Drawing, playing and swapping cards animate as flying cards (`cardFly`).
+- When a card is played, a hologram of its character appears at the player's seat (`holoSpawn`). Attack cards send it to the chosen target (dash, sneak, swap, scan...), self cards show an aura/shield/crown, defence cards make it stand and defend (shield, wall, gavel, shockwave). A lie shatters it. Animation depends on the power (`HOP` table) and uses the card colour. Disabled under prefers-reduced-motion.

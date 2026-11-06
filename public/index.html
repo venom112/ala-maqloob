@@ -455,6 +455,46 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .pstgrid div { border: 1px solid var(--brass-dim); border-radius: 12px; padding: 10px 4px; display: grid; gap: 2px; }
 .pstgrid b { font-family: var(--font-display); font-size: 28px; color: var(--brass); }
 .pstgrid span { font-size: 12px; color: var(--mute); }
+/* ---------- holograms and card flights ---------- */
+.fxl { position: absolute; inset: 0; pointer-events: none; z-index: 8; }
+.fxl > * { position: absolute; left: 50%; top: 50%; }
+.holo { width: 18cqw; margin: -11cqw 0 0 -9cqw; --hg: color-mix(in srgb, var(--hc, #66ccff) 40%, #8ff); filter: drop-shadow(0 0 1.4cqw var(--hg)); }
+.hl-in { position: relative; animation: hl-in .6s cubic-bezier(.2, .9, .3, 1) both, hl-float 3.2s ease-in-out .6s infinite; transform-origin: 50% 100%; }
+.hl-body { position: relative; isolation: isolate; height: 16cqw; animation: hl-flick 2.6s steps(1) infinite; }
+.hl-fig { position: absolute; inset: 0; background-repeat: no-repeat; background-size: 150% auto; background-position: 50% 34%;
+  filter: saturate(.5) contrast(1.3) brightness(1.2);
+  -webkit-mask-image: radial-gradient(ellipse 68% 78% at 50% 44%, #000 50%, transparent 100%); mask-image: radial-gradient(ellipse 68% 78% at 50% 44%, #000 50%, transparent 100%); }
+.hl-fig.gl { display: grid; place-items: center; font-size: 12cqw; color: var(--hg); background: none; filter: none; }
+.hl-body::before { content: ''; position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, var(--hg), color-mix(in srgb, var(--hg) 40%, transparent)); mix-blend-mode: color; opacity: .95; }
+.hl-body::after { content: ''; position: absolute; inset: 0; z-index: 2;
+  background: repeating-linear-gradient(0deg, rgba(255,255,255,.2) 0 .25cqw, transparent .25cqw .8cqw), linear-gradient(180deg, transparent 0 40%, rgba(255,255,255,.28) 50%, transparent 60% 100%);
+  background-size: 100% .8cqw, 100% 300%; animation: hl-scan 2.2s linear infinite;
+  -webkit-mask-image: radial-gradient(ellipse 68% 78% at 50% 44%, #000 50%, transparent 100%); mask-image: radial-gradient(ellipse 68% 78% at 50% 44%, #000 50%, transparent 100%); }
+.hl-base { position: absolute; left: 6%; right: 6%; bottom: -1.2cqw; height: 4.2cqw; border-radius: 50%;
+  background: radial-gradient(ellipse, color-mix(in srgb, var(--hg) 90%, #fff) 0%, transparent 70%); }
+.hl-base::before { content: ''; position: absolute; inset: 0; border-radius: 50%; border: .35cqw solid var(--hg); animation: hl-ring 2s ease-out infinite; }
+.hl-beam { position: absolute; left: 8%; right: 8%; bottom: .6cqw; height: 17cqw; opacity: .45; clip-path: polygon(18% 0, 82% 0, 100% 100%, 0 100%);
+  background: linear-gradient(to top, var(--hg), transparent); animation: hl-flick 1.7s steps(1) infinite; }
+.hl-name { position: absolute; left: 50%; bottom: -5.2cqw; translate: -50% 0; white-space: nowrap; font-size: clamp(9px, 2.5cqw, 16px); font-weight: 700; color: var(--hg); text-shadow: 0 0 .8cqw var(--hg), 0 0 .3cqw #000; letter-spacing: .03em; }
+.holo.glitch .hl-body { animation: hl-glitch .3s steps(2) 5; }
+.holo.ghost { filter: blur(.25cqw) drop-shadow(0 0 1cqw var(--hg)); }
+.holo.ghost .hl-in { animation: none; }
+.holo.ghost .hl-name, .holo.ghost .hl-base, .holo.ghost .hl-beam { display: none; }
+@keyframes hl-in { 0% { opacity: 0; transform: scaleY(.05) scaleX(1.3); filter: brightness(4); } 55% { opacity: 1; transform: scaleY(1.1) scaleX(.96); } 100% { opacity: 1; transform: none; filter: none; } }
+@keyframes hl-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -.9cqw; } }
+@keyframes hl-flick { 0%, 100% { opacity: .95; } 6% { opacity: .6; } 8% { opacity: 1; } 41% { opacity: .85; } 43% { opacity: .5; } 45% { opacity: 1; } 78% { opacity: .8; } }
+@keyframes hl-scan { to { background-position: 0 .8cqw, 0 -300%; } }
+@keyframes hl-ring { 0% { transform: scale(.4); opacity: .9; } 100% { transform: scale(1.6); opacity: 0; } }
+@keyframes hl-glitch { 0% { clip-path: inset(10% 0 60% 0); translate: -1.5cqw 0; filter: hue-rotate(60deg); } 50% { clip-path: inset(55% 0 12% 0); translate: 1.5cqw 0; filter: hue-rotate(-60deg); } 100% { clip-path: none; translate: 0 0; } }
+.fcard { width: 7cqw; height: 9.8cqw; margin: -4.9cqw 0 0 -3.5cqw; border-radius: 1cqw; border: .2cqw solid rgba(200,162,75,.7); background: var(--back) center / cover no-repeat #0b0b0c; box-shadow: 0 .8cqw 1.6cqw rgba(0,0,0,.7), 0 0 1.4cqw rgba(255,210,120,.35); }
+.pt { border-radius: 50%; box-shadow: 0 0 .9cqw currentColor; }
+.rg { width: 10cqw; height: 10cqw; margin: -5cqw 0 0 -5cqw; border: .5cqw solid; border-radius: 50%; }
+.sl { width: 18cqw; height: .7cqw; margin: -.35cqw 0 0 -9cqw; background: linear-gradient(90deg, transparent, #fff, transparent); box-shadow: 0 0 1.2cqw currentColor; }
+.beam { height: 1.1cqw; margin-top: -.55cqw; transform-origin: 0 50%; border-radius: 1cqw; background: linear-gradient(90deg, transparent, #fff 30%, var(--bc, #7ff)); box-shadow: 0 0 1.6cqw var(--bc, #7ff); }
+.dome { width: 22cqw; height: 22cqw; margin: -13cqw 0 0 -11cqw; border-radius: 50%; border: .5cqw solid var(--bc, #7ff); background: radial-gradient(circle, transparent 55%, color-mix(in srgb, var(--bc, #7ff) 45%, transparent) 100%); box-shadow: 0 0 2.4cqw var(--bc, #7ff), inset 0 0 2.4cqw var(--bc, #7ff); }
+.wall { width: 1.4cqw; height: 22cqw; margin: -11cqw 0 0 -.7cqw; border-radius: 1cqw; background: linear-gradient(180deg, transparent, var(--bc, #7ff), transparent); box-shadow: 0 0 2cqw var(--bc, #7ff); }
+.pillar { width: 7cqw; height: 46cqw; margin: -40cqw 0 0 -3.5cqw; background: linear-gradient(to top, rgba(255,214,102,.9), rgba(255,214,102,0)); clip-path: polygon(20% 0, 80% 0, 100% 100%, 0 100%); transform-origin: 50% 100%; }
+@media (prefers-reduced-motion: reduce) { .fxl { display: none; } }
 .flypip { position: absolute; left: 50%; top: 50%; width: 5cqw; height: 5cqw; margin: -2.5cqw 0 0 -2.5cqw; background: var(--coin1) center / cover; filter: drop-shadow(0 0 1.6cqw rgba(200,162,75,.95)); z-index: 7; pointer-events: none; }
 .cardimg { display: block; margin: 0 auto 12px; width: min(48vw, 200px); aspect-ratio: 864 / 1232; object-fit: cover; border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.8), 0 0 0 3px var(--brass); }
 .cardimg.ph { background: linear-gradient(170deg, #f3ecd8, #ddd2b6); color: #17130b; display: flex; flex-direction: column; align-items: center; justify-content: center; direction: ltr; }
@@ -672,6 +712,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
         <img class="logo feather" id="tableLogo" alt="شعار لعبة ع المقلوب" src="/img/logo.jpg" data-img="logo">
       </div>
       <div class="bank" id="bank" aria-hidden="true"></div>
+      <div class="fxl" id="fxl" aria-hidden="true"></div>
       <div class="piles">
         <button class="pile" id="drawPile" type="button" aria-label="كومة السحب"><span class="cnt"></span><span class="stack" id="drawStack"></span></button>
         <button class="pile" id="playPile" type="button" aria-label="كومة اللعب"></button>
@@ -1447,10 +1488,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   function flyFromDraw(i) {
     if (calm) return;
     try {
-      var g = document.createElement('span'); g.className = 'pcard back'; g.style.zIndex = 5;
-      $('drawPile').appendChild(g);
-      var s = seatXY(i);
-      g.animate([{ transform: 'none', opacity: 1 }, { transform: 'translate(' + (s.x - DRAW.x) + 'cqw,' + (s.y - DRAW.y) + 'cqw) scale(.5)', opacity: .2 }], { duration: 420, easing: 'ease-in' }).onfinish = function () { g.remove(); };
+      var to = hpos(i, 1);
+      cardFly({ x: DRAW.x, y: DRAW.y }, to, { d: 640, arc: i === 0 ? -.18 : .22, rot: 160, r0: 8, r1: -6, done: function () { ring(to, 'rgba(255,214,120,.9)', 1.6, 420); } });
     } catch (e) {}
   }
   function landOnPlay(i) {
@@ -1459,6 +1498,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       var top = $('playPile').querySelector('.pcard:last-child'); if (!top) return;
       var s = seatXY(i);
       top.animate([{ translate: (s.x - PLAY.x) + 'cqw ' + (s.y - PLAY.y) + 'cqw', scale: .5, opacity: .3 }, { translate: '0 0', scale: 1, opacity: 1 }], { duration: 420, easing: 'cubic-bezier(.2,.9,.3,1)' });
+      setTimeout(function () { ring(PLAY, 'rgba(255,214,120,.9)', 2.2, 520); }, 380);
     } catch (e) {}
   }
   function flipTop() {
@@ -1468,6 +1508,220 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       var el = $('playPile').querySelector('.pcard:last-child'), base = 'translateX(' + c.dx + 'cqw) rotate(' + c.rot + 'deg)';
       el.animate([{ transform: base + ' rotateY(90deg)' }, { transform: base + ' rotateY(0deg) scale(1.4)', offset: .6 }, { transform: base }], { duration: 850, easing: 'ease-out' });
     } catch (e) {}
+  }
+
+  /* ===== holograms: every played card appears as a living projection of its character ===== */
+  var HOLO = {};
+  var HOP = {
+    steal: { mode: 'dash', imp: 'slash' }, inf_loss: { mode: 'dash', imp: 'blast' }, drop: { mode: 'dash', imp: 'blast' }, skip: { mode: 'dash', imp: 'freeze' },
+    take: { mode: 'sneak' }, swap: { mode: 'swap' }, peek: { mode: 'scan' },
+    inf_gain: { mode: 'aura' }, regain: { mode: 'aura' }, smuggle: { mode: 'pile' }, recycle: { mode: 'spin' },
+    immune: { mode: 'shield' }, copy: { mode: 'clone' }, victory: { mode: 'crown' }, _: { mode: 'aura' }
+  };
+  var HCOL = { gold: '#ffd25a', red: '#ff5a4a', cyan: '#6ff', green: '#7dff9a', ice: '#9fd8ff' };
+  function hpos(i, k) { var s = seatXY(i); k = k == null ? .56 : k; return { x: s.x * k, y: s.y * k }; }
+  function tr(p, extra) { return 'translate(' + p.x + 'cqw,' + p.y + 'cqw)' + (extra ? ' ' + extra : ''); }
+  function fxEl(cls, html) { var e = document.createElement('div'); e.className = cls; if (html) e.innerHTML = html; $('fxl').appendChild(e); return e; }
+  function gone(e, ms) { setTimeout(function () { e.remove(); }, ms); }
+  function holoEl(c) {
+    var C = cd(c), e = document.createElement('div'); e.className = 'holo'; e.style.setProperty('--hc', C.color || '#66ccff');
+    var fig = C.img ? '<div class="hl-fig" style="background-image:url(\'' + esc(C.img) + '\')"></div>' : '<div class="hl-fig gl">' + esc(C.symbol) + '</div>';
+    e.innerHTML = '<div class="hl-in"><div class="hl-beam"></div><div class="hl-body">' + fig + '</div><div class="hl-base"></div><div class="hl-name">' + esc(C.name) + '</div></div>';
+    return e;
+  }
+  function holoSpawn(i, c) {
+    if (calm || !$('fxl') || !CFG || !CFG.cards[c] || !slots[i]) return null;
+    holoEnd(HOLO[i]);
+    var e = holoEl(c), p = hpos(i); e.style.transform = tr(p); e._p = p; $('fxl').appendChild(e);
+    var h = { el: e, c: c, i: i, t: 0 }; HOLO[i] = h; holoLife(h, 7000); return h;
+  }
+  function holoLife(h, ms) { clearTimeout(h.t); h.t = setTimeout(function () { holoEnd(h, true); }, ms); }
+  function holoEnd(h, fade) {
+    if (!h) return; clearTimeout(h.t); if (HOLO[h.i] === h) delete HOLO[h.i];
+    if (fade && h.el.animate) h.el.animate([{ opacity: 1, filter: 'brightness(1)' }, { opacity: 0, filter: 'brightness(3)' }], { duration: 500, fill: 'forwards' }).onfinish = function () { h.el.remove(); }; else h.el.remove();
+  }
+  function holoClear() { Object.keys(HOLO).forEach(function (k) { holoEnd(HOLO[k]); }); var l = $('fxl'); if (l) l.innerHTML = ''; }
+  function glide(el, a, b, ms, ease, extra) {
+    var an = el.animate([{ transform: tr(a, extra && extra[0]) }, { transform: tr(b, extra && extra[1]) }], { duration: ms, easing: ease || 'ease-in-out', fill: 'forwards' });
+    el._p = b; return an;
+  }
+  function trail(src, a, b, ms, ease) {
+    for (var k = 1; k <= 3; k++) (function (k) {
+      var g = src.cloneNode(true); g.classList.add('ghost'); g.style.opacity = String(.34 - k * .07); $('fxl').appendChild(g);
+      var an = g.animate([{ transform: tr(a) }, { transform: tr(b) }], { duration: ms, delay: k * 45, easing: ease, fill: 'both' });
+      an.onfinish = function () { g.remove(); };
+    })(k);
+  }
+  function burst(p, color, n, dist, ms, size) {
+    for (var k = 0; k < n; k++) {
+      var d = fxEl('pt'), a = Math.random() * 6.283, r = dist * (.5 + Math.random() * .6), s = size || 1.3;
+      d.style.cssText = 'background:' + color + ';color:' + color + ';width:' + s + 'cqw;height:' + s + 'cqw;margin:' + (-s / 2) + 'cqw 0 0 ' + (-s / 2) + 'cqw';
+      d.animate([{ transform: tr(p), opacity: 1 }, { transform: tr({ x: p.x + Math.cos(a) * r, y: p.y + Math.sin(a) * r }, 'scale(.2)'), opacity: 0 }], { duration: ms || 700, easing: 'ease-out', fill: 'forwards' });
+      gone(d, (ms || 700) + 60);
+    }
+  }
+  function rise(p, color, n, ms) {
+    for (var k = 0; k < n; k++) {
+      var d = fxEl('pt'), x = p.x + (Math.random() - .5) * 12, s = 1 + Math.random() * 1.2;
+      d.style.cssText = 'background:' + color + ';color:' + color + ';width:' + s + 'cqw;height:' + s + 'cqw;margin:' + (-s / 2) + 'cqw 0 0 ' + (-s / 2) + 'cqw';
+      d.animate([{ transform: tr({ x: x, y: p.y + 4 }), opacity: 0 }, { opacity: 1, offset: .2 }, { transform: tr({ x: x + (Math.random() - .5) * 4, y: p.y - 16 - Math.random() * 6 }), opacity: 0 }], { duration: ms || 1300, delay: k * 70, easing: 'ease-out', fill: 'both' });
+      gone(d, (ms || 1300) + k * 70 + 80);
+    }
+  }
+  function ring(p, color, big, ms, delay) {
+    var e = fxEl('rg'); e.style.borderColor = color; e.style.boxShadow = '0 0 1.6cqw ' + color + ', inset 0 0 1.2cqw ' + color;
+    e.animate([{ transform: tr(p, 'scale(.2)'), opacity: 1 }, { transform: tr(p, 'scale(' + (big || 3) + ')'), opacity: 0 }], { duration: ms || 700, delay: delay || 0, easing: 'ease-out', fill: 'both' }); gone(e, (ms || 700) + (delay || 0) + 60);
+  }
+  function slash(p, color) {
+    [[-35, 0], [38, 90]].forEach(function (sa) {
+      var e = fxEl('sl'); e.style.color = color;
+      e.animate([{ transform: tr(p, 'rotate(' + sa[0] + 'deg) scaleX(0)'), opacity: 1 }, { transform: tr(p, 'rotate(' + sa[0] + 'deg) scaleX(1.1)'), opacity: 1, offset: .35 }, { transform: tr(p, 'rotate(' + sa[0] + 'deg) scaleX(1.2)'), opacity: 0 }], { duration: 520, delay: sa[1], easing: 'ease-out', fill: 'both' }); gone(e, 700);
+    });
+  }
+  function beamBetween(a, b, color, ms, delay) {
+    var dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy), ang = Math.atan2(dy, dx) * 180 / Math.PI, e = fxEl('beam');
+    e.style.width = len + 'cqw'; e.style.setProperty('--bc', color);
+    e.animate([{ transform: tr(a, 'rotate(' + ang + 'deg) scaleX(0)'), opacity: 1 }, { transform: tr(a, 'rotate(' + ang + 'deg) scaleX(1)'), opacity: 1, offset: .4 }, { transform: tr(a, 'rotate(' + ang + 'deg) scaleX(1)'), opacity: 0 }], { duration: ms || 800, delay: delay || 0, easing: 'ease-out', fill: 'both' }); gone(e, (ms || 800) + (delay || 0) + 60);
+  }
+  function shake(i) {
+    var sl = slots[i], t = sl && sl.querySelector('.tag'); if (!t || !t.animate) return;
+    t.animate([{ translate: '0 0', filter: 'none' }, { translate: '-1.4cqw 0', filter: 'brightness(2) drop-shadow(0 0 1cqw #f44)', offset: .15 }, { translate: '1.4cqw 0', offset: .3 }, { translate: '-1cqw 0', offset: .45 }, { translate: '.8cqw 0', offset: .6 }, { translate: '0 0', filter: 'none' }], { duration: 650 });
+  }
+  function stageShake() { if (stage.animate) stage.animate([{ translate: '0 0' }, { translate: '0 .9cqw', offset: .2 }, { translate: '0 -.7cqw', offset: .45 }, { translate: '0 .4cqw', offset: .7 }, { translate: '0 0' }], { duration: 420 }); }
+  function cardFly(a, b, o) {
+    o = o || {}; var e = fxEl('fcard'), dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1, ar = (o.arc == null ? .25 : o.arc) * len, r0 = o.r0 == null ? -12 : o.r0, r1 = o.r1 == null ? 8 : o.r1;
+    var m = { x: (a.x + b.x) / 2 - dy / len * ar, y: (a.y + b.y) / 2 + dx / len * ar };
+    var an = e.animate([
+      { transform: tr(a, 'rotate(' + r0 + 'deg) scale(.5)'), opacity: 0 },
+      { transform: tr(a, 'rotate(' + r0 + 'deg) scale(.75)'), opacity: 1, offset: .1 },
+      { transform: tr(m, 'rotate(' + ((r0 + r1) / 2 + (o.rot || 0)) + 'deg) scale(1.25)'), opacity: 1, offset: .5 },
+      { transform: tr(b, 'rotate(' + r1 + 'deg) scale(.6)'), opacity: .9 }
+    ], { duration: o.d || 650, delay: o.delay || 0, easing: 'cubic-bezier(.45,.05,.25,1)', fill: 'both' });
+    an.onfinish = function () { e.remove(); if (o.done) o.done(); };
+  }
+  function impact(p, kind, T) {
+    var col = kind === 'freeze' ? HCOL.ice : kind === 'blast' ? '#ff9a3a' : HCOL.red;
+    if (kind === 'slash') { slash(p, '#ffffff'); burst(p, HCOL.gold, 8, 9, 800, 1.5); }
+    else if (kind === 'freeze') { ring(p, col, 3.2, 800); burst(p, col, 10, 8, 900, 1.2); }
+    else { ring(p, col, 3.4, 650); burst(p, col, 12, 10, 750, 1.5); }
+    shake(T); try { SFX.thud(); } catch (e) {}
+  }
+  function holoFor(i, c) { var h = HOLO[i]; return (h && h.c === c) ? h : holoSpawn(i, c); }
+  function uniqRel(arr, P) { var o = [], seen = {}; (arr || []).forEach(function (x) { if (x !== P && !seen[x]) { seen[x] = 1; o.push(rel(x)); } }); return o; }
+
+  function holoPower(d) {
+    if (calm) return;
+    var P = rel(d.P), h = holoFor(P, d.c); if (!h) return; clearTimeout(h.t);
+    var steps = d.steps || [], st = null;
+    steps.forEach(function (s) { if (!st && (s.T || []).some(function (x) { return x !== d.P; })) st = s; });
+    st = st || steps[0] || { op: '' };
+    var cfg = HOP[st.op] || HOP._, tg = uniqRel(st.T, d.P), a = h.el._p, delay = 0, el = h.el;
+    if (d.cp != null) {   // the forger: the hologram splits into two copies and merges before acting
+      delay = 900;
+      [-1, 1].forEach(function (sg) { var g = el.cloneNode(true); g.classList.add('ghost'); g.style.opacity = '.6'; $('fxl').appendChild(g);
+        g.animate([{ transform: tr(a) }, { transform: tr({ x: a.x + sg * 9, y: a.y }), offset: .45 }, { transform: tr(a) }], { duration: 800, easing: 'ease-in-out', fill: 'both' }).onfinish = function () { g.remove(); }; });
+      burst(a, HCOL.cyan, 10, 8, 800, 1.2);
+    }
+    var mode = cfg.mode; if ((mode === 'dash' || mode === 'sneak' || mode === 'swap' || mode === 'scan') && !tg.length) mode = 'aura';
+    setTimeout(function () {
+      if (!el.isConnected) return;
+      var hg = getComputedStyle(el).getPropertyValue('--hg') || HCOL.cyan;
+      switch (mode) {
+        case 'dash':
+          tg.forEach(function (T, k) {
+            var src = k === 0 ? el : el.cloneNode(true), b = hpos(T, .8);
+            if (k) { src.style.transform = tr(a); $('fxl').appendChild(src); }
+            trail(src, a, b, 520, 'cubic-bezier(.6,0,.9,.4)');
+            var an = src.animate([{ transform: tr(a, 'scale(1)') }, { transform: tr(a, 'scale(1.15)'), offset: .18 }, { transform: tr(b, 'scale(1.25)') }], { duration: 520, easing: 'cubic-bezier(.6,0,.9,.4)', fill: 'forwards' });
+            if (k === 0) el._p = b;
+            an.onfinish = function () { impact(b, cfg.imp, T); if (k) setTimeout(function () { src.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 400, fill: 'forwards' }).onfinish = function () { src.remove(); }; }, 700); };
+          });
+          holoLife(h, 520 + 1700); break;
+        case 'sneak':
+          tg.forEach(function (T, k) {
+            var src = k === 0 ? el : el.cloneNode(true), b = hpos(T, .8); if (k) { src.style.transform = tr(a); $('fxl').appendChild(src); }
+            src.style.opacity = '.35';
+            var an = src.animate([{ transform: tr(a) }, { transform: tr({ x: (a.x + b.x) / 2 + 6, y: (a.y + b.y) / 2 - 4 }), offset: .5 }, { transform: tr(b) }], { duration: 850, easing: 'ease-in-out', fill: 'forwards' });
+            if (k === 0) el._p = b;
+            an.onfinish = function () { src.style.opacity = '1'; burst(b, HCOL.green, 8, 6, 600, 1.1); shake(T); cardFly(hpos(T, 1), hpos(P, 1), { d: 650, arc: .3 }); if (k) setTimeout(function () { src.remove(); }, 800); };
+          });
+          holoLife(h, 850 + 1800); break;
+        case 'swap':
+          tg.forEach(function (T, k) {
+            var sa = hpos(P, 1), sb = hpos(T, 1);
+            cardFly(sa, sb, { d: 800, arc: .35, rot: 200, delay: 120 }); cardFly(sb, sa, { d: 800, arc: .35, rot: -200, delay: 120, r0: 10, r1: -8 });
+            var mid = { x: (sa.x + sb.x) / 2, y: (sa.y + sb.y) / 2 };
+            setTimeout(function () { ring(mid, HCOL.cyan, 3.4, 700); burst(mid, HCOL.cyan, 10, 7, 700, 1.2); }, 560);
+            setTimeout(function () { shake(T); }, 920);
+          });
+          el.querySelector('.hl-in').animate([{ transform: 'rotateY(0)' }, { transform: 'rotateY(720deg)' }], { duration: 1000, easing: 'ease-in-out' });
+          holoLife(h, 2400); break;
+        case 'scan':
+          tg.forEach(function (T) { var b = hpos(T, .85); beamBetween(a, b, HCOL.cyan, 1100); setTimeout(function () { ring(b, HCOL.cyan, 2.6, 800); ring(b, HCOL.cyan, 2, 800, 220); }, 360); });
+          holoLife(h, 2300); break;
+        case 'shield':
+          var dm = fxEl('dome'); dm.style.setProperty('--bc', hg.trim() || HCOL.cyan);
+          dm.animate([{ transform: tr(a, 'scale(.2)'), opacity: 0 }, { transform: tr(a, 'scale(1)'), opacity: .95, offset: .3 }, { transform: tr(a, 'scale(1.06)'), opacity: .6, offset: .6 }, { transform: tr(a, 'scale(1)'), opacity: .85, offset: .8 }, { transform: tr(a, 'scale(1.1)'), opacity: 0 }], { duration: 2200, fill: 'both' }); gone(dm, 2300);
+          ring(a, HCOL.gold, 3.5, 900); holoLife(h, 2400); break;
+        case 'crown':
+          var pl = fxEl('pillar');
+          pl.animate([{ transform: tr(a, 'scaleY(0)'), opacity: 1 }, { transform: tr(a, 'scaleY(1)'), opacity: .95, offset: .3 }, { transform: tr(a, 'scaleY(1)'), opacity: 0 }], { duration: 1600, easing: 'ease-out', fill: 'both' }); gone(pl, 1700);
+          ring(a, HCOL.gold, 4, 1000); ring(a, HCOL.gold, 3, 1000, 250); burst(a, HCOL.gold, 18, 14, 1100, 1.6);
+          el.querySelector('.hl-in').animate([{ transform: 'scale(1)' }, { transform: 'scale(1.28)', offset: .35 }, { transform: 'scale(1)' }], { duration: 1200, easing: 'ease-in-out' });
+          holoLife(h, 2400); break;
+        case 'pile':
+          var c0 = { x: 0, y: 4 };
+          cardFly(hpos(P, 1), c0, { d: 560, arc: .2 });
+          el.animate([{ transform: tr(a) }, { transform: tr({ x: c0.x * .6 + a.x * .4, y: c0.y * .6 + a.y * .4 }), offset: .45 }, { transform: tr(a) }], { duration: 1200, easing: 'ease-in-out' });
+          setTimeout(function () { ring(c0, HCOL.gold, 2.6, 700); burst(c0, HCOL.gold, 8, 7, 700, 1.1); cardFly(c0, hpos(P, 1), { d: 600, arc: -.2 }); }, 620);
+          holoLife(h, 2400); break;
+        case 'spin':
+          el.querySelector('.hl-in').animate([{ transform: 'rotateY(0)' }, { transform: 'rotateY(720deg)' }], { duration: 1100, easing: 'ease-in-out' });
+          for (var q = 0; q < 4; q++) cardFly(PLAY, DRAW, { d: 700, delay: q * 130, arc: .5, rot: 300, r0: q * 20, r1: -q * 10 });
+          ring(a, HCOL.green, 3.2, 900); holoLife(h, 2300); break;
+        default:   // aura: the card works on itself or sends something good to others
+          ring(a, hg.trim() || HCOL.cyan, 3, 900); ring(a, HCOL.gold, 2.2, 900, 250); rise(a, HCOL.gold, 12, 1300);
+          el.querySelector('.hl-in').animate([{ transform: 'scale(1)' }, { transform: 'scale(1.18)', offset: .3 }, { transform: 'scale(1)' }], { duration: 900, easing: 'ease-in-out' });
+          tg.forEach(function (T) {
+            var b = hpos(T, .85), o = fxEl('pt'); o.style.cssText = 'background:' + HCOL.gold + ';color:' + HCOL.gold + ';width:2.4cqw;height:2.4cqw;margin:-1.2cqw 0 0 -1.2cqw';
+            o.animate([{ transform: tr(a) }, { transform: tr({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 - 8 }) + ' scale(1.5)', offset: .5 }, { transform: tr(b) }], { duration: 800, delay: 300, easing: 'ease-in-out', fill: 'both' }).onfinish = function () { o.remove(); burst(b, HCOL.gold, 8, 7, 700, 1.2); };
+          });
+          holoLife(h, 2300);
+      }
+    }, delay);
+  }
+
+  function holoDefend(kind, d) {
+    if (calm) return;
+    var D = rel(d.D), A = rel(d.A), h = holoFor(D, d.c); if (!h) return; clearTimeout(h.t);
+    var el = h.el, a = el._p, b = hpos(A, .6), foe = HOLO[A], toward = { x: a.x + (b.x - a.x) * .18, y: a.y + (b.y - a.y) * .18 };
+    var hg = (getComputedStyle(el).getPropertyValue('--hg') || HCOL.cyan).trim();
+    var recoil = function () { if (!foe) return; var fa = foe.el._p; foe.el.classList.add('glitch'); foe.el.animate([{ transform: tr(fa) }, { transform: tr({ x: fa.x + (fa.x - b.x) * .35, y: fa.y + (fa.y - b.y) * .35 }), offset: .3 }, { transform: tr(fa) }], { duration: 700, easing: 'ease-out' }); holoLife(foe, 1500); };
+    el.animate([{ transform: tr(a) }, { transform: tr(toward, 'scale(1.15)') }], { duration: 300, easing: 'ease-out', fill: 'forwards' }); el._p = toward;
+    var dm = function (col) {
+      var e = fxEl('dome'); e.style.setProperty('--bc', col);
+      e.animate([{ transform: tr(toward, 'scale(.2)'), opacity: 0 }, { transform: tr(toward, 'scale(1)'), opacity: 1, offset: .25 }, { transform: tr(toward, 'scale(.96)'), opacity: .7, offset: .55 }, { transform: tr(toward, 'scale(1.04)'), opacity: .9, offset: .75 }, { transform: tr(toward, 'scale(1.1)'), opacity: 0 }], { duration: 1700, fill: 'both' }); gone(e, 1800);
+    };
+    switch (kind) {
+      case 'reflect':
+        dm(hg);
+        setTimeout(function () { beamBetween(toward, b, '#ffffff', 700); }, 350);
+        setTimeout(function () { ring(b, HCOL.cyan, 3.2, 700); burst(b, '#fff', 10, 8, 700, 1.2); shake(A); recoil(); try { SFX.thud(); } catch (e) {} }, 800); break;
+      case 'elder':
+        ring(toward, HCOL.gold, 4.4, 1100); ring(toward, HCOL.gold, 3, 1100, 280); ring(toward, HCOL.gold, 2, 1100, 560);
+        el.querySelector('.hl-in').animate([{ transform: 'scale(1)' }, { transform: 'scale(1.22)', offset: .3 }, { transform: 'scale(1)' }], { duration: 1000 });
+        setTimeout(function () { recoil(); shake(A); }, 500); break;
+      case 'judge':
+        el.animate([{ transform: tr({ x: toward.x, y: toward.y - 26 }, 'scale(1.3)'), opacity: 0 }, { transform: tr(toward, 'scale(1.2)'), opacity: 1, offset: .55 }, { transform: tr(toward, 'scale(1.15)') }], { duration: 480, easing: 'cubic-bezier(.6,0,1,.6)', fill: 'forwards' });
+        setTimeout(function () { ring(toward, HCOL.gold, 5, 900); ring(toward, '#fff', 3, 700); burst(toward, HCOL.gold, 14, 12, 800, 1.5); stageShake(); try { SFX.thud(); } catch (e) {} if (foe) { burst(foe.el._p, HCOL.red, 12, 8, 800, 1.3); holoEnd(foe); shake(A); } }, 460); break;
+      default:   // block (guard): a wall of light between the two
+        dm(hg);
+        var mid = { x: (toward.x + b.x) / 2, y: (toward.y + b.y) / 2 }, ang = Math.atan2(b.y - toward.y, b.x - toward.x) * 180 / Math.PI;
+        var w = fxEl('wall'); w.style.setProperty('--bc', hg);
+        w.animate([{ transform: tr(mid, 'rotate(' + ang + 'deg) scaleY(0)'), opacity: 0 }, { transform: tr(mid, 'rotate(' + ang + 'deg) scaleY(1)'), opacity: 1, offset: .3 }, { transform: tr(mid, 'rotate(' + ang + 'deg) scaleY(1)'), opacity: 0 }], { duration: 1500, fill: 'both' }); gone(w, 1600);
+        setTimeout(function () { ring(mid, hg, 2.6, 700); recoil(); }, 600);
+    }
+    holoLife(h, 2300);
   }
 
   /* speech bubbles above a seat, and full-screen stunts */
@@ -1574,11 +1828,12 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     return '';
   }
   var showT = 0;
+  function fxd() { var a = arguments; setTimeout(function () { fx.apply(null, a); }, calm ? 0 : 1100); }   /* let the hologram act before the big stunt covers the table */
   function playEv(d) {
     var r;
     switch (d.k) {
       case 'draw': SFX.draw(); flyFromDraw(rel(d.i)); break;
-      case 'play': landOnPlay(rel(d.i)); SFX.card(CFG && CFG.cards[d.c] ? CFG.cards[d.c].snd : ''); bubble(rel(d.i), lab(d.c), 'claim'); break;
+      case 'play': landOnPlay(rel(d.i)); (function (ri, cc) { setTimeout(function () { holoSpawn(ri, cc); }, 420); })(rel(d.i), d.c); SFX.card(CFG && CFG.cards[d.c] ? CFG.cards[d.c].snd : ''); bubble(rel(d.i), lab(d.c), 'claim'); break;
       case 'pass':
         r = rel(d.j);
         if (r === 0) { if (!d.auto) { fx('pass', 'ماشي، الكارت عدّى', 'خلاص هعديهالك', 1300); SFX.pass(); } }
@@ -1589,6 +1844,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
         break;
       case 'challenge':
         var P = rel(d.P), j = rel(d.j);
+        if (HOLO[P]) { HOLO[P].el.classList.add('glitch'); holoLife(HOLO[P], 6000); }
         fx('challenge', P === 0 ? nmR(j) + ' بيتحداك' : (j === 0 ? 'إنت بتتحدى ' + nmR(P) : nmR(j) + ' بيتحدى ' + nmR(P)), 'أتحداك!', 1900);
         SFX.challenge(); buzz();
         break;
@@ -1596,25 +1852,31 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       case 'honest':
         fx('honest', rel(d.j) === 0 ? 'إنت اتحديت وخسرت نقطة نفوذ' : nmR(rel(d.j)) + ' اتحدى وخسر نقطة نفوذ', 'الكارت صح!', 2300); SFX.honest(); break;
       case 'unreveal': break;
-      case 'liar': fx('liar', 'عقوبة الكدب: ' + cd(d.c).pen, 'كدّاب!', 2400); SFX.liar(); break;
+      case 'liar': (function (h) { if (h) { burst(h.el._p, HCOL.red, 16, 11, 900, 1.5); holoEnd(h); } })(HOLO[rel(d.P)]);
+        fx('liar', 'عقوبة الكدب: ' + cd(d.c).pen, 'كدّاب!', 2400); SFX.liar(); break;
       case 'power':
-        fx('fatwa', (d.cp != null ? 'نسخ قدرة ' + cd(d.cp).name + ': ' : '') + stepsLine(d, true), cd(d.c).name + '!', 2400, d.c); SFX.fatwa(); buzz([80, 30, 80]);
+        holoPower(d);
+        (function (dd) { setTimeout(function () { fx('fatwa', (dd.cp != null ? 'نسخ قدرة ' + cd(dd.cp).name + ': ' : '') + stepsLine(dd, true), cd(dd.c).name + '!', 2000, dd.c); }, calm || !HOLO[rel(dd.P)] ? 0 : 1100); })(d); SFX.fatwa(); buzz([80, 30, 80]);
         break;
       case 'reflect':
+        holoDefend('reflect', d);
         var A = rel(d.A), D = rel(d.D);
-        fx('fatwa', D === 0 ? 'صدّيت الهجوم ورجّعته على ' + nmR(A) : A === 0 ? 'الهجوم اتعكس عليك على إيد ' + nmR(D) : nmR(D) + ' صدّ هجوم ' + nmR(A) + ' ورجّعه عليه', cd(d.c).name + '!', 2300, d.c); SFX.honest(); buzz([60, 30, 60]);
+        fxd('fatwa', D === 0 ? 'صدّيت الهجوم ورجّعته على ' + nmR(A) : A === 0 ? 'الهجوم اتعكس عليك على إيد ' + nmR(D) : nmR(D) + ' صدّ هجوم ' + nmR(A) + ' ورجّعه عليه', cd(d.c).name + '!', 2300, d.c); SFX.honest(); buzz([60, 30, 60]);
         break;
       case 'elder':
+        holoDefend('elder', d);
         var A4 = rel(d.A), D4 = rel(d.D);
-        fx('fatwa', D4 === 0 ? 'العجوز لغى الهجوم عليك' : A4 === 0 ? nmR(D4) + ' لغى هجومك بالعجوز' : nmR(D4) + ' لغى هجوم ' + nmR(A4), cd(d.c).name + '!', 2300, d.c); SFX.honest(); buzz([60, 30, 60]);
+        fxd('fatwa', D4 === 0 ? 'العجوز لغى الهجوم عليك' : A4 === 0 ? nmR(D4) + ' لغى هجومك بالعجوز' : nmR(D4) + ' لغى هجوم ' + nmR(A4), cd(d.c).name + '!', 2300, d.c); SFX.honest(); buzz([60, 30, 60]);
         break;
       case 'judge':
+        holoDefend('judge', d);
         var A3 = rel(d.A), D3 = rel(d.D);
-        fx('fatwa', D3 === 0 ? 'ألغيت الأكشن بالقاضي' : A3 === 0 ? nmR(D3) + ' ألغى أكشنك بالقاضي' : nmR(D3) + ' ألغى أكشن ' + nmR(A3), cd(d.c).name + '!', 2300, d.c); SFX.honest(); buzz([60, 30, 60]);
+        fxd('fatwa', D3 === 0 ? 'ألغيت الأكشن بالقاضي' : A3 === 0 ? nmR(D3) + ' ألغى أكشنك بالقاضي' : nmR(D3) + ' ألغى أكشن ' + nmR(A3), cd(d.c).name + '!', 2300, d.c); SFX.honest(); buzz([60, 30, 60]);
         break;
       case 'block':
+        holoDefend('block', d);
         var A2 = rel(d.A), D2 = rel(d.D);
-        fx('fatwa', D2 === 0 ? 'صدّيت التبديل وحميت كروتك' : A2 === 0 ? nmR(D2) + ' صدّ التبديل بتاعك' : nmR(D2) + ' صدّ تبديل ' + nmR(A2), cd(d.c).name + '!', 2300, d.c); SFX.honest(); buzz([60, 30, 60]);
+        fxd('fatwa', D2 === 0 ? 'صدّيت التبديل وحميت كروتك' : A2 === 0 ? nmR(D2) + ' صدّ التبديل بتاعك' : nmR(D2) + ' صدّ تبديل ' + nmR(A2), cd(d.c).name + '!', 2300, d.c); SFX.honest(); buzz([60, 30, 60]);
         break;
       case 'hit':
         (d.steps || []).forEach(function (st) {
@@ -2067,7 +2329,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     } catch (e) { fail(); }
   };
   function leaveLocal() {
-    closeOverlay(); $('fx').innerHTML = '';
+    closeOverlay(); $('fx').innerHTML = ''; holoClear();
     $('room').hidden = true; $('lobby').hidden = false; $('logBtn').hidden = true; $('logPanel').hidden = true; syncAdmin();
     S.playing = false; S.dealt = false; S.mode = '';
     R.roster = []; R.code = '';
@@ -2077,7 +2339,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   $('leave').onclick = leave;
 
   /* ---------- start: connect, and sign in with the saved session if there is one ---------- */
-  window.__ala = { net: net, connect: connect, SFX: SFX, S: S };   // used by the end-to-end test to cut and restore the connection
+  window.__ala = { net: net, connect: connect, SFX: SFX, S: S, playEv: function (d) { return playEv(d); } };   // used by the end-to-end test to cut and restore the connection
   /* the opening splash stays at least 2.4 s, then fades once the first real screen is ready (never longer than 7 s) */
   var SPL0 = Date.now(), splDone = false;
   function hideSplash() {
