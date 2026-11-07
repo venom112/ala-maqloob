@@ -400,23 +400,26 @@ ol { padding-inline-start: 20px; text-align: right; }
       var gn = h('input', { placeholder: 'اسم اللاعب بالظبط' }), gc = h('input', { type: 'number', placeholder: 'عدد العملات (سالب للخصم)', style: 'width:200px' });
       box.append(h('div', { class: 'card' }, h('h3', {}, 'إدّي عملات للاعب'), h('div', { class: 'bar' }, gn, gc, h('button', { onclick: function () { act(api('POST', 'shop/grant', { name: gn.value, coins: Number(gc.value) }), 'تمام').then(function (x) { toast('رصيده دلوقتي ' + x.coins); gn.value = gc.value = ''; }, function () {}); } }, 'نفّذ'))));
       /* items */
-      var items = h('div', { class: 'card' }, h('h3', {}, 'عناصر المتجر (إيموجي / صور / أصوات)'), h('p', { class: 'mute' }, 'السعر ٠ = مجاني للكل. الصور PNG/JPG/WEBP أقل من ٣٠٠ كيلو، والأصوات MP3/WAV/OGG/M4A أقل من ٤٠٠ كيلو.'));
-      var hasMedia = function (id) { return r.media.indexOf('shop-' + id) >= 0; };
-      var itemRow = function (it) {
-        var kind = h('select', {}, Object.keys(r.kinds).map(function (k) { var o = h('option', { value: k }, r.kinds[k]); if (k === it.kind) o.selected = true; return o; }));
-        var nm = h('input', { value: it.name || '', maxlength: 24, style: 'width:130px' }), em = h('input', { value: it.emoji || '', maxlength: 8, style: 'width:70px', placeholder: '😀' }), pr = h('input', { type: 'number', min: 0, value: it.price == null ? 30 : it.price, style: 'width:90px' }), ac = h('input', { type: 'checkbox' }); ac.checked = it.active !== false;
-        var fin = h('input', { type: 'file', accept: 'image/png,image/jpeg,image/webp,audio/mpeg,audio/wav,audio/ogg,audio/mp4,.mp3,.wav,.ogg,.m4a', hidden: true, onchange: function () {
-          var fl = fin.files[0]; if (!fl) return; if (fl.size > 400 * 1024) { toast('الملف كبير.', true); return; }
-          var fr = new FileReader(); fr.onload = function () { act(api('PUT', 'shop/items/' + it.id + '/media', { data: String(fr.result).split(',')[1] }), 'اترفع').then(reload, function () {}); }; fr.readAsDataURL(fl); } });
-        var body = function () { return { kind: kind.value, name: nm.value, emoji: em.value, price: Number(pr.value), active: ac.checked }; };
-        return h('div', { class: 'bar', style: 'border-top:1px solid var(--line);padding:8px 0;align-items:center' }, kind, nm, em, pr, h('label', { class: 'row' }, ac, 'شغّال'),
-          it.id ? h('button', { onclick: function () { act(api('PATCH', 'shop/items/' + it.id, body()), 'اتحفظ').then(reload, function () {}); } }, 'حفظ') : h('button', { class: 'primary', onclick: function () { act(api('POST', 'shop/items', body()), 'اتضاف').then(reload, function () {}); } }, 'أضف'),
-          it.id && it.kind !== 'emoji' ? h('button', { onclick: function () { fin.click(); } }, hasMedia(it.id) ? 'غيّر الملف' : 'ارفع ملف') : null,
-          it.id && hasMedia(it.id) ? h('button', { onclick: function () { try { new Audio('/a/shop-' + it.id).play(); } catch (e) {} }, hidden: it.kind !== 'sound' }, '▶') : null,
-          it.id ? h('button', { class: 'danger', onclick: function () { if (confirm('تمسح ' + it.name + '؟ هيتشال من كل اللاعبين.')) act(api('DELETE', 'shop/items/' + it.id), 'اتمسح').then(reload, function () {}); } }, 'مسح') : null, fin);
+      var items = h('div', { class: 'card' }, h('h3', {}, 'تفاعلات المتجر'), h('p', { class: 'mute' }, 'كل تفاعل ممكن يبقى إيموجي، وصورة بتظهر بدل الإيموجي، وصوت بيشتغل معاه — أي تركيبة. الصور PNG/JPG/WEBP أقل من ٣٠٠ كيلو، والأصوات MP3/WAV/OGG/M4A أقل من ٤٠٠ كيلو. السعر ٠ = مجاني للكل.'));
+            var itemRow = function (it) {
+        var nm = h('input', { value: it.name || '', maxlength: 24, style: 'width:130px', placeholder: 'الاسم' }), em = h('input', { value: it.emoji || '', maxlength: 8, style: 'width:70px', placeholder: '😀' }), pr = h('input', { type: 'number', min: 0, value: it.price == null ? 30 : it.price, style: 'width:90px' }), ac = h('input', { type: 'checkbox' }); ac.checked = it.active !== false;
+        var pick = function (type, accept) {
+          var fin = h('input', { type: 'file', accept: accept, hidden: true, onchange: function () {
+            var fl = fin.files[0]; if (!fl) return; if (fl.size > 400 * 1024) { toast('الملف كبير.', true); return; }
+            var fr = new FileReader(); fr.onload = function () { act(api('PUT', 'shop/items/' + it.id + '/media?type=' + type, { data: String(fr.result).split(',')[1] }), 'اترفع').then(reload, function () {}); }; fr.readAsDataURL(fl); } });
+          var has = r.media.indexOf((type === 'sound' ? 'shopsnd-' : 'shop-') + it.id) >= 0, nmT = type === 'sound' ? 'صوت' : 'صورة';
+          return [h('button', { onclick: function () { fin.click(); } }, (has ? 'غيّر ' : 'ارفع ') + nmT), has ? h('button', { onclick: function () { act(api('DELETE', 'shop/items/' + it.id + '/media?type=' + type), 'اتشالت').then(reload, function () {}); } }, 'شيل ال' + nmT) : null,
+            has && type === 'sound' ? h('button', { onclick: function () { try { new Audio('/a/shopsnd-' + it.id).play(); } catch (e) {} } }, '▶') : null,
+            has && type === 'image' ? h('img', { src: '/a/shop-' + it.id, style: 'width:34px;height:34px;object-fit:cover;border-radius:6px' }) : null, fin];
+        };
+        var body = function () { return { name: nm.value, emoji: em.value, price: Number(pr.value), active: ac.checked }; };
+        var row = h('div', { class: 'bar', style: 'border-top:1px solid var(--line);padding:8px 0;align-items:center' }, nm, em, pr, h('label', { class: 'row' }, ac, 'شغّال'),
+          it.id ? h('button', { onclick: function () { act(api('PATCH', 'shop/items/' + it.id, body()), 'اتحفظ').then(reload, function () {}); } }, 'حفظ') : h('button', { class: 'primary', onclick: function () { act(api('POST', 'shop/items', body()), 'اتضاف (بعدها ارفع الصورة والصوت)').then(reload, function () {}); } }, 'أضف'));
+        if (it.id) { pick('image', 'image/png,image/jpeg,image/webp').concat(pick('sound', 'audio/mpeg,audio/wav,audio/ogg,audio/mp4,.mp3,.wav,.ogg,.m4a')).forEach(function (x) { if (x) row.append(x); }); row.append(h('button', { class: 'danger', onclick: function () { if (confirm('تمسح ' + it.name + '؟ هيتشال من كل اللاعبين.')) act(api('DELETE', 'shop/items/' + it.id), 'اتمسح').then(reload, function () {}); } }, 'مسح')); }
+        return row;
       };
       r.items.forEach(function (it) { items.append(itemRow(it)); });
-      items.append(h('h4', { style: 'margin:12px 0 4px' }, 'عنصر جديد'), itemRow({ kind: 'emoji', active: true }));
+      items.append(h('h4', { style: 'margin:12px 0 4px' }, 'عنصر جديد'), itemRow({ active: true }));
       box.append(items);
       /* packs */
       var packs = h('div', { class: 'card' }, h('h3', {}, 'الباكجات (بفلوس حقيقية)'));

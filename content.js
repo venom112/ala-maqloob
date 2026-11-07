@@ -50,7 +50,7 @@ const IMAGE_SLOTS = {
   coin10: { label: 'عملة ١٠ (دهب)', def: '/img/coin10.webp' }
 };
 const cardSlot = id => 'card-' + id;
-const slotOk = s => IMAGE_SLOTS[s] || /^(card|snd|shop)-\d{1,9}$/.test(s);
+const slotOk = s => IMAGE_SLOTS[s] || /^(card|snd|shop|shopsnd)-\d{1,9}$/.test(s);
 
 const DEFAULT_SETTINGS = {
   startCards: 3,      // cards dealt to each player
@@ -487,7 +487,10 @@ class Content {
   }
 
   // a shop item as the clients see it (the picture / sound is an uploaded asset)
-  shopPublic(it) { return { id: it.id, k: it.kind, n: it.name, e: it.emoji, p: it.price, u: this.assets['shop-' + it.id] ? '/a/shop-' + it.id + '?v=' + this.assets['shop-' + it.id] : '' }; }
+  shopPublic(it) {
+    const a = s => this.assets[s + '-' + it.id] ? '/a/' + s + '-' + it.id + '?v=' + this.assets[s + '-' + it.id] : '';
+    return { id: it.id, n: it.name, e: it.emoji, p: it.price, i: a('shop'), s: a('shopsnd') };   // i = picture, s = sound (each optional)
+  }
   shopItem(id) { const it = (this.shopAll || []).find(x => x.id === id && x.active); return it ? this.shopPublic(it) : null; }
   imgUrl(slot, def) { return this.assets[slot] ? '/a/' + slot + '?v=' + this.assets[slot] : def; }
   cardImg(c) { return this.imgUrl(cardSlot(c.id), c.defaultImg || ''); }

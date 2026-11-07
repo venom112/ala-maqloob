@@ -259,7 +259,7 @@ function install(ctx) {
           return fail(res, 404, 'غير موجود.'), true;
         }
         if (!need('shop.edit')) return true;
-        if (!sub && m === 'GET') return json(res, 200, { items: await store.shopItems(), packs: await store.packList(), cfg: content.shopCfg, kinds: SH.KINDS, media: Object.keys(content.assets).filter(k => k.startsWith('shop-')) }), true;
+        if (!sub && m === 'GET') return json(res, 200, { items: await store.shopItems(), packs: await store.packList(), cfg: content.shopCfg, kinds: SH.KINDS, media: Object.keys(content.assets).filter(k => k.startsWith('shop')) }), true;
         if (sub === 'config' && m === 'PUT') {
           const r = SH.cleanCfg(await readBody(req, 4096)); if (r.err) return fail(res, 400, r.err), true;
           await store.setSetting('shop', JSON.stringify(Object.assign({}, content.shopCfg, r.v))); await content.reload();
@@ -282,17 +282,17 @@ function install(ctx) {
           }
           const id = Number(route[2]), it = (await store.shopItems()).find(x => x.id === id);
           if (!it) return fail(res, 404, 'العنصر مش موجود.'), true;
-          if (route[3] === 'media') {
-            if (m === 'DELETE') { await store.delAsset('shop-' + id); await content.reload(); return json(res, 200, { ok: true }), true; }
+          if (route[3] === 'media') {   // a picture and a sound, each optional: ?type=image | sound
+            const snd = (url.searchParams.get('type') || 'image') === 'sound', slot = (snd ? 'shopsnd-' : 'shop-') + id;
+            if (m === 'DELETE') { await store.delAsset(slot); await content.reload(); return json(res, 200, { ok: true }), true; }
             if (m === 'PUT') {
-              if (it.kind === 'emoji') return fail(res, 400, 'الإيموجي مالوش ملف.'), true;
               const b = await readBody(req, 1 * 1024 * 1024), data = Buffer.from(String(b.data || ''), 'base64');
-              const max = it.kind === 'sound' ? MAX_SND : 300 * 1024;
+              const max = snd ? MAX_SND : 300 * 1024;
               if (!data.length || data.length > max) return fail(res, 400, 'الملف لازم يكون أقل من ' + Math.round(max / 1024) + ' كيلو.'), true;
-              const mime = it.kind === 'sound' ? sniffAudio(data) : sniff(data);
-              if (!mime) return fail(res, 400, it.kind === 'sound' ? 'الصوت لازم MP3 أو WAV أو OGG أو M4A.' : 'الصورة لازم PNG أو JPG أو WEBP.'), true;
-              await store.putAsset('shop-' + id, mime, data, actor(me)); await content.reload();
-              await store.log(actor(me), 'shop.item.media', it.name + ' (#' + id + ')', { bytes: data.length, mime }); return json(res, 200, { ok: true }), true;
+              const mime = snd ? sniffAudio(data) : sniff(data);
+              if (!mime) return fail(res, 400, snd ? 'الصوت لازم MP3 أو WAV أو OGG أو M4A.' : 'الصورة لازم PNG أو JPG أو WEBP.'), true;
+              await store.putAsset(slot, mime, data, actor(me)); await content.reload();
+              await store.log(actor(me), 'shop.item.media', it.name + ' (#' + id + ') ' + (snd ? 'sound' : 'image'), { bytes: data.length, mime }); return json(res, 200, { ok: true }), true;
             }
           }
           if (m === 'PATCH' && route.length === 3) {
@@ -301,7 +301,7 @@ function install(ctx) {
             await content.reload(); await store.log(actor(me), 'shop.item.update', it.name + ' (#' + id + ')', v); return json(res, 200, { ok: true }), true;
           }
           if (m === 'DELETE' && route.length === 3) {
-            await store.run('DELETE FROM shop_items WHERE id=?', [id]); await store.run('DELETE FROM owned WHERE item_id=?', [id]); await store.delAsset('shop-' + id);
+            await store.run('DELETE FROM shop_items WHERE id=?', [id]); await store.run('DELETE FROM owned WHERE item_id=?', [id]); await store.delAsset('shop-' + id); await store.delAsset('shopsnd-' + id);
             await content.reload(); await store.log(actor(me), 'shop.item.delete', it.name + ' (#' + id + ')', null); return json(res, 200, { ok: true }), true;
           }
         }
@@ -332,7 +332,7 @@ function install(ctx) {
           return json(res, 200, { slots: list }), true;
         }
         const slot = route[1];
-        if (!slot || /^shop-/.test(slot) || !C.slotOk(slot)) return fail(res, 404, 'مكان الصورة غير معروف.'), true;
+        if (!slot || /^shop/.test(slot) || !C.slotOk(slot)) return fail(res, 404, 'مكان الصورة غير معروف.'), true;
         if (/^(card|snd)-/.test(slot) && !content.cards.some(c => 'card-' + c.id === slot || 'snd-' + c.id === slot)) return fail(res, 404, 'الكارت مش موجود.'), true;
         if (m === 'PUT') {
           const isSnd = slot.startsWith('snd-');

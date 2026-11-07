@@ -9,10 +9,10 @@ const str = (v, max) => Array.from(String(v == null ? '' : v).replace(/[\u0000-\
 
 function cleanItem(b) {
   if (!b || typeof b !== 'object') return { err: 'بيانات غلط.' };
-  const kind = String(b.kind || ''); if (!KINDS[kind]) return { err: 'النوع لازم إيموجي أو صورة أو صوت.' };
+  const kind = KINDS[b.kind] ? String(b.kind) : 'emoji';   // kept for old rows; an item may now carry an emoji, a picture and a sound together
   const name = str(b.name, 24); if (!name) return { err: 'اكتب اسم للعنصر.' };
   const price = num(b.price, 0, 100000); if (price == null) return { err: 'السعر رقم من ٠ لـ١٠٠٠٠٠ (٠ = مجاني للكل).' };
-  const emoji = str(b.emoji, 8); if (kind === 'emoji' && !emoji) return { err: 'اكتب الإيموجي.' };
+  const emoji = str(b.emoji, 8);
   return { v: { kind, name, price, emoji, active: b.active !== false, sort: num(b.sort, 0, 100000) == null ? 0 : num(b.sort, 0, 100000) } };
 }
 function cleanPack(b, itemIds) {

@@ -62,9 +62,15 @@ async function until(f, ms = 8000) { const t0 = Date.now(); while (Date.now() - 
   check('players cannot use the admin API', (await fetch(base + '/api/admin/shop')).status === 401);
   check('owner can edit payment details', (await call('PUT', 'shop/config', { payNumber: '01111111111', winReward: 5 }, OWN)).s === 200 && (await call('GET', 'shop', undefined, OWN)).j.cfg.payNumber === '01111111111');
   check('bad config refused', (await call('PUT', 'shop/config', { payNumber: 'abc' }, OWN)).s === 400);
-  const it = await call('POST', 'shop/items', { kind: 'image', name: 'صورة', price: 10 }, OWN);
+  const it = await call('POST', 'shop/items', { name: 'صورة وصوت', price: 10 }, OWN);
   const png = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(40)]);
-  check('new item + picture upload', it.s === 200 && (await call('PUT', 'shop/items/' + it.j.id + '/media', { data: png.toString('base64') }, OWN)).s === 200 && (await fetch(base + '/a/shop-' + it.j.id)).headers.get('content-type') === 'image/png');
+  const wav = Buffer.concat([Buffer.from('RIFF'), Buffer.from([40, 0, 0, 0]), Buffer.from('WAVEfmt '), Buffer.alloc(32)]);
+  check('new reaction with a picture AND a sound', it.s === 200 && (await call('PUT', 'shop/items/' + it.j.id + '/media?type=image', { data: png.toString('base64') }, OWN)).s === 200 && (await call('PUT', 'shop/items/' + it.j.id + '/media?type=sound', { data: wav.toString('base64') }, OWN)).s === 200);
+  check('both files are served with the right type', (await fetch(base + '/a/shop-' + it.j.id)).headers.get('content-type') === 'image/png' && (await fetch(base + '/a/shopsnd-' + it.j.id)).headers.get('content-type') === 'audio/wav');
+  check('a sound is refused as a picture and the reverse', (await call('PUT', 'shop/items/' + it.j.id + '/media?type=image', { data: wav.toString('base64') }, OWN)).s === 400 && (await call('PUT', 'shop/items/' + it.j.id + '/media?type=sound', { data: png.toString('base64') }, OWN)).s === 400);
+  ws.msgs.length = 0; tx(ws, { t: 'wallet' }); await until(() => last(ws, 'wallet'));
+  { const x = last(ws, 'wallet').items.find(q => q.id === it.j.id); check('players see the item with picture and sound urls', x && /^\/a\/shop-/.test(x.i) && /^\/a\/shopsnd-/.test(x.s), x); }
+  check('remove the sound only', (await call('DELETE', 'shop/items/' + it.j.id + '/media?type=sound', undefined, OWN)).s === 200 && (await fetch(base + '/a/shopsnd-' + it.j.id)).status === 404 && (await fetch(base + '/a/shop-' + it.j.id)).status === 200);
   check('a pack with no content refused', (await call('POST', 'shop/packs', { name: 'x', priceEgp: 10, coins: 0, items: [] }, OWN)).s === 400);
   check('new pack', (await call('POST', 'shop/packs', { name: 'جديد', priceEgp: 10, coins: 50, items: [it.j.id] }, OWN)).s === 200);
   check('delete an item', (await call('DELETE', 'shop/items/' + it.j.id, undefined, OWN)).s === 200);

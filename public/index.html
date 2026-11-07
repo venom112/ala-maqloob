@@ -935,7 +935,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   var WAL = { coins: 0, owned: [], items: [], packs: [], orders: [], reward: 0 }, shTab = 1, payInfo = null;
   var ARN = function (n) { return String(n).replace(/\d/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'[d]; }); };
   function shMsg(t, bad) { var m = $('shMsg'); m.textContent = t || ''; m.className = 'msg' + (bad ? ' err' : ''); }
-  function itemIco(it) { return it.k === 'emoji' ? esc(it.e) : it.k === 'image' ? (it.u ? '<img src="' + esc(it.u) + '" alt="">' : '🖼️') : '🔊'; }
+  function itemIco(it) { return it.i ? '<img src="' + esc(it.i) + '" alt="">' : it.e ? esc(it.e) : it.s ? '🔊' : '🎭'; }
   function renderShop() {
     $('shCoins').textContent = ARN(WAL.coins); $('shopCoins').textContent = ARN(WAL.coins);
     $('shRew').textContent = WAL.reward ? 'بتكسب ' + ARN(WAL.reward) + ' عملة كل ما تكسب جيم ضد لاعبين حقيقيين.' : '';
@@ -945,7 +945,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       if (!WAL.items.length) h = '<p class="pvtxt">المتجر فاضي دلوقتي.</p>';
       WAL.items.forEach(function (it) {
         var own = WAL.owned.indexOf(it.id) >= 0;
-        h += '<div class="shrow"><div class="ico">' + itemIco(it) + '</div><div>' + esc(it.n) + '<small>' + (it.k === 'emoji' ? 'إيموجي' : it.k === 'image' ? 'صورة' : 'صوت') + '</small></div>' +
+        h += '<div class="shrow"><div class="ico">' + itemIco(it) + '</div><div>' + esc(it.n) + '<small>' + (it.i ? 'صورة' : it.e ? 'إيموجي' : 'تفاعل') + (it.s ? ' + 🔊 صوت' : '') + '</small></div>' +
           (own ? '<button type="button" disabled>معاك ✓</button>' : '<button type="button" class="buy" data-buy="' + it.id + '"' + (WAL.coins < it.p ? ' disabled' : '') + '>🪙 ' + ARN(it.p) + '</button>') + '</div>';
       });
     } else if (shTab === 2) {
@@ -955,7 +955,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       } else {
         if (!WAL.packs.length) h = '<p class="pvtxt">مفيش باكجات دلوقتي.</p>';
         WAL.packs.forEach(function (p) {
-          var inc = (p.items || []).map(function (id) { var it = WAL.items.filter(function (x) { return x.id === id; })[0]; return it ? (it.k === 'emoji' ? it.e : it.n) : ''; }).join(' ');
+          var inc = (p.items || []).map(function (id) { var it = WAL.items.filter(function (x) { return x.id === id; })[0]; return it ? (it.e || it.n) : ''; }).join(' ');
           h += '<div class="shrow" style="grid-template-columns:1fr auto"><div><b>' + esc(p.n) + '</b><small>' + (p.c ? '🪙 ' + ARN(p.c) + ' عملة ' : '') + esc(inc) + '</small><small>' + esc(p.d) + '</small></div><button type="button" class="buy" data-pack="' + p.id + '">' + ARN(p.egp) + ' جنيه</button></div>';
         });
       }
@@ -982,16 +982,16 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   /* reactions at the table */
   function renderTray() {
     var T = $('rxTray'), h = '';
-    WAL.items.forEach(function (it) { if (WAL.owned.indexOf(it.id) >= 0) h += '<button type="button" data-rx="' + it.id + '" aria-label="' + esc(it.n) + '">' + (it.k === 'emoji' ? esc(it.e) : it.k === 'image' ? (it.u ? '<img src="' + esc(it.u) + '" alt="">' : '🖼️') : '🔊<span>' + esc(it.n) + '</span>') + '</button>'; });
+    WAL.items.forEach(function (it) { if (WAL.owned.indexOf(it.id) >= 0) h += '<button type="button" data-rx="' + it.id + '" aria-label="' + esc(it.n) + '">' + itemIco(it) + (it.s ? '<span>🔊</span>' : '') + '</button>'; });
     T.innerHTML = h || '<span class="pvtxt">معندكش تفاعلات. اشتري من المتجر 🛒</span>';
   }
   $('rxBtn').onclick = function () { var T = $('rxTray'); if (T.hidden) { renderTray(); send({ t: 'wallet' }); } T.hidden = !T.hidden; };
   $('rxTray').addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('button[data-rx]'); if (!b) return; send({ t: 'react', id: Number(b.dataset.rx) }); $('rxTray').hidden = true; });
   function showReact(d) {
     var sl = slots[rel(d.i)], it = d.it; if (!sl || !it) return;
-    if (it.k === 'sound' && it.u && soundOn) { try { var a = new Audio(it.u); a.volume = .9; var pr = a.play(); if (pr && pr.catch) pr.catch(function () {}); } catch (e) {} }
+    if (it.s && soundOn) { try { var a = new Audio(it.s); a.volume = .9; var pr = a.play(); if (pr && pr.catch) pr.catch(function () {}); } catch (e) {} }
     var el = document.createElement('div'); el.className = 'rxpop';
-    el.innerHTML = it.k === 'emoji' ? esc(it.e) : it.k === 'image' ? (it.u ? '<img src="' + esc(it.u) + '" alt="">' : '🖼️') : '🔊<small>' + esc(it.n) + '</small>';
+    el.innerHTML = it.i ? '<img src="' + esc(it.i) + '" alt="">' : it.e ? esc(it.e) : '🔊<small>' + esc(it.n) + '</small>';
     sl.querySelector('.seat').appendChild(el); setTimeout(function () { el.remove(); }, 3000);
   }
   $('accClose').onclick = function () { $('accBox').hidden = true; };
