@@ -1,4 +1,5 @@
 'use strict';
+const SHOP = require('./shop');
 // Everything the admin can change about the game: the cards, the numbers, the texts and the images.
 // It lives in the database; this module loads it, checks every edit, and hands each game a frozen copy (a "snapshot"),
 // so an edit never changes a game that is already being played. It takes effect from the next game.
@@ -49,7 +50,7 @@ const IMAGE_SLOTS = {
   coin10: { label: 'عملة ١٠ (دهب)', def: '/img/coin10.webp' }
 };
 const cardSlot = id => 'card-' + id;
-const slotOk = s => IMAGE_SLOTS[s] || /^card-\d{1,9}$/.test(s);
+const slotOk = s => IMAGE_SLOTS[s] || /^(card|snd|shop)-\d{1,9}$/.test(s);
 
 const DEFAULT_SETTINGS = {
   startCards: 3,      // cards dealt to each player
@@ -475,6 +476,8 @@ class Content {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, s);
     this.sounds = {}; try { const sj = JSON.parse((await st.getSetting('sounds')) || '{}'); for (const k of Object.keys(sj)) { const c = cleanSound(sj[k]); if (c) this.sounds[k] = c; } } catch (e) {}
     this.assets = {}; for (const a of await st.assetMeta()) this.assets[a.slot] = a.hash;
+    this.shopAll = await st.shopItems();
+    this.shopCfg = Object.assign({}, SHOP.DEFAULTS); try { Object.assign(this.shopCfg, JSON.parse((await st.getSetting('shop')) || '{}')); } catch (e) {}
     this.version++;
   }
   async insertCard(c) {
@@ -483,6 +486,9 @@ class Content {
       [c.name, c.symbol || '', c.descr, c.penDescr, c.cnt, c.active ? 1 : 0, c.color, JSON.stringify(c.power), JSON.stringify(c.penalty), c.sort, c.defaultImg || null, now, now]);
   }
 
+  // a shop item as the clients see it (the picture / sound is an uploaded asset)
+  shopPublic(it) { return { id: it.id, k: it.kind, n: it.name, e: it.emoji, p: it.price, u: this.assets['shop-' + it.id] ? '/a/shop-' + it.id + '?v=' + this.assets['shop-' + it.id] : '' }; }
+  shopItem(id) { const it = (this.shopAll || []).find(x => x.id === id && x.active); return it ? this.shopPublic(it) : null; }
   imgUrl(slot, def) { return this.assets[slot] ? '/a/' + slot + '?v=' + this.assets[slot] : def; }
   cardImg(c) { return this.imgUrl(cardSlot(c.id), c.defaultImg || ''); }
   images() { const o = {}; for (const k of Object.keys(IMAGE_SLOTS)) o[k] = this.imgUrl(k, IMAGE_SLOTS[k].def); return o; }
@@ -491,7 +497,7 @@ class Content {
   snapshot() {
     const set = this.settings;
     const cards = this.cards.filter(c => c.active).map(c => ({
-      up: c.power.some(o => o.op === 'immune' || o.op === 'victory'), jg: c.power.some(o => o.op === 'judge'), df: c.power.some(o => o.op === 'reflect' || o.op === 'guard' || o.op === 'judge' || o.op === 'elder'), id: c.id, snd: this.soundFor(c), name: c.name, symbol: c.symbol, color: c.color, cnt: c.cnt, descr: c.descr, img: this.cardImg(c),
+      up: c.power.some(o => o.op === 'immune' || o.op === 'victory'), jg: c.power.some(o => o.op === 'judge'), df: c.power.some(o => o.op === 'reflect' || o.op === 'guard' || o.op === 'judge' || o.op === 'elder'), id: c.id, snd: this.soundFor(c), sfx: this.assets['snd-' + c.id] ? '/a/snd-' + c.id + '?v=' + this.assets['snd-' + c.id] : null, name: c.name, symbol: c.symbol, color: c.color, cnt: c.cnt, descr: c.descr, img: this.cardImg(c),
       pen: c.penDescr || penText(c.penalty), power: c.power.map(o => Object.assign({}, o)), penalty: Object.assign({}, c.penalty)
     }));
     return {

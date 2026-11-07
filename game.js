@@ -34,6 +34,13 @@ class Room {
   later(fn, ms) { const tk = this.token; const t = setTimeout(() => { this.timers.delete(t); if (tk === this.token && !this.closed) fn(); }, ms * (Room.speed || 1)); this.timers.add(t); }
   clearTimers() { this.timers.forEach(clearTimeout); this.timers.clear(); this.token++; }
   E(kind, d) { d = d || {}; d.k = kind; d.id = ++this.evSeq; this.evs.push(d); if (this.evs.length > 30) this.evs.shift(); }
+  // a shop reaction (emoji / picture / sound) shown to the whole table while a game is on
+  react(uid, item) {
+    const i = this.idx(uid); if (i < 0 || this.status !== 'playing' || !this.dealt || this.closed) return false;
+    const now = Date.now(); this.lastReact = this.lastReact || {};
+    if (now - (this.lastReact[uid] || 0) < 2500) return false;
+    this.lastReact[uid] = now; this.E('react', { i, it: item }); this.publish(); return true;
+  }
   idx(uid) { return this.roster.findIndex(r => r.uid === uid); }
   isBot(j) { return !!this.roster[j] && (!!this.roster[j].bot || !!this.roster[j].sub); }
   live() { return this.status === 'playing' && this.dealt; }
@@ -54,7 +61,7 @@ class Room {
         imm: this.immuneTo ? this.roster.map((r, j) => this.isImmune(j) ? this.immuneTo[j] - this.turnsN[j] + 1 : 0) : [],
         cd: i >= 0 && this.turnsN && this.cdAt[i] ? this.cfg.cards.map((c, x) => this.cdLeft(i, x)) : [],
         ban: i >= 0 && this.turnsN ? this.cfg.cards.map((c, x) => x).filter(x => this.claimBanned(i, x)) : [],
-        cfg: { cards: this.cfg.cards.map(c => ({ df: this.isDefCard(this.cfg.cards.indexOf(c)), jg: !!c.jg, win: (c.power.find(o => o.op === 'victory') || { n: 0 }).n, up: !!c.up, snd: c.snd || null, cdn: this.cdOf(this.cfg.cards.indexOf(c)), name: c.name, symbol: c.symbol, color: c.color, descr: c.descr, img: c.img, pen: c.pen })), set: { startInf: this.cfg.set.startInf, decideMs: this.cfg.set.decideMs, pickMs: this.cfg.set.pickMs, turnMs: this.cfg.set.turnMs || 0 }, v: this.cfg.v }
+        cfg: { cards: this.cfg.cards.map(c => ({ df: this.isDefCard(this.cfg.cards.indexOf(c)), jg: !!c.jg, win: (c.power.find(o => o.op === 'victory') || { n: 0 }).n, up: !!c.up, snd: c.snd || null, sfx: c.sfx || null, cdn: this.cdOf(this.cfg.cards.indexOf(c)), name: c.name, symbol: c.symbol, color: c.color, descr: c.descr, img: c.img, pen: c.pen })), set: { startInf: this.cfg.set.startInf, decideMs: this.cfg.set.decideMs, pickMs: this.cfg.set.pickMs, turnMs: this.cfg.set.turnMs || 0 }, v: this.cfg.v }
       };
     }
     return {
@@ -247,7 +254,7 @@ class Room {
     this.clearTimers();
     if (this.bots) { this.newGame(); this.touch(); return; }
     this.roster = this.roster.filter(r => !r.gone && !r.left);   // somebody who left for good is not dealt into the next game
-    this.resetCards(); this.evs = []; this.gameNo++;
+    this.resetCards(); this.evs = []; this.gameNo++; this.statsDone = false;
     if (this.roster.length < this.cap) { this.status = 'waiting'; this.publish(); return; }
     this.status = 'waiting'; this.start(this.hostUid);
   }
@@ -324,7 +331,9 @@ class Room {
   judgeCard() { return this.cfg.cards.findIndex(c => c.power.some(o => o.op === 'judge')); }
   canJudge(j) {
     const cl = this.claim;
-    return this.phase === 'claim' && !!cl && !cl.def && cl.by !== j && cl.pending.includes(j) && !this.out[j] && !(cl.judged && cl.judged.has(j)) && this.judgeCard() >= 0;
+    // the judge cancels any action or attack, except the elder (a defence) and the politician (immunity)
+    const cc = cl && this.cfg.cards[cl.c], safe = !!cc && cc.power.some(o => o.op === 'elder' || o.op === 'immune');
+    return this.phase === 'claim' && !!cl && !cl.def && !safe && cl.by !== j && cl.pending.includes(j) && !this.out[j] && !(cl.judged && cl.judged.has(j)) && this.judgeCard() >= 0;
   }
   judgePlay(j, k) {
     if (!this.canJudge(j) || this.hands[j][k] == null) return;
@@ -382,7 +391,10 @@ class Room {
     if (st && st.addResult && !this.bots && !this.statsDone) {
       this.statsDone = true;
       const humans = this.roster.filter(r => !r.bot && r.uid);
-      if (humans.length >= 2) for (const r of humans) Promise.resolve(st.addResult(r.uid, this.roster[w] === r)).catch(() => {});
+      if (humans.length >= 2) for (const r of humans) {
+        Promise.resolve(st.addResult(r.uid, this.roster[w] === r)).catch(() => {});
+        if (this.roster[w] === r && this.content.onWin) Promise.resolve(this.content.onWin(r.uid)).catch(() => {});   // the winner earns shop coins
+      }
     }
   }
   // Who a step of a power hits. 'pick' is the player the claimer chose; 'random' is drawn once, when the power starts.

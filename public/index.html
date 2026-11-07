@@ -297,6 +297,36 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
 .modal .sheet h3 { margin: 0; font-family: var(--font-display); font-size: 18px; color: var(--brass); }
 .logbtn { position: fixed; top: 58px; left: 10px; z-index: 40; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--brass-dim); background: var(--coal); color: var(--brass); font-size: 20px; cursor: pointer; display: grid; place-items: center; }
 .accbtn { position: fixed; top: 10px; left: 10px; z-index: 40; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--brass-dim); background: var(--coal); color: var(--brass); font-size: 19px; display: grid; place-items: center; cursor: pointer; }
+#shopBtn { left: 58px; width: auto; min-width: 40px; padding: 0 12px; border-radius: 20px; font-size: 14px; gap: 6px; grid-auto-flow: column; }
+.shopbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.shopbar b { color: var(--brass); font-size: 18px; }
+.shtabs { display: flex; gap: 6px; margin: 6px 0 10px; }
+.shtabs button { flex: 1; min-height: 38px; border-radius: 10px; border: 1px solid var(--brass-dim); background: none; color: var(--bone); font: inherit; font-size: 14px; cursor: pointer; }
+.shtabs button.on { background: var(--brass); color: #1a1405; border-color: var(--brass); }
+.shlist { display: grid; gap: 8px; max-height: 52vh; overflow: auto; }
+.shrow { display: grid; grid-template-columns: 44px 1fr auto; gap: 10px; align-items: center; border: 1px solid var(--brass-dim); border-radius: 12px; padding: 8px 10px; }
+.shrow .ico { font-size: 30px; text-align: center; line-height: 1; }
+.shrow .ico img { width: 40px; height: 40px; object-fit: cover; border-radius: 8px; display: block; }
+.shrow small { display: block; color: var(--mute); font-size: 12px; margin-top: 2px; }
+.shrow button { min-height: 38px; border-radius: 10px; border: 1px solid var(--brass); background: none; color: var(--brass); font: inherit; font-size: 14px; padding: 0 12px; cursor: pointer; }
+.shrow button.buy { background: var(--brass); color: #1a1405; }
+.shrow button:disabled { opacity: .45; }
+.paybox { border: 1px dashed var(--brass); border-radius: 12px; padding: 12px; line-height: 1.8; font-size: 14px; }
+.paybox b { color: var(--brass); user-select: all; }
+.paybox .cbtns { margin-top: 8px; }
+.paybox a.btn { text-decoration: none; display: grid; place-items: center; text-align: center; }
+#shopBtn { white-space: nowrap; }
+.rxbtn { background: none; border: 1px solid var(--brass-dim); color: var(--brass); border-radius: 999px; min-height: 34px; padding: 0 12px; font: inherit; font-size: 15px; cursor: pointer; }
+.mhrow { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.rxtray { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; border: 1px solid var(--brass-dim); border-radius: 14px; background: var(--coal); max-height: 30vh; overflow: auto; }
+.rxtray[hidden] { display: none; }
+.rxtray button { min-width: 48px; min-height: 48px; border-radius: 12px; border: 1px solid var(--brass-dim); background: none; font-size: 26px; cursor: pointer; padding: 2px 6px; color: var(--bone); display: grid; place-items: center; }
+.rxtray button img { width: 36px; height: 36px; border-radius: 6px; object-fit: cover; }
+.rxtray button span { font-size: 12px; }
+.rxpop { position: absolute; left: 50%; top: -16cqw; translate: -50% 0; z-index: 9; pointer-events: none; font-size: 11cqw; line-height: 1; animation: rxup 2.8s ease-out both; text-align: center; filter: drop-shadow(0 2px 6px rgba(0,0,0,.6)); }
+.rxpop img { width: 15cqw; height: 15cqw; object-fit: cover; border-radius: 3cqw; display: block; }
+.rxpop small { display: block; font-size: 3.2cqw; background: rgba(0,0,0,.65); color: var(--bone); border-radius: 2cqw; padding: .4cqw 1.6cqw; margin-top: 1cqw; }
+@keyframes rxup { 0% { opacity: 0; transform: translateY(8cqw) scale(.4); } 14% { opacity: 1; transform: translateY(0) scale(1.25); } 26% { transform: scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(-9cqw) scale(1); } }
 .accrow { display: grid; gap: 4px; margin: 6px 0 4px; }
 .accrow label { font-size: 13px; color: var(--mute); }
 .accname { display: flex; gap: 8px; }
@@ -770,9 +800,18 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       </div></div>
 
       <div class="myhand" id="myHand" hidden>
-        <h3 class="mh">إيدك</h3>
+        <div class="mhrow"><h3 class="mh">إيدك</h3><button class="rxbtn" id="rxBtn" type="button" aria-label="تفاعل">😀 تفاعل</button></div>
+        <div class="rxtray" id="rxTray" hidden></div>
         <div class="hrow" id="handRow"></div>
       </div>
+      <div class="modal" id="shopBox" hidden><div class="claimbox sheet" role="dialog" aria-label="المتجر">
+        <div class="shopbar"><h3 style="margin:0">المتجر</h3><b>🪙 <span id="shCoins">٠</span></b></div>
+        <p class="pvtxt" id="shRew" style="margin:0 0 4px"></p>
+        <div class="shtabs"><button type="button" id="shT1" class="on">العناصر</button><button type="button" id="shT2">الباكجات</button><button type="button" id="shT3">طلباتي</button></div>
+        <p class="msg" id="shMsg" aria-live="polite"></p>
+        <div class="shlist" id="shList"></div>
+        <div class="cbtns"><button class="btn pass" id="shClose" type="button">تمام</button></div>
+      </div></div>
       <div class="modal" id="accBox" hidden><div class="claimbox sheet" role="dialog" aria-label="حسابي">
         <h3>حسابي</h3>
         <div class="accrow"><label for="accName">الاسم</label><div class="accname"><input id="accName" type="text" maxlength="100" autocomplete="off"><button class="btn" id="accSave" type="button">حفظ</button></div></div>
@@ -847,6 +886,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       </div></div>
 
   <button class="accbtn" id="accBtn" type="button" aria-label="حسابي" hidden>👤</button>
+  <button class="accbtn" id="shopBtn" type="button" aria-label="المتجر" hidden>🛒 <span id="shopCoins">٠</span></button>
   <a class="adminbtn" id="adminBtn" href="/admin" aria-label="لوحة الأدمن" hidden>⚙</a>
   <div id="fx" aria-hidden="true"></div>
 
@@ -891,6 +931,69 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     $('pstBox').hidden = false;
   }
   $('accBtn').onclick = function () { send({ t: 'profile' }); };
+  /* ---------- shop: items bought with coins, packs bought with real money (paid by hand, approved by an admin) ---------- */
+  var WAL = { coins: 0, owned: [], items: [], packs: [], orders: [], reward: 0 }, shTab = 1, payInfo = null;
+  var ARN = function (n) { return String(n).replace(/\d/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'[d]; }); };
+  function shMsg(t, bad) { var m = $('shMsg'); m.textContent = t || ''; m.className = 'msg' + (bad ? ' err' : ''); }
+  function itemIco(it) { return it.k === 'emoji' ? esc(it.e) : it.k === 'image' ? (it.u ? '<img src="' + esc(it.u) + '" alt="">' : '🖼️') : '🔊'; }
+  function renderShop() {
+    $('shCoins').textContent = ARN(WAL.coins); $('shopCoins').textContent = ARN(WAL.coins);
+    $('shRew').textContent = WAL.reward ? 'بتكسب ' + ARN(WAL.reward) + ' عملة كل ما تكسب جيم ضد لاعبين حقيقيين.' : '';
+    ['shT1', 'shT2', 'shT3'].forEach(function (id, k) { $(id).className = shTab === k + 1 ? 'on' : ''; });
+    var L = $('shList'), h = '';
+    if (shTab === 1) {
+      if (!WAL.items.length) h = '<p class="pvtxt">المتجر فاضي دلوقتي.</p>';
+      WAL.items.forEach(function (it) {
+        var own = WAL.owned.indexOf(it.id) >= 0;
+        h += '<div class="shrow"><div class="ico">' + itemIco(it) + '</div><div>' + esc(it.n) + '<small>' + (it.k === 'emoji' ? 'إيموجي' : it.k === 'image' ? 'صورة' : 'صوت') + '</small></div>' +
+          (own ? '<button type="button" disabled>معاك ✓</button>' : '<button type="button" class="buy" data-buy="' + it.id + '"' + (WAL.coins < it.p ? ' disabled' : '') + '>🪙 ' + ARN(it.p) + '</button>') + '</div>';
+      });
+    } else if (shTab === 2) {
+      if (payInfo) {
+        h = '<div class="paybox">طلب رقم <b>' + ARN(payInfo.id) + '</b> — ' + esc(payInfo.pack) + '<br>1) حوّل <b>' + ARN(payInfo.price) + '</b> جنيه على انستا باي أو أي محفظة إلكترونية للرقم:<br><b dir="ltr">' + esc(payInfo.pay) + '</b><br>2) ابعت سكرين شوت التحويل على واتساب للرقم <b dir="ltr">' + esc(payInfo.wa) + '</b> ومعاه رقم الطلب.<br>3) أول ما الأدمن يتأكد، الباكج بيوصلك ويظهرلك إشعار.' + (payInfo.note ? '<br>' + esc(payInfo.note) : '') +
+          '<div class="cbtns"><a class="btn primary" target="_blank" rel="noopener" href="' + esc(payInfo.link) + '">ابعت على واتساب</a><button class="btn" type="button" data-copy="' + esc(payInfo.pay) + '">انسخ الرقم</button><button class="btn pass" type="button" data-back="1">رجوع</button></div></div>';
+      } else {
+        if (!WAL.packs.length) h = '<p class="pvtxt">مفيش باكجات دلوقتي.</p>';
+        WAL.packs.forEach(function (p) {
+          var inc = (p.items || []).map(function (id) { var it = WAL.items.filter(function (x) { return x.id === id; })[0]; return it ? (it.k === 'emoji' ? it.e : it.n) : ''; }).join(' ');
+          h += '<div class="shrow" style="grid-template-columns:1fr auto"><div><b>' + esc(p.n) + '</b><small>' + (p.c ? '🪙 ' + ARN(p.c) + ' عملة ' : '') + esc(inc) + '</small><small>' + esc(p.d) + '</small></div><button type="button" class="buy" data-pack="' + p.id + '">' + ARN(p.egp) + ' جنيه</button></div>';
+        });
+      }
+    } else {
+      var ST = { pending: 'مستني التأكيد', approved: 'اتسلّم ✓', rejected: 'اترفض' };
+      if (!WAL.orders.length) h = '<p class="pvtxt">مفيش طلبات لسه.</p>';
+      WAL.orders.forEach(function (o) { h += '<div class="shrow" style="grid-template-columns:1fr auto"><div>#' + ARN(o.id) + ' ' + esc(o.n) + '<small>' + ARN(o.egp) + ' جنيه</small></div><span>' + (ST[o.s] || '') + '</span></div>'; });
+    }
+    L.innerHTML = h;
+  }
+  function openShop() { shTab = 1; payInfo = null; shMsg(''); renderShop(); $('shopBox').hidden = false; send({ t: 'wallet' }); }
+  $('shopBtn').onclick = openShop;
+  $('shClose').onclick = function () { $('shopBox').hidden = true; };
+  $('shopBox').addEventListener('click', function (e) { if (e.target === this) this.hidden = true; });
+  ['shT1', 'shT2', 'shT3'].forEach(function (id, k) { $(id).onclick = function () { shTab = k + 1; payInfo = null; shMsg(''); renderShop(); }; });
+  $('shList').addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('button'); if (!b) return;
+    if (b.dataset.buy) { shMsg(''); send({ t: 'buy', id: Number(b.dataset.buy) }); }
+    else if (b.dataset.pack) { shMsg(''); send({ t: 'order', pack: Number(b.dataset.pack) }); }
+    else if (b.dataset.back) { payInfo = null; renderShop(); }
+    else if (b.dataset.copy) { try { navigator.clipboard.writeText(b.dataset.copy); shMsg('اتنسخ الرقم ✓'); } catch (x) { shMsg(b.dataset.copy); } }
+  });
+  function toastMsg(t) { var el = $('exitToast'); el.textContent = t; el.classList.add('on'); clearTimeout(toastMsg.t); toastMsg.t = setTimeout(function () { el.classList.remove('on'); }, 3600); }
+  /* reactions at the table */
+  function renderTray() {
+    var T = $('rxTray'), h = '';
+    WAL.items.forEach(function (it) { if (WAL.owned.indexOf(it.id) >= 0) h += '<button type="button" data-rx="' + it.id + '" aria-label="' + esc(it.n) + '">' + (it.k === 'emoji' ? esc(it.e) : it.k === 'image' ? (it.u ? '<img src="' + esc(it.u) + '" alt="">' : '🖼️') : '🔊<span>' + esc(it.n) + '</span>') + '</button>'; });
+    T.innerHTML = h || '<span class="pvtxt">معندكش تفاعلات. اشتري من المتجر 🛒</span>';
+  }
+  $('rxBtn').onclick = function () { var T = $('rxTray'); if (T.hidden) { renderTray(); send({ t: 'wallet' }); } T.hidden = !T.hidden; };
+  $('rxTray').addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('button[data-rx]'); if (!b) return; send({ t: 'react', id: Number(b.dataset.rx) }); $('rxTray').hidden = true; });
+  function showReact(d) {
+    var sl = slots[rel(d.i)], it = d.it; if (!sl || !it) return;
+    if (it.k === 'sound' && it.u && soundOn) { try { var a = new Audio(it.u); a.volume = .9; var pr = a.play(); if (pr && pr.catch) pr.catch(function () {}); } catch (e) {} }
+    var el = document.createElement('div'); el.className = 'rxpop';
+    el.innerHTML = it.k === 'emoji' ? esc(it.e) : it.k === 'image' ? (it.u ? '<img src="' + esc(it.u) + '" alt="">' : '🖼️') : '🔊<small>' + esc(it.n) + '</small>';
+    sl.querySelector('.seat').appendChild(el); setTimeout(function () { el.remove(); }, 3000);
+  }
   $('accClose').onclick = function () { $('accBox').hidden = true; };
   $('accBox').addEventListener('click', function (e) { if (e.target === this) this.hidden = true; });
   $('accSave').onclick = function () {
@@ -928,7 +1031,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   /* ---------- accounts live on the server: a unique name plus a password ---------- */
   var TOK = 'ala-maqloob-token';
   var net = { ws: null, on: false, tries: 0, last: 0, rt: 0, stop: false };
-  function syncAdmin() { $('adminBtn').hidden = !(ME.admin && $('room').hidden); $('accBtn').hidden = !(ME.name && net.on && $('room').hidden && !$('st-home').hidden); }
+  function syncAdmin() { $('adminBtn').hidden = !(ME.admin && $('room').hidden); var onHome = !!(ME.name && net.on && $('room').hidden && !$('st-home').hidden); $('accBtn').hidden = !onHome; $('shopBtn').hidden = !onHome; if (onHome && !syncAdmin.got) { syncAdmin.got = 1; send({ t: 'wallet' }); } if (!ME.name) syncAdmin.got = 0; }
   function validName(v) {
     var len = Array.from(v).length;
     if (len < 2) return 'الاسم لازم يكون حرفين على الأقل.';
@@ -1079,7 +1182,10 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       for (var k = 0; k < 14; k++) noise(.1, .09, .4 + k * .11, 2500);
     },
     // one sound per card power, played when the card is put on the table (the sound follows the card that was NAMED)
-    card: function (rec) { SFX.play(); if (!rec || !rec.length) return; rec.forEach(function (o) { if (o.k === 'n') noise(o.d, o.v, o.a || 0, o.hz || 1000); else tone(o.f, o.d, o.w, o.v, o.a || 0, o.to); }); },
+    card: function (rec, url) {
+      SFX.play();
+      if (url) { if (!soundOn) return; try { var a = new Audio(url); a.volume = .9; var pr = a.play(); if (pr && pr.catch) pr.catch(function () {}); return; } catch (e) {} }
+      if (!rec || !rec.length) return; rec.forEach(function (o) { if (o.k === 'n') noise(o.d, o.v, o.a || 0, o.hz || 1000); else tone(o.f, o.d, o.w, o.v, o.a || 0, o.to); }); },
     fatwa: function () { noise(.12, .3, 0, 300); tone(90, .3, 'square', .3, 0, 45); tone(1175, .09, 'square', .12, .55); tone(1568, .35, 'square', .12, .65); },
     lose: function () { [392, 370, 349, 262].forEach(function (f, k) { tone(f, .5, 'sawtooth', .13, k * .45, f * .94); }); }
   };
@@ -1923,6 +2029,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   function evStr(o) {
     if (!o) return '';
     if (typeof o === 'string') return o;
+    if (o.k === 'react') return '';
     var me = function (a) { return rel(a) === 0; };
     switch (o.k) {
       case 'rs': return 'كومة السحب خلصت. رجّعنا كل الورق اللي اتلعب وفنّطناه.';
@@ -1953,7 +2060,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     var r;
     switch (d.k) {
       case 'draw': SFX.draw(); flyFromDraw(rel(d.i)); break;
-      case 'play': landOnPlay(rel(d.i)); (function (ri, cc) { setTimeout(function () { holoSpawn(ri, cc); }, 420); })(rel(d.i), d.c); SFX.card(CFG && CFG.cards[d.c] ? CFG.cards[d.c].snd : ''); bubble(rel(d.i), lab(d.c), 'claim'); break;
+      case 'play': landOnPlay(rel(d.i)); (function (ri, cc) { setTimeout(function () { holoSpawn(ri, cc); }, 420); })(rel(d.i), d.c); SFX.card(CFG && CFG.cards[d.c] ? CFG.cards[d.c].snd : '', CFG && CFG.cards[d.c] ? CFG.cards[d.c].sfx : null); bubble(rel(d.i), lab(d.c), 'claim'); break;
       case 'pass':
         r = rel(d.j);
         if (r === 0) { if (!d.auto) { fx('pass', 'ماشي، الكارت عدّى', 'خلاص هعديهالك', 1300); SFX.pass(); } }
@@ -1972,6 +2079,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       case 'honest':
         fx('honest', rel(d.j) === 0 ? 'إنت اتحديت وخسرت نقطة نفوذ' : nmR(rel(d.j)) + ' اتحدى وخسر نقطة نفوذ', 'الكارت صح!', 2300); SFX.honest(); break;
       case 'unreveal': break;
+      case 'react': showReact(d); break;
       case 'liar': (function (h) { if (h) { burst(h.el._p, HCOL.red, 16, 11, 900, 1.5); holoEnd(h); } })(HOLO[rel(d.P)]);
         fx('liar', 'عقوبة الكدب: ' + cd(d.c).pen, 'كدّاب!', 2400); SFX.liar(); break;
       case 'power':
@@ -2124,6 +2232,20 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       case 'left': if (inRoom()) { leaveLocal(); show('home'); } break;
       case 'rooms': fillRoomList(m.list || []); break;
       case 'pstats': showPstats(m); break;
+      case 'wallet':
+        WAL = { coins: m.coins, owned: m.owned || [], items: m.items || [], packs: m.packs || [], orders: m.orders || [], reward: m.reward || 0 };
+        if (m.bought) shMsg(m.bought.msg, !m.bought.ok);
+        renderShop(); if (!$('rxTray').hidden) renderTray(); break;
+      case 'ordered':
+        if (m.ok) { payInfo = m; shTab = 2; shMsg(''); send({ t: 'wallet' }); } else shMsg(m.msg, true);
+        renderShop(); break;
+      case 'coins':
+        WAL.coins = m.coins; renderShop();
+        if (m.won) toastMsg('كسبت ' + ARN(m.won) + ' عملة 🪙 لفوزك بالجيم');
+        else if (m.order === 1) { toastMsg('طلبك اتوافق عليه ✓ الباكج وصلك'); send({ t: 'wallet' }); }
+        else if (m.order === 2) { toastMsg('طلب الباكج اترفض. كلّم الأدمن على واتساب.'); send({ t: 'wallet' }); }
+        else send({ t: 'wallet' });
+        break;
       case 'profile':
         $('accName').value = m.name || ''; $('accMail').textContent = m.email || ''; $('accMailRow').hidden = !m.email;
         $('accSince').textContent = m.created ? new Date(m.created).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' }) : '';

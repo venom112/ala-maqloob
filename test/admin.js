@@ -153,6 +153,11 @@ async function until(f, ms = 15000) { const t0 = Date.now(); while (Date.now() -
   check('svg / html disguised as a picture refused', (await call('PUT', 'assets/logo', { data: Buffer.from('<svg onload=alert(1)/>').toString('base64') }, OWN)).s === 400);
   check('unknown slot refused', (await call('PUT', 'assets/evil', { data: png.toString('base64') }, OWN)).s === 404);
   check('picture for a card', (await call('PUT', 'assets/card-' + mine.id, { data: png.toString('base64') }, OWN)).s === 200 && (await call('GET', 'cards', undefined, OWN)).j.cards.find(c => c.id === mine.id).customImg === true);
+  { const wav = Buffer.concat([Buffer.from('RIFF'), Buffer.from([40,0,0,0]), Buffer.from('WAVEfmt '), Buffer.alloc(32)]);
+    check('sound file for a card', (await call('PUT', 'assets/snd-' + mine.id, { data: wav.toString('base64') }, OWN)).s === 200 && /^\/a\/snd-/.test((await call('GET', 'cards', undefined, OWN)).j.cards.find(c => c.id === mine.id).sfx));
+    check('picture refused as a sound', (await call('PUT', 'assets/snd-' + mine.id, { data: png.toString('base64') }, OWN)).s === 400);
+    check('sound served as audio', (await fetch(base + '/a/snd-' + mine.id)).headers.get('content-type') === 'audio/wav');
+    check('sound removed', (await call('DELETE', 'assets/snd-' + mine.id, undefined, OWN)).j.ok === true); }
   check('reset the logo to the original', (await call('DELETE', 'assets/logo', undefined, OWN)).j.ok === true && (await (await fetch(base + '/api/config')).json()).images.logo === '/img/logo.jpg');
 
   /* ---- settings, then a real game uses the edited content ---- */

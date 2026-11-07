@@ -203,3 +203,11 @@ npm start          # http://localhost:3000
 
 ### v47: living characters
 `public/img/holo/*.webp` are cut-outs of each card's character (made once with the ISNet segmentation model from the card art; custom admin images fall back to a crop). Each hologram is a canvas actor (`mkActor`): strip-warped body with breathing, sway, walk bob, lean, strike, hit, spin, block, cast poses, projector tint, scan lines, materialise-from-feet and glitch. Drawn and swapped cards fly to the real cards in your hand (`handPt`).
+
+## المتجر والعملات (v51)
+- **العملات**: الفايز في جيم ضد لاعبين حقيقيين (٢ على الأقل، مش مع بوتات) بياخد مكافأة (الافتراضي ٢٠، من تبويب "المتجر" في الأدمن). الرصيد في جدول `wallet`.
+- **العناصر**: إيموجي / صور / أصوات (`shop_items`)، بتتشرى بالعملات (`owned`). السعر ٠ = مجاني للكل. الصور والأصوات بتتخزن في `assets` بالمفتاح `shop-<id>`. اللاعب بيبعتها على الترابيزة بزرار "😀 تفاعل" (رسالة `react`، مرة كل ٢٫٥ ثانية)، وبتظهر للكل كحدث `react`.
+- **الباكجات بفلوس حقيقية** (`packs`): اللاعب بيطلب باكج (رسالة `order`) فيظهرله رقم انستا باي / المحفظة وزرار واتساب جاهز. الفلوس ما بتعدّيش على السيرفر: الأدمن بيراجع السكرين شوت وبيوافق من "طلبات الباكجات" (`orders`) فتوصل العملات والعناصر. كل طلب بيتقرر مرة واحدة، وأقصى ٣ طلبات معلّقة للاعب.
+- **الصلاحيات**: `shop.edit` (العناصر، الباكجات، الأسعار، أرقام الدفع، منح عملات) و`orders.manage` (الموافقة/الرفض). الأونر عنده كل حاجة.
+- **القاضي**: بيلغي أي أكشن أو هجوم، ما عدا العجوز (دفاع) والسياسي (حصانة). **العجوز** بيصد أي هجوم عليك.
+- اختبار: `node test/shop.js`.

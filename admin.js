@@ -4,6 +4,7 @@
 // Roles are looked up on every request, so removing an admin or changing his permissions takes effect at once.
 const S = require('./storage');
 const C = require('./content');
+const SH = require('./shop');
 const { verifyIdToken } = require('./google');
 
 const OWNER_EMAIL = () => (process.env.OWNER_EMAIL || 'ana.wolfish@gmail.com').trim();
@@ -15,12 +16,25 @@ const PERMS = {
   'cards.edit':     'يضيف ويعدّل ويمسح الكروت',
   'assets.edit':    'يغيّر الصور (الشعار، ضهر الكارت، العملات، صور الكروت)',
   'settings.edit':  'يغيّر إعدادات اللعبة (النقط، الوقت، أسماء البوتات، النصوص)',
+  'shop.edit':      'يدير المتجر: العناصر والباكجات والأسعار وبيانات الدفع ويدّي عملات',
+  'orders.manage':  'يراجع طلبات شراء الباكجات ويوافق عليها أو يرفضها',
   'audit.view':     'يشوف سجل العمليات',
   'rooms.manage':   'يشوف الغرف الشغالة ويقفلها'
 };
 const PERM_KEYS = Object.keys(PERMS);
 const IMG_TYPES = { 'image/png': [0x89, 0x50, 0x4e, 0x47], 'image/jpeg': [0xff, 0xd8, 0xff], 'image/webp': null };
 const MAX_IMG = 1.5 * 1024 * 1024;
+const MAX_SND = 400 * 1024;
+function sniffAudio(b) {
+  if (b.length < 16) return null;
+  const s4 = b.slice(0, 4).toString('latin1');
+  if (s4 === 'OggS') return 'audio/ogg';
+  if (s4 === 'RIFF' && b.slice(8, 12).toString('latin1') === 'WAVE') return 'audio/wav';
+  if (b.slice(4, 8).toString('latin1') === 'ftyp') return 'audio/mp4';
+  if (b[0] === 0x1a && b[1] === 0x45 && b[2] === 0xdf && b[3] === 0xa3) return 'audio/webm';
+  if (s4.slice(0, 3) === 'ID3' || (b[0] === 0xff && (b[1] & 0xe0) === 0xe0)) return 'audio/mpeg';
+  return null;
+}
 
 function sniff(buf) {
   if (buf.length > 12 && buf.slice(0, 4).toString() === 'RIFF' && buf.slice(8, 12).toString() === 'WEBP') return 'image/webp';
@@ -175,7 +189,7 @@ function install(ctx) {
       if (route[0] === 'cards') {
         if (route.length === 1 && m === 'GET') {
           if (!can(me, 'cards.edit')) return fail(res, 403, 'مفيش عندك صلاحية لده.'), true;
-          return json(res, 200, { cards: content.cards.map(c => Object.assign({}, c, { img: content.cardImg(c), customImg: !!content.assets['card-' + c.id], snd: content.soundFor(c), sndCustom: !!content.sounds[c.id] })), settings: content.settings, version: content.version }), true;
+          return json(res, 200, { cards: content.cards.map(c => Object.assign({}, c, { img: content.cardImg(c), customImg: !!content.assets['card-' + c.id], snd: content.soundFor(c), sndCustom: !!content.sounds[c.id], sfx: content.assets['snd-' + c.id] ? '/a/snd-' + c.id + '?v=' + content.assets['snd-' + c.id] : null })), settings: content.settings, version: content.version }), true;
         }
         if (!need('cards.edit')) return true;
         if (route.length === 1 && m === 'POST') {
@@ -215,9 +229,97 @@ function install(ctx) {
         if (m === 'DELETE' && route.length === 2) {
           const bad = deckProblem(content.cards.filter(c => c.id !== id), content.settings); if (bad) return fail(res, 400, bad), true;
           await store.run('UPDATE cards SET deleted=1, updated=? WHERE id=?', [Date.now(), id]);
-          await store.delAsset('card-' + id);
+          await store.delAsset('card-' + id); await store.delAsset('snd-' + id);
           await content.reload(); await store.log(actor(me), 'card.delete', card.name + ' (#' + id + ')', null);
           return json(res, 200, { ok: true }), true;
+        }
+        return fail(res, 404, 'غير موجود.'), true;
+      }
+
+      /* ---- shop: items, packs, payment details, orders ---- */
+      if (route[0] === 'shop') {
+        const sub = route[1];
+        if (sub === 'orders') {
+          if (!need('orders.manage')) return true;
+          if (route.length === 1 + 1 && m === 'GET') return json(res, 200, { orders: await store.ordersAll(url.searchParams.get('status') || '') }), true;
+          const oid = Number(route[2]), act = route[3];
+          if (m === 'POST' && Number.isInteger(oid) && (act === 'approve' || act === 'reject')) {
+            const o = await store.orderDecide(oid, act === 'approve' ? 'approved' : 'rejected', actor(me));
+            if (!o) return fail(res, 409, 'الطلب ده اتراجع قبل كده أو مش موجود.'), true;
+            const u = 'u' + o.uid;
+            if (act === 'approve') {   // the pack is delivered: coins first, then every item in it
+              if (o.coins) await store.addCoins(u, o.coins);
+              for (const it of JSON.parse(o.items || '[]')) await store.own(u, it);
+            }
+            await store.log(actor(me), 'order.' + act, '#' + o.id + ' ' + o.uname, { pack: o.pack_name, egp: o.price_egp });
+            const ws = ctx.online.get(u);
+            if (ws) { try { ws.send(JSON.stringify({ t: 'coins', order: act === 'approve' ? 1 : 2, pack: o.pack_name, coins: await store.getCoins(u) })); } catch (e) {} }
+            return json(res, 200, { ok: true }), true;
+          }
+          return fail(res, 404, 'غير موجود.'), true;
+        }
+        if (!need('shop.edit')) return true;
+        if (!sub && m === 'GET') return json(res, 200, { items: await store.shopItems(), packs: await store.packList(), cfg: content.shopCfg, kinds: SH.KINDS, media: Object.keys(content.assets).filter(k => k.startsWith('shop-')) }), true;
+        if (sub === 'config' && m === 'PUT') {
+          const r = SH.cleanCfg(await readBody(req, 4096)); if (r.err) return fail(res, 400, r.err), true;
+          await store.setSetting('shop', JSON.stringify(Object.assign({}, content.shopCfg, r.v))); await content.reload();
+          await store.log(actor(me), 'shop.config', null, r.v); return json(res, 200, { ok: true }), true;
+        }
+        if (sub === 'grant' && m === 'POST') {
+          const b = await readBody(req, 2048), id = await store.idByName(S.nameKey(S.norm(b.name))), n = Math.floor(Number(b.coins));
+          if (!id) return fail(res, 404, 'مفيش لاعب بالاسم ده.'), true;
+          if (!Number.isFinite(n) || !n || Math.abs(n) > 1000000) return fail(res, 400, 'العدد غلط.'), true;
+          if (!(await store.addCoins(id, n))) return fail(res, 400, 'رصيد اللاعب أقل من المبلغ المخصوم.'), true;
+          await store.log(actor(me), 'shop.grant', b.name, { coins: n });
+          const ws = ctx.online.get(id); if (ws) { try { ws.send(JSON.stringify({ t: 'coins', coins: await store.getCoins(id) })); } catch (e) {} }
+          return json(res, 200, { ok: true, coins: await store.getCoins(id) }), true;
+        }
+        if (sub === 'items') {
+          if (route.length === 2 && m === 'POST') {
+            const r = SH.cleanItem(await readBody(req, 4096)); if (r.err) return fail(res, 400, r.err), true; const v = r.v;
+            const id = await store.insert('INSERT INTO shop_items(kind,name,emoji,price,active,sort) VALUES(?,?,?,?,?,?)', [v.kind, v.name, v.emoji, v.price, v.active ? 1 : 0, v.sort]);
+            await content.reload(); await store.log(actor(me), 'shop.item.create', v.name + ' (#' + id + ')', v); return json(res, 200, { ok: true, id }), true;
+          }
+          const id = Number(route[2]), it = (await store.shopItems()).find(x => x.id === id);
+          if (!it) return fail(res, 404, 'العنصر مش موجود.'), true;
+          if (route[3] === 'media') {
+            if (m === 'DELETE') { await store.delAsset('shop-' + id); await content.reload(); return json(res, 200, { ok: true }), true; }
+            if (m === 'PUT') {
+              if (it.kind === 'emoji') return fail(res, 400, 'الإيموجي مالوش ملف.'), true;
+              const b = await readBody(req, 1 * 1024 * 1024), data = Buffer.from(String(b.data || ''), 'base64');
+              const max = it.kind === 'sound' ? MAX_SND : 300 * 1024;
+              if (!data.length || data.length > max) return fail(res, 400, 'الملف لازم يكون أقل من ' + Math.round(max / 1024) + ' كيلو.'), true;
+              const mime = it.kind === 'sound' ? sniffAudio(data) : sniff(data);
+              if (!mime) return fail(res, 400, it.kind === 'sound' ? 'الصوت لازم MP3 أو WAV أو OGG أو M4A.' : 'الصورة لازم PNG أو JPG أو WEBP.'), true;
+              await store.putAsset('shop-' + id, mime, data, actor(me)); await content.reload();
+              await store.log(actor(me), 'shop.item.media', it.name + ' (#' + id + ')', { bytes: data.length, mime }); return json(res, 200, { ok: true }), true;
+            }
+          }
+          if (m === 'PATCH' && route.length === 3) {
+            const r = SH.cleanItem(Object.assign({}, it, await readBody(req, 4096))); if (r.err) return fail(res, 400, r.err), true; const v = r.v;
+            await store.run('UPDATE shop_items SET kind=?,name=?,emoji=?,price=?,active=?,sort=? WHERE id=?', [v.kind, v.name, v.emoji, v.price, v.active ? 1 : 0, v.sort, id]);
+            await content.reload(); await store.log(actor(me), 'shop.item.update', it.name + ' (#' + id + ')', v); return json(res, 200, { ok: true }), true;
+          }
+          if (m === 'DELETE' && route.length === 3) {
+            await store.run('DELETE FROM shop_items WHERE id=?', [id]); await store.run('DELETE FROM owned WHERE item_id=?', [id]); await store.delAsset('shop-' + id);
+            await content.reload(); await store.log(actor(me), 'shop.item.delete', it.name + ' (#' + id + ')', null); return json(res, 200, { ok: true }), true;
+          }
+        }
+        if (sub === 'packs') {
+          const ids = (await store.shopItems()).map(x => x.id);
+          if (route.length === 2 && m === 'POST') {
+            const r = SH.cleanPack(await readBody(req, 8192), ids); if (r.err) return fail(res, 400, r.err), true; const v = r.v;
+            const id = await store.insert('INSERT INTO packs(name,descr,price_egp,coins,items,active,sort) VALUES(?,?,?,?,?,?,?)', [v.name, v.descr, v.priceEgp, v.coins, JSON.stringify(v.items), v.active ? 1 : 0, v.sort]);
+            await store.log(actor(me), 'shop.pack.create', v.name + ' (#' + id + ')', v); return json(res, 200, { ok: true, id }), true;
+          }
+          const id = Number(route[2]), pk = (await store.packList()).find(x => x.id === id);
+          if (!pk) return fail(res, 404, 'الباكج مش موجود.'), true;
+          if (m === 'PATCH' && route.length === 3) {
+            const r = SH.cleanPack(Object.assign({}, pk, await readBody(req, 8192)), ids); if (r.err) return fail(res, 400, r.err), true; const v = r.v;
+            await store.run('UPDATE packs SET name=?,descr=?,price_egp=?,coins=?,items=?,active=?,sort=? WHERE id=?', [v.name, v.descr, v.priceEgp, v.coins, JSON.stringify(v.items), v.active ? 1 : 0, v.sort, id]);
+            await store.log(actor(me), 'shop.pack.update', pk.name + ' (#' + id + ')', v); return json(res, 200, { ok: true }), true;
+          }
+          if (m === 'DELETE' && route.length === 3) { await store.run('DELETE FROM packs WHERE id=?', [id]); await store.log(actor(me), 'shop.pack.delete', pk.name + ' (#' + id + ')', null); return json(res, 200, { ok: true }), true; }
         }
         return fail(res, 404, 'غير موجود.'), true;
       }
@@ -230,13 +332,16 @@ function install(ctx) {
           return json(res, 200, { slots: list }), true;
         }
         const slot = route[1];
-        if (!slot || !C.slotOk(slot)) return fail(res, 404, 'مكان الصورة غير معروف.'), true;
-        if (slot.startsWith('card-') && !content.cards.some(c => 'card-' + c.id === slot)) return fail(res, 404, 'الكارت مش موجود.'), true;
+        if (!slot || /^shop-/.test(slot) || !C.slotOk(slot)) return fail(res, 404, 'مكان الصورة غير معروف.'), true;
+        if (/^(card|snd)-/.test(slot) && !content.cards.some(c => 'card-' + c.id === slot || 'snd-' + c.id === slot)) return fail(res, 404, 'الكارت مش موجود.'), true;
         if (m === 'PUT') {
+          const isSnd = slot.startsWith('snd-');
           const b = await readBody(req, 2.4 * 1024 * 1024);
           const data = Buffer.from(String(b.data || ''), 'base64');
-          if (!data.length || data.length > MAX_IMG) return fail(res, 400, 'الصورة لازم تكون أقل من ١٫٥ ميجا.'), true;
-          const mime = sniff(data); if (!mime) return fail(res, 400, 'نوع الصورة لازم PNG أو JPG أو WEBP.'), true;
+          if (isSnd) { if (!data.length || data.length > MAX_SND) return fail(res, 400, 'ملف الصوت لازم يكون أقل من ٤٠٠ كيلو.'), true; }
+          else if (!data.length || data.length > MAX_IMG) return fail(res, 400, 'الصورة لازم تكون أقل من ١٫٥ ميجا.'), true;
+          const mime = isSnd ? sniffAudio(data) : sniff(data);
+          if (!mime) return fail(res, 400, isSnd ? 'نوع الصوت لازم MP3 أو WAV أو OGG أو M4A.' : 'نوع الصورة لازم PNG أو JPG أو WEBP.'), true;
           await store.putAsset(slot, mime, data, actor(me)); await content.reload();
           await store.log(actor(me), 'asset.set', slot, { bytes: data.length, mime });
           return json(res, 200, { ok: true, url: content.imgUrl(slot, '') }), true;

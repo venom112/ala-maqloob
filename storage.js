@@ -92,6 +92,11 @@ async function makeStore(db) {
     CREATE TABLE IF NOT EXISTS audit (id ${D.id}, at ${D.big} NOT NULL, actor TEXT NOT NULL, action TEXT NOT NULL, target TEXT, detail TEXT);
     CREATE TABLE IF NOT EXISTS cards (id ${D.id}, name TEXT NOT NULL, symbol TEXT NOT NULL DEFAULT '', descr TEXT NOT NULL, pen_descr TEXT NOT NULL, cnt INTEGER NOT NULL, active INTEGER NOT NULL, color TEXT NOT NULL, power TEXT NOT NULL, penalty TEXT NOT NULL, sort INTEGER NOT NULL, default_img TEXT, deleted INTEGER NOT NULL DEFAULT 0, created ${D.big} NOT NULL, updated ${D.big} NOT NULL);
     CREATE TABLE IF NOT EXISTS user_stats (uid INTEGER PRIMARY KEY, games INTEGER NOT NULL DEFAULT 0, wins INTEGER NOT NULL DEFAULT 0);
+    CREATE TABLE IF NOT EXISTS wallet (uid INTEGER PRIMARY KEY, coins INTEGER NOT NULL DEFAULT 0);
+    CREATE TABLE IF NOT EXISTS shop_items (id ${D.id}, kind TEXT NOT NULL, name TEXT NOT NULL, emoji TEXT NOT NULL DEFAULT '', price INTEGER NOT NULL, active INTEGER NOT NULL DEFAULT 1, sort INTEGER NOT NULL DEFAULT 0);
+    CREATE TABLE IF NOT EXISTS packs (id ${D.id}, name TEXT NOT NULL, descr TEXT NOT NULL DEFAULT '', price_egp INTEGER NOT NULL, coins INTEGER NOT NULL DEFAULT 0, items TEXT NOT NULL DEFAULT '[]', active INTEGER NOT NULL DEFAULT 1, sort INTEGER NOT NULL DEFAULT 0);
+    CREATE TABLE IF NOT EXISTS owned (uid INTEGER NOT NULL, item_id INTEGER NOT NULL, at ${D.big} NOT NULL, PRIMARY KEY (uid, item_id));
+    CREATE TABLE IF NOT EXISTS orders (id ${D.id}, uid INTEGER NOT NULL, uname TEXT NOT NULL, pack_id INTEGER NOT NULL, pack_name TEXT NOT NULL, price_egp INTEGER NOT NULL, coins INTEGER NOT NULL, items TEXT NOT NULL, status TEXT NOT NULL, created ${D.big} NOT NULL, decided ${D.big}, by TEXT);
     CREATE TABLE IF NOT EXISTS assets (slot TEXT PRIMARY KEY, mime TEXT NOT NULL, data ${D.blob} NOT NULL, hash TEXT NOT NULL, updated ${D.big} NOT NULL, by TEXT NOT NULL);
   `);
   const uid = id => Number(String(id).slice(1));
@@ -112,6 +117,38 @@ async function makeStore(db) {
       const r = await db.get('SELECT games,wins FROM user_stats WHERE uid=?', [n]);
       return r ? { games: r.games, wins: r.wins, losses: r.games - r.wins } : { games: 0, wins: 0, losses: 0 };
     },
+
+    /* wallet, shop, packs, orders */
+    async getCoins(id) { const n = uid(id); if (!Number.isInteger(n)) return 0; const r = await db.get('SELECT coins FROM wallet WHERE uid=?', [n]); return r ? r.coins : 0; },
+    async addCoins(id, k) {
+      const n = uid(id); k = Math.floor(Number(k)); if (!Number.isInteger(n) || !Number.isFinite(k) || !k) return false;
+      if (k < 0) return (await db.run('UPDATE wallet SET coins=coins+? WHERE uid=? AND coins>=?', [k, n, -k])).changes > 0;
+      await db.run('INSERT INTO wallet(uid,coins) VALUES(?,?) ON CONFLICT(uid) DO UPDATE SET coins=coins+?', [n, k, k]); return true;
+    },
+    async ownedIds(id) { const n = uid(id); if (!Number.isInteger(n)) return []; return (await db.all('SELECT item_id FROM owned WHERE uid=?', [n])).map(r => r.item_id); },
+    async own(id, item) { const n = uid(id); const r = await db.run('INSERT INTO owned(uid,item_id,at) VALUES(?,?,?) ON CONFLICT(uid,item_id) DO NOTHING', [n, item, Date.now()]); return r.changes > 0; },
+    // buy: the price is taken first (atomic, never below zero), then the item is given; a failed give refunds
+    async buyItem(id, item) {
+      const n = uid(id); if (!Number.isInteger(n)) return 'no';
+      if ((await db.get('SELECT 1 AS x FROM owned WHERE uid=? AND item_id=?', [n, item.id]))) return 'have';
+      if (item.price > 0 && !(await db.run('UPDATE wallet SET coins=coins-? WHERE uid=? AND coins>=?', [item.price, n, item.price])).changes) return 'poor';
+      try { if (!(await this.own(id, item.id))) { if (item.price > 0) await this.addCoins(id, item.price); return 'have'; } } catch (e) { if (item.price > 0) await this.addCoins(id, item.price); throw e; }
+      return 'ok';
+    },
+    async shopItems() { return (await db.all('SELECT id,kind,name,emoji,price,active,sort FROM shop_items ORDER BY sort,id')).map(r => ({ id: r.id, kind: r.kind, name: r.name, emoji: r.emoji, price: r.price, active: !!r.active, sort: r.sort })); },
+    async packList() { return (await db.all('SELECT id,name,descr,price_egp,coins,items,active,sort FROM packs ORDER BY sort,id')).map(r => ({ id: r.id, name: r.name, descr: r.descr, priceEgp: r.price_egp, coins: r.coins, items: JSON.parse(r.items || '[]'), active: !!r.active, sort: r.sort })); },
+    async orderCreate(u, uname, pack) {
+      if ((await db.get("SELECT COUNT(*) c FROM orders WHERE uid=? AND status='pending'", [uid(u)])).c >= 3) return 0;
+      return db.insert('INSERT INTO orders(uid,uname,pack_id,pack_name,price_egp,coins,items,status,created) VALUES(?,?,?,?,?,?,?,?,?)', [uid(u), uname, pack.id, pack.name, pack.priceEgp, pack.coins, JSON.stringify(pack.items), 'pending', Date.now()]);
+    },
+    async ordersOf(u) { return db.all('SELECT id,pack_name,price_egp,status,created FROM orders WHERE uid=? ORDER BY id DESC LIMIT 20', [uid(u)]); },
+    async ordersAll(status) { return db.all(status ? 'SELECT * FROM orders WHERE status=? ORDER BY id DESC LIMIT 200' : 'SELECT * FROM orders ORDER BY id DESC LIMIT 200', status ? [status] : []); },
+    // an order is decided once: only a pending one changes; returns the row when this call won
+    async orderDecide(oid, status, by) {
+      const r = await db.run("UPDATE orders SET status=?, decided=?, by=? WHERE id=? AND status='pending'", [status, Date.now(), by, oid]);
+      return r.changes > 0 ? db.get('SELECT * FROM orders WHERE id=?', [oid]) : null;
+    },
+    async idByName(nameKey) { const r = await db.get('SELECT id FROM users WHERE name_key=?', [nameKey]); return r ? 'u' + r.id : null; },
 
     /* accounts */
     async byKey(key) { const r = await db.get('SELECT id,name,salt,hash FROM users WHERE name_key=?', [key]); return r ? { id: 'u' + r.id, name: r.name, salt: r.salt, hash: r.hash } : null; },
