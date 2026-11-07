@@ -489,8 +489,9 @@ class Content {
   // a shop item as the clients see it (the picture / sound is an uploaded asset)
   shopPublic(it) {
     const a = s => this.assets[s + '-' + it.id] ? '/a/' + s + '-' + it.id + '?v=' + this.assets[s + '-' + it.id] : '';
-    return { id: it.id, n: it.name, e: it.emoji, p: it.price, i: a('shop'), s: a('shopsnd') };   // i = picture, s = sound (each optional)
+    return { id: it.id, n: it.name, e: it.emoji, p: it.price, m: it.mode || 'coins', i: a('shop'), s: a('shopsnd') };   // i = picture, s = sound (each optional)
   }
+  isVip(uid) { return !!this.vipMap && (this.vipMap.get(uid) || 0) > Date.now(); }
   shopItem(id) { const it = (this.shopAll || []).find(x => x.id === id && x.active); return it ? this.shopPublic(it) : null; }
   imgUrl(slot, def) { return this.assets[slot] ? '/a/' + slot + '?v=' + this.assets[slot] : def; }
   cardImg(c) { return this.imgUrl(cardSlot(c.id), c.defaultImg || ''); }

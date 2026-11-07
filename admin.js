@@ -250,10 +250,11 @@ function install(ctx) {
             if (act === 'approve') {   // the pack is delivered: coins first, then every item in it
               if (o.coins) await store.addCoins(u, o.coins);
               for (const it of JSON.parse(o.items || '[]')) await store.own(u, it);
+              if (o.vip_days) { const vu = await store.addVip(u, o.vip_days); content.vipMap && content.vipMap.set(u, vu); }
             }
             await store.log(actor(me), 'order.' + act, '#' + o.id + ' ' + o.uname, { pack: o.pack_name, egp: o.price_egp });
             const ws = ctx.online.get(u);
-            if (ws) { try { ws.send(JSON.stringify({ t: 'coins', order: act === 'approve' ? 1 : 2, pack: o.pack_name, coins: await store.getCoins(u) })); } catch (e) {} }
+            if (ws) { try { ws.send(JSON.stringify({ t: 'coins', order: act === 'approve' ? 1 : 2, pack: o.pack_name, coins: await store.getCoins(u), vip: await store.vipUntil(u) })); } catch (e) {} }
             return json(res, 200, { ok: true }), true;
           }
           return fail(res, 404, 'غير موجود.'), true;
@@ -266,18 +267,20 @@ function install(ctx) {
           await store.log(actor(me), 'shop.config', null, r.v); return json(res, 200, { ok: true }), true;
         }
         if (sub === 'grant' && m === 'POST') {
-          const b = await readBody(req, 2048), id = await store.idByName(S.nameKey(S.norm(b.name))), n = Math.floor(Number(b.coins));
+          const b = await readBody(req, 2048), id = await store.idByName(S.nameKey(S.norm(b.name))), n = Math.floor(Number(b.coins) || 0);
           if (!id) return fail(res, 404, 'مفيش لاعب بالاسم ده.'), true;
-          if (!Number.isFinite(n) || !n || Math.abs(n) > 1000000) return fail(res, 400, 'العدد غلط.'), true;
-          if (!(await store.addCoins(id, n))) return fail(res, 400, 'رصيد اللاعب أقل من المبلغ المخصوم.'), true;
-          await store.log(actor(me), 'shop.grant', b.name, { coins: n });
-          const ws = ctx.online.get(id); if (ws) { try { ws.send(JSON.stringify({ t: 'coins', coins: await store.getCoins(id) })); } catch (e) {} }
+          const vd = Math.floor(Number(b.vipDays) || 0);
+          if (!Number.isFinite(n) || Math.abs(n) > 1000000 || vd < 0 || vd > 36500 || (!n && !vd)) return fail(res, 400, 'العدد غلط.'), true;
+          if (n && !(await store.addCoins(id, n))) return fail(res, 400, 'رصيد اللاعب أقل من المبلغ المخصوم.'), true;
+          if (vd) content.vipMap.set(id, await store.addVip(id, vd));
+          await store.log(actor(me), 'shop.grant', b.name, { coins: n, vipDays: vd });
+          const ws = ctx.online.get(id); if (ws) { try { ws.send(JSON.stringify({ t: 'coins', coins: await store.getCoins(id), vip: await store.vipUntil(id) })); } catch (e) {} }
           return json(res, 200, { ok: true, coins: await store.getCoins(id) }), true;
         }
         if (sub === 'items') {
           if (route.length === 2 && m === 'POST') {
             const r = SH.cleanItem(await readBody(req, 4096)); if (r.err) return fail(res, 400, r.err), true; const v = r.v;
-            const id = await store.insert('INSERT INTO shop_items(kind,name,emoji,price,active,sort) VALUES(?,?,?,?,?,?)', [v.kind, v.name, v.emoji, v.price, v.active ? 1 : 0, v.sort]);
+            const id = await store.insert('INSERT INTO shop_items(kind,name,emoji,price,mode,active,sort) VALUES(?,?,?,?,?,?,?)', [v.kind, v.name, v.emoji, v.price, v.mode, v.active ? 1 : 0, v.sort]);
             await content.reload(); await store.log(actor(me), 'shop.item.create', v.name + ' (#' + id + ')', v); return json(res, 200, { ok: true, id }), true;
           }
           const id = Number(route[2]), it = (await store.shopItems()).find(x => x.id === id);
@@ -297,7 +300,7 @@ function install(ctx) {
           }
           if (m === 'PATCH' && route.length === 3) {
             const r = SH.cleanItem(Object.assign({}, it, await readBody(req, 4096))); if (r.err) return fail(res, 400, r.err), true; const v = r.v;
-            await store.run('UPDATE shop_items SET kind=?,name=?,emoji=?,price=?,active=?,sort=? WHERE id=?', [v.kind, v.name, v.emoji, v.price, v.active ? 1 : 0, v.sort, id]);
+            await store.run('UPDATE shop_items SET kind=?,name=?,emoji=?,price=?,mode=?,active=?,sort=? WHERE id=?', [v.kind, v.name, v.emoji, v.price, v.mode, v.active ? 1 : 0, v.sort, id]);
             await content.reload(); await store.log(actor(me), 'shop.item.update', it.name + ' (#' + id + ')', v); return json(res, 200, { ok: true }), true;
           }
           if (m === 'DELETE' && route.length === 3) {
@@ -309,14 +312,14 @@ function install(ctx) {
           const ids = (await store.shopItems()).map(x => x.id);
           if (route.length === 2 && m === 'POST') {
             const r = SH.cleanPack(await readBody(req, 8192), ids); if (r.err) return fail(res, 400, r.err), true; const v = r.v;
-            const id = await store.insert('INSERT INTO packs(name,descr,price_egp,coins,items,active,sort) VALUES(?,?,?,?,?,?,?)', [v.name, v.descr, v.priceEgp, v.coins, JSON.stringify(v.items), v.active ? 1 : 0, v.sort]);
+            const id = await store.insert('INSERT INTO packs(name,descr,price_egp,coins,vip_days,items,active,sort) VALUES(?,?,?,?,?,?,?,?)', [v.name, v.descr, v.priceEgp, v.coins, v.vipDays, JSON.stringify(v.items), v.active ? 1 : 0, v.sort]);
             await store.log(actor(me), 'shop.pack.create', v.name + ' (#' + id + ')', v); return json(res, 200, { ok: true, id }), true;
           }
           const id = Number(route[2]), pk = (await store.packList()).find(x => x.id === id);
           if (!pk) return fail(res, 404, 'الباكج مش موجود.'), true;
           if (m === 'PATCH' && route.length === 3) {
             const r = SH.cleanPack(Object.assign({}, pk, await readBody(req, 8192)), ids); if (r.err) return fail(res, 400, r.err), true; const v = r.v;
-            await store.run('UPDATE packs SET name=?,descr=?,price_egp=?,coins=?,items=?,active=?,sort=? WHERE id=?', [v.name, v.descr, v.priceEgp, v.coins, JSON.stringify(v.items), v.active ? 1 : 0, v.sort, id]);
+            await store.run('UPDATE packs SET name=?,descr=?,price_egp=?,coins=?,vip_days=?,items=?,active=?,sort=? WHERE id=?', [v.name, v.descr, v.priceEgp, v.coins, v.vipDays, JSON.stringify(v.items), v.active ? 1 : 0, v.sort, id]);
             await store.log(actor(me), 'shop.pack.update', pk.name + ' (#' + id + ')', v); return json(res, 200, { ok: true }), true;
           }
           if (m === 'DELETE' && route.length === 3) { await store.run('DELETE FROM packs WHERE id=?', [id]); await store.log(actor(me), 'shop.pack.delete', pk.name + ' (#' + id + ')', null); return json(res, 200, { ok: true }), true; }

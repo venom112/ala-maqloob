@@ -932,13 +932,14 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   }
   $('accBtn').onclick = function () { send({ t: 'profile' }); };
   /* ---------- shop: items bought with coins, packs bought with real money (paid by hand, approved by an admin) ---------- */
-  var WAL = { coins: 0, owned: [], items: [], packs: [], orders: [], reward: 0 }, shTab = 1, payInfo = null;
+  var WAL = { vip: 0, vipMult: 1, coins: 0, owned: [], items: [], packs: [], orders: [], reward: 0 }, shTab = 1, payInfo = null;
   var ARN = function (n) { return String(n).replace(/\d/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'[d]; }); };
   function shMsg(t, bad) { var m = $('shMsg'); m.textContent = t || ''; m.className = 'msg' + (bad ? ' err' : ''); }
   function itemIco(it) { return it.i ? '<img src="' + esc(it.i) + '" alt="">' : it.e ? esc(it.e) : it.s ? '🔊' : '🎭'; }
   function renderShop() {
     $('shCoins').textContent = ARN(WAL.coins); $('shopCoins').textContent = ARN(WAL.coins);
-    $('shRew').textContent = WAL.reward ? 'بتكسب ' + ARN(WAL.reward) + ' عملة كل ما تكسب جيم ضد لاعبين حقيقيين.' : '';
+    var vipOn = WAL.vip > Date.now();
+    $('shRew').textContent = (WAL.reward ? 'بتكسب ' + ARN(vipOn ? WAL.reward * WAL.vipMult : WAL.reward) + ' عملة كل ما تكسب جيم ضد لاعبين حقيقيين' + (!vipOn && WAL.vipMult > 1 ? ' (وأعلى للـVIP ×' + ARN(WAL.vipMult) + ')' : '') + '. ' : '') + (vipOn ? '⭐ VIP لحد ' + new Date(WAL.vip).toLocaleDateString('ar-EG') + ' · من غير إعلانات.' : '');
     ['shT1', 'shT2', 'shT3'].forEach(function (id, k) { $(id).className = shTab === k + 1 ? 'on' : ''; });
     var L = $('shList'), h = '';
     if (shTab === 1) {
@@ -946,7 +947,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       WAL.items.forEach(function (it) {
         var own = WAL.owned.indexOf(it.id) >= 0;
         h += '<div class="shrow"><div class="ico">' + itemIco(it) + '</div><div>' + esc(it.n) + '<small>' + (it.i ? 'صورة' : it.e ? 'إيموجي' : 'تفاعل') + (it.s ? ' + 🔊 صوت' : '') + '</small></div>' +
-          (own ? '<button type="button" disabled>معاك ✓</button>' : '<button type="button" class="buy" data-buy="' + it.id + '"' + (WAL.coins < it.p ? ' disabled' : '') + '>🪙 ' + ARN(it.p) + '</button>') + '</div>';
+          (own ? '<button type="button" disabled>معاك ✓</button>' : it.m === 'pack' ? '<button type="button" data-lock="1">🔒 بباكج</button>' : '<button type="button" class="buy" data-buy="' + it.id + '"' + (WAL.coins < it.p ? ' disabled' : '') + '>🪙 ' + ARN(it.p) + '</button>') + '</div>';
       });
     } else if (shTab === 2) {
       if (payInfo) {
@@ -956,7 +957,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
         if (!WAL.packs.length) h = '<p class="pvtxt">مفيش باكجات دلوقتي.</p>';
         WAL.packs.forEach(function (p) {
           var inc = (p.items || []).map(function (id) { var it = WAL.items.filter(function (x) { return x.id === id; })[0]; return it ? (it.e || it.n) : ''; }).join(' ');
-          h += '<div class="shrow" style="grid-template-columns:1fr auto"><div><b>' + esc(p.n) + '</b><small>' + (p.c ? '🪙 ' + ARN(p.c) + ' عملة ' : '') + esc(inc) + '</small><small>' + esc(p.d) + '</small></div><button type="button" class="buy" data-pack="' + p.id + '">' + ARN(p.egp) + ' جنيه</button></div>';
+          h += '<div class="shrow" style="grid-template-columns:1fr auto"><div><b>' + esc(p.n) + '</b><small>' + (p.vd ? '⭐ VIP ' + ARN(p.vd) + ' يوم ' : '') + (p.c ? '🪙 ' + ARN(p.c) + ' عملة ' : '') + esc(inc) + '</small><small>' + esc(p.d) + '</small></div><button type="button" class="buy" data-pack="' + p.id + '">' + ARN(p.egp) + ' جنيه</button></div>';
         });
       }
     } else {
@@ -975,6 +976,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     var b = e.target.closest && e.target.closest('button'); if (!b) return;
     if (b.dataset.buy) { shMsg(''); send({ t: 'buy', id: Number(b.dataset.buy) }); }
     else if (b.dataset.pack) { shMsg(''); send({ t: 'order', pack: Number(b.dataset.pack) }); }
+    else if (b.dataset.lock) { shTab = 2; shMsg('العنصر ده بيتفتح بباكج بفلوس. اختار باكج فيه العنصر.'); renderShop(); }
     else if (b.dataset.back) { payInfo = null; renderShop(); }
     else if (b.dataset.copy) { try { navigator.clipboard.writeText(b.dataset.copy); shMsg('اتنسخ الرقم ✓'); } catch (x) { shMsg(b.dataset.copy); } }
   });
@@ -1308,7 +1310,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
         sl.querySelector('.av').textContent = p ? firstCh(p.name) : '+';
         var nmEl = sl.querySelector('.nm');
         if (p && lv && S.over === i) { if (!nmEl.classList.contains('crowned')) { nmEl.innerHTML = crownName(esc(p.name)); nmEl.classList.add('crowned'); } }
-        else { nmEl.classList.remove('crowned'); nmEl.textContent = p ? p.name : 'مستني...'; }
+        else { nmEl.classList.remove('crowned'); nmEl.textContent = p ? p.name + (p.vip ? ' ⭐' : '') : 'مستني...'; }
         var small = p ? (p.tag || '') : '';
         if (p && lv) small = S.over === i ? 'زعيم المافيا' : S.out[i] ? 'الضحية' : p.sub ? 'فصل · بوت مكانه' : cardsWord(handLen(i));
         var ib = sl.querySelector('.immb'), imn = (p && lv && !S.out[i] && S.over < 0) ? (S.imm[i] || 0) : 0;
@@ -2219,6 +2221,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
   function onMsg(m) {
     switch (m.t) {
       case 'authed':
+        ME.vip = m.vip || 0; window.adsOff = function () { return ME.vip > Date.now(); };   // VIP: the hook every ad slot must check
         ME.name = m.name; setTok(m.token); net.on = true; connBar(true); authBusy(false); if (m.cv && m.cv !== cfgV) loadConfig();
         try { localStorage.setItem(KEY, m.name); localSaved = m.name; if (m.email) { localStorage.setItem(KEY + '-mail', m.email); localSavedMail = m.email; } } catch (e) {}
         ME.admin = !!m.admin; syncAdmin();
@@ -2233,14 +2236,14 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
       case 'rooms': fillRoomList(m.list || []); break;
       case 'pstats': showPstats(m); break;
       case 'wallet':
-        WAL = { coins: m.coins, owned: m.owned || [], items: m.items || [], packs: m.packs || [], orders: m.orders || [], reward: m.reward || 0 };
+        WAL = { vip: m.vip || 0, vipMult: m.vipMult || 1, coins: m.coins, owned: m.owned || [], items: m.items || [], packs: m.packs || [], orders: m.orders || [], reward: m.reward || 0 };
         if (m.bought) shMsg(m.bought.msg, !m.bought.ok);
         renderShop(); if (!$('rxTray').hidden) renderTray(); break;
       case 'ordered':
         if (m.ok) { payInfo = m; shTab = 2; shMsg(''); send({ t: 'wallet' }); } else shMsg(m.msg, true);
         renderShop(); break;
       case 'coins':
-        WAL.coins = m.coins; renderShop();
+        WAL.coins = m.coins; if (m.vip !== undefined) { WAL.vip = m.vip; ME.vip = m.vip; } renderShop();
         if (m.won) toastMsg('كسبت ' + ARN(m.won) + ' عملة 🪙 لفوزك بالجيم');
         else if (m.order === 1) { toastMsg('طلبك اتوافق عليه ✓ الباكج وصلك'); send({ t: 'wallet' }); }
         else if (m.order === 2) { toastMsg('طلب الباكج اترفض. كلّم الأدمن على واتساب.'); send({ t: 'wallet' }); }
@@ -2277,7 +2280,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); out
     var n = R.roster.length, out = [], rr;
     for (rr = 0; rr < n; rr++) {
       var a = (rr + R.myIdx) % n, p = R.roster[a];
-      out.push({ name: p.name, sub: !!p.sub, tag: rr === 0 ? 'أنت' : p.bot ? 'بوت' : p.host ? 'مضيف' : '' });
+      out.push({ name: p.name, vip: !!p.vip, sub: !!p.sub, tag: rr === 0 ? 'أنت' : p.bot ? 'بوت' : p.host ? 'مضيف' : '' });
     }
     return out;
   }

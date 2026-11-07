@@ -10,7 +10,7 @@ async function until(f, ms = 8000) { const t0 = Date.now(); while (Date.now() - 
   const fake = await startFake();
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ala-'));
   Object.assign(process.env, { GOOGLE_CLIENT_ID: 'test-client', GOOGLE_JWKS_URL: fake.url, DB_PATH: path.join(dir, 't.db'), PORT: '3918', LOGIN_LIMIT: '1000' });
-  const { main } = require('../server.js'); await main();
+  const { main } = require('../server.js'); const { rooms } = await main();
   const base = 'http://127.0.0.1:3918', WebSocket = require('ws');
   const call = async (method, p, body, tok) => { const r = await fetch(base + '/api/admin/' + p, { method, headers: { 'content-type': 'application/json', ...(tok ? { authorization: 'Bearer ' + tok } : {}) }, body: body === undefined ? undefined : JSON.stringify(body) }); return { s: r.status, j: await r.json().catch(() => ({})) }; };
   const OWN = (await call('POST', 'login', { credential: fake.token({ email: 'ana.wolfish@gmail.com' }) })).j.token;
@@ -74,6 +74,30 @@ async function until(f, ms = 8000) { const t0 = Date.now(); while (Date.now() - 
   check('a pack with no content refused', (await call('POST', 'shop/packs', { name: 'x', priceEgp: 10, coins: 0, items: [] }, OWN)).s === 400);
   check('new pack', (await call('POST', 'shop/packs', { name: 'جديد', priceEgp: 10, coins: 50, items: [it.j.id] }, OWN)).s === 200);
   check('delete an item', (await call('DELETE', 'shop/items/' + it.j.id, undefined, OWN)).s === 200);
+
+  /* locked items (money only) and VIP */
+  const lk = await call('POST', 'shop/items', { name: 'ذهبي', emoji: '🏆', price: 5, mode: 'pack' }, OWN);
+  ws.msgs.length = 0; tx(ws, { t: 'buy', id: lk.j.id }); await until(() => last(ws, 'wallet') && last(ws, 'wallet').bought);
+  check('a money-only item cannot be bought with coins', last(ws, 'wallet').bought.ok === false && !last(ws, 'wallet').owned.includes(lk.j.id));
+  { const free = await call('POST', 'shop/items', { name: 'مجاني مقفول', emoji: '🎁', price: 0, mode: 'pack' }, OWN);
+    ws.msgs.length = 0; tx(ws, { t: 'wallet' }); await until(() => last(ws, 'wallet')); check('price 0 does not unlock a money-only item', !last(ws, 'wallet').owned.includes(free.j.id)); }
+  tx(ws, { t: 'react', id: lk.j.id }); await sleep(2600);
+  check('a locked item cannot be used in a game', !((last(ws, 'room').g || {}).evs || []).some(e => e.k === 'react' && e.it.id === lk.j.id));
+  const vp = await call('POST', 'shop/packs', { name: 'VIP', priceEgp: 100, coins: 10, vipDays: 30, items: [lk.j.id] }, OWN);
+  check('VIP pack created', vp.s === 200);
+  for (const o of (await call('GET', 'shop/orders?status=pending', undefined, OWN)).j.orders) await call('POST', 'shop/orders/' + o.id + '/reject', {}, OWN);
+  ws.msgs.length = 0; tx(ws, { t: 'order', pack: vp.j.id }); await until(() => last(ws, 'ordered'));
+  const vo = last(ws, 'ordered'); ws.msgs.length = 0;
+  await call('POST', 'shop/orders/' + vo.id + '/approve', {}, OWN); await until(() => last(ws, 'coins'));
+  tx(ws, { t: 'wallet' }); await until(() => last(ws, 'wallet')); w = last(ws, 'wallet');
+  check('approved VIP pack: VIP for 30 days, the locked item opens, coins arrive', w.vip > Date.now() + 29 * 86400000 && w.owned.includes(lk.j.id), { vip: w.vip });
+  check('the locked item now works in a game', await (async () => { await sleep(2600); tx(ws, { t: 'react', id: lk.j.id }); return until(() => ((last(ws, 'room').g || {}).evs || []).some(e => e.k === 'react' && e.it.id === lk.j.id)); })());
+  check('VIP shows on his seat', (last(ws, 'room').roster || []).some(r => r.name === 'سمير' && r.vip === true));
+  { const before = w.coins; const { Room: R2 } = require('../game'); const ct0 = [...rooms.values()][0].content;
+    const rr = new R2('x2', 2, { uid: 'u1', name: 'سمير' }, () => {}, ct0); rr.add({ uid: 'u99', name: 'Z' }); rr.start('u1'); await sleep(50); rr.finish(0);
+    ws.msgs.length = 0; await until(() => last(ws, 'coins'));
+    check('a VIP winner earns double', last(ws, 'coins') && last(ws, 'coins').won === 2 * 5 && last(ws, 'coins').coins === before + 10, last(ws, 'coins')); }
+  check('admin gives VIP days directly', (await call('POST', 'shop/grant', { name: 'سمير', vipDays: 5 }, OWN)).s === 200);
 
   /* judge guard + win reward (unit) */
   const { Room } = require('../game'), { Content } = require('../content');

@@ -391,18 +391,20 @@ ol { padding-inline-start: 20px; text-align: right; }
     act(api('GET', 'shop')).then(function (r) {
       box.innerHTML = '';
       /* payment + reward */
-      var f = { winReward: h('input', { type: 'number', min: 0, max: 100000, value: r.cfg.winReward, style: 'width:110px' }), payNumber: h('input', { value: r.cfg.payNumber, dir: 'ltr' }), waNumber: h('input', { value: r.cfg.waNumber, dir: 'ltr' }), payNote: h('input', { value: r.cfg.payNote || '', maxlength: 200, placeholder: 'ملاحظة بتظهر للاعب (اختياري)' }) };
+      var f = { vipMult: h('input', { type: 'number', min: 1, max: 10, value: r.cfg.vipMult, style: 'width:80px' }), winReward: h('input', { type: 'number', min: 0, max: 100000, value: r.cfg.winReward, style: 'width:110px' }), payNumber: h('input', { value: r.cfg.payNumber, dir: 'ltr' }), waNumber: h('input', { value: r.cfg.waNumber, dir: 'ltr' }), payNote: h('input', { value: r.cfg.payNote || '', maxlength: 200, placeholder: 'ملاحظة بتظهر للاعب (اختياري)' }) };
       box.append(h('div', { class: 'card' }, h('h3', {}, 'الدفع والمكافأة'),
         h('label', {}, 'عملات الفوز (بتتدّى للي يكسب جيم ضد لاعبين حقيقيين، ٠ لإيقافها)', f.winReward),
+        h('label', {}, 'مضاعف عملات الفوز للـVIP (١ = بدون زيادة)', f.vipMult),
         h('label', {}, 'رقم انستا باي / المحفظة', f.payNumber), h('label', {}, 'رقم واتساب لاستلام السكرين شوت', f.waNumber), h('label', {}, 'ملاحظة', f.payNote),
-        h('div', { class: 'bar' }, h('button', { class: 'primary', onclick: function () { act(api('PUT', 'shop/config', { winReward: Number(f.winReward.value), payNumber: f.payNumber.value, waNumber: f.waNumber.value, payNote: f.payNote.value }), 'اتحفظ').then(reload, function () {}); } }, 'حفظ'))));
+        h('div', { class: 'bar' }, h('button', { class: 'primary', onclick: function () { act(api('PUT', 'shop/config', { winReward: Number(f.winReward.value), vipMult: Number(f.vipMult.value), payNumber: f.payNumber.value, waNumber: f.waNumber.value, payNote: f.payNote.value }), 'اتحفظ').then(reload, function () {}); } }, 'حفظ'))));
       /* grant coins */
-      var gn = h('input', { placeholder: 'اسم اللاعب بالظبط' }), gc = h('input', { type: 'number', placeholder: 'عدد العملات (سالب للخصم)', style: 'width:200px' });
-      box.append(h('div', { class: 'card' }, h('h3', {}, 'إدّي عملات للاعب'), h('div', { class: 'bar' }, gn, gc, h('button', { onclick: function () { act(api('POST', 'shop/grant', { name: gn.value, coins: Number(gc.value) }), 'تمام').then(function (x) { toast('رصيده دلوقتي ' + x.coins); gn.value = gc.value = ''; }, function () {}); } }, 'نفّذ'))));
+      var gn = h('input', { placeholder: 'اسم اللاعب بالظبط' }), gc = h('input', { type: 'number', placeholder: 'عدد العملات (سالب للخصم)', style: 'width:200px' }), gv = h('input', { type: 'number', min: 0, placeholder: 'أيام VIP', style: 'width:110px' });
+      box.append(h('div', { class: 'card' }, h('h3', {}, 'إدّي عملات أو VIP للاعب'), h('div', { class: 'bar' }, gn, gc, gv, h('button', { onclick: function () { act(api('POST', 'shop/grant', { name: gn.value, coins: Number(gc.value) || 0, vipDays: Number(gv.value) || 0 }), 'تمام').then(function (x) { toast('رصيده دلوقتي ' + x.coins); gn.value = gc.value = gv.value = ''; }, function () {}); } }, 'نفّذ'))));
       /* items */
-      var items = h('div', { class: 'card' }, h('h3', {}, 'تفاعلات المتجر'), h('p', { class: 'mute' }, 'كل تفاعل ممكن يبقى إيموجي، وصورة بتظهر بدل الإيموجي، وصوت بيشتغل معاه — أي تركيبة. الصور PNG/JPG/WEBP أقل من ٣٠٠ كيلو، والأصوات MP3/WAV/OGG/M4A أقل من ٤٠٠ كيلو. السعر ٠ = مجاني للكل.'));
+      var items = h('div', { class: 'card' }, h('h3', {}, 'تفاعلات المتجر'), h('p', { class: 'mute' }, 'كل تفاعل ممكن يبقى إيموجي، وصورة بتظهر بدل الإيموجي، وصوت بيشتغل معاه — أي تركيبة. الصور PNG/JPG/WEBP أقل من ٣٠٠ كيلو، والأصوات MP3/WAV/OGG/M4A أقل من ٤٠٠ كيلو. السعر بالعملات (٠ = مجاني للكل). "بباكج فلوس بس" = مقفول ومبيتشراش بالعملات، بيتفتح بس لما اللاعب يشتري باكج فيه العنصر ده.'));
             var itemRow = function (it) {
         var nm = h('input', { value: it.name || '', maxlength: 24, style: 'width:130px', placeholder: 'الاسم' }), em = h('input', { value: it.emoji || '', maxlength: 8, style: 'width:70px', placeholder: '😀' }), pr = h('input', { type: 'number', min: 0, value: it.price == null ? 30 : it.price, style: 'width:90px' }), ac = h('input', { type: 'checkbox' }); ac.checked = it.active !== false;
+        var md = h('select', {}, [['coins', 'بالعملات'], ['pack', 'بباكج فلوس بس']].map(function (x) { var o = h('option', { value: x[0] }, x[1]); if (x[0] === (it.mode || 'coins')) o.selected = true; return o; }));
         var pick = function (type, accept) {
           var fin = h('input', { type: 'file', accept: accept, hidden: true, onchange: function () {
             var fl = fin.files[0]; if (!fl) return; if (fl.size > 400 * 1024) { toast('الملف كبير.', true); return; }
@@ -412,8 +414,8 @@ ol { padding-inline-start: 20px; text-align: right; }
             has && type === 'sound' ? h('button', { onclick: function () { try { new Audio('/a/shopsnd-' + it.id).play(); } catch (e) {} } }, '▶') : null,
             has && type === 'image' ? h('img', { src: '/a/shop-' + it.id, style: 'width:34px;height:34px;object-fit:cover;border-radius:6px' }) : null, fin];
         };
-        var body = function () { return { name: nm.value, emoji: em.value, price: Number(pr.value), active: ac.checked }; };
-        var row = h('div', { class: 'bar', style: 'border-top:1px solid var(--line);padding:8px 0;align-items:center' }, nm, em, pr, h('label', { class: 'row' }, ac, 'شغّال'),
+        var body = function () { return { name: nm.value, emoji: em.value, price: Number(pr.value), mode: md.value, active: ac.checked }; };
+        var row = h('div', { class: 'bar', style: 'border-top:1px solid var(--line);padding:8px 0;align-items:center' }, nm, em, md, pr, h('label', { class: 'row' }, ac, 'شغّال'),
           it.id ? h('button', { onclick: function () { act(api('PATCH', 'shop/items/' + it.id, body()), 'اتحفظ').then(reload, function () {}); } }, 'حفظ') : h('button', { class: 'primary', onclick: function () { act(api('POST', 'shop/items', body()), 'اتضاف (بعدها ارفع الصورة والصوت)').then(reload, function () {}); } }, 'أضف'));
         if (it.id) { pick('image', 'image/png,image/jpeg,image/webp').concat(pick('sound', 'audio/mpeg,audio/wav,audio/ogg,audio/mp4,.mp3,.wav,.ogg,.m4a')).forEach(function (x) { if (x) row.append(x); }); row.append(h('button', { class: 'danger', onclick: function () { if (confirm('تمسح ' + it.name + '؟ هيتشال من كل اللاعبين.')) act(api('DELETE', 'shop/items/' + it.id), 'اتمسح').then(reload, function () {}); } }, 'مسح')); }
         return row;
@@ -424,10 +426,10 @@ ol { padding-inline-start: 20px; text-align: right; }
       /* packs */
       var packs = h('div', { class: 'card' }, h('h3', {}, 'الباكجات (بفلوس حقيقية)'));
       var packRow = function (p) {
-        var nm = h('input', { value: p.name || '', maxlength: 30, placeholder: 'اسم الباكج' }), ds = h('input', { value: p.descr || '', maxlength: 120, placeholder: 'وصف' }), eg = h('input', { type: 'number', min: 1, value: p.priceEgp || '', style: 'width:90px' }), co = h('input', { type: 'number', min: 0, value: p.coins || 0, style: 'width:100px' }), ac = h('input', { type: 'checkbox' }); ac.checked = p.active !== false;
+        var nm = h('input', { value: p.name || '', maxlength: 30, placeholder: 'اسم الباكج' }), ds = h('input', { value: p.descr || '', maxlength: 120, placeholder: 'وصف' }), eg = h('input', { type: 'number', min: 1, value: p.priceEgp || '', style: 'width:90px' }), co = h('input', { type: 'number', min: 0, value: p.coins || 0, style: 'width:100px' }), vd = h('input', { type: 'number', min: 0, max: 36500, value: p.vipDays || 0, style: 'width:90px' }), ac = h('input', { type: 'checkbox' }); ac.checked = p.active !== false;
         var sel = h('select', { multiple: true, size: 5, style: 'min-width:160px' }, r.items.map(function (it) { var o = h('option', { value: it.id }, (it.emoji || '') + ' ' + it.name); if ((p.items || []).indexOf(it.id) >= 0) o.selected = true; return o; }));
-        var body = function () { return { name: nm.value, descr: ds.value, priceEgp: Number(eg.value), coins: Number(co.value), active: ac.checked, items: Array.prototype.filter.call(sel.options, function (o) { return o.selected; }).map(function (o) { return Number(o.value); }) }; };
-        return h('div', { style: 'border-top:1px solid var(--line);padding:8px 0' }, h('div', { class: 'bar' }, nm, ds), h('div', { class: 'bar', style: 'align-items:flex-start' }, h('label', {}, 'جنيه', eg), h('label', {}, 'عملات', co), h('label', {}, 'عناصر بتتفتح (Ctrl للتعدد)', sel), h('label', { class: 'row' }, ac, 'شغّال'),
+        var body = function () { return { name: nm.value, descr: ds.value, priceEgp: Number(eg.value), coins: Number(co.value), vipDays: Number(vd.value) || 0, active: ac.checked, items: Array.prototype.filter.call(sel.options, function (o) { return o.selected; }).map(function (o) { return Number(o.value); }) }; };
+        return h('div', { style: 'border-top:1px solid var(--line);padding:8px 0' }, h('div', { class: 'bar' }, nm, ds), h('div', { class: 'bar', style: 'align-items:flex-start' }, h('label', {}, 'جنيه', eg), h('label', {}, 'عملات', co), h('label', {}, 'أيام VIP (٠ = بدون)', vd), h('label', {}, 'عناصر بتتفتح (Ctrl للتعدد)', sel), h('label', { class: 'row' }, ac, 'شغّال'),
           p.id ? h('button', { onclick: function () { act(api('PATCH', 'shop/packs/' + p.id, body()), 'اتحفظ').then(reload, function () {}); } }, 'حفظ') : h('button', { class: 'primary', onclick: function () { act(api('POST', 'shop/packs', body()), 'اتضاف').then(reload, function () {}); } }, 'أضف'),
           p.id ? h('button', { class: 'danger', onclick: function () { if (confirm('تمسح الباكج؟')) act(api('DELETE', 'shop/packs/' + p.id), 'اتمسح').then(reload, function () {}); } }, 'مسح') : null));
       };

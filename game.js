@@ -66,7 +66,7 @@ class Room {
     }
     return {
       t: 'room', code: this.code, name: this.name, locked: !!this.pass, pass: uid === this.hostUid ? this.pass : '', quick: !!this.quick, cap: this.cap, status: this.status, gameNo: this.gameNo, bots: this.bots,
-      roster: this.roster.map(r => ({ name: r.name, bot: !!r.bot, sub: !!r.sub, gone: !!r.gone, host: r.uid === this.hostUid })),
+      roster: this.roster.map(r => ({ name: r.name, bot: !!r.bot, sub: !!r.sub, gone: !!r.gone, host: r.uid === this.hostUid, vip: !r.bot && !!this.content.isVip && this.content.isVip(r.uid) })),
       you: i, isHost: uid === this.hostUid, g, peek: this.peek && i >= 0 && this.peek.to === i ? { of: this.peek.of, cards: this.peek.cards, id: this.peek.id } : null, hand: i >= 0 && this.hands[i] && this.status === 'playing' ? this.hands[i] : []
     };
   }

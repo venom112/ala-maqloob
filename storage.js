@@ -99,6 +99,9 @@ async function makeStore(db) {
     CREATE TABLE IF NOT EXISTS orders (id ${D.id}, uid INTEGER NOT NULL, uname TEXT NOT NULL, pack_id INTEGER NOT NULL, pack_name TEXT NOT NULL, price_egp INTEGER NOT NULL, coins INTEGER NOT NULL, items TEXT NOT NULL, status TEXT NOT NULL, created ${D.big} NOT NULL, decided ${D.big}, by TEXT);
     CREATE TABLE IF NOT EXISTS assets (slot TEXT PRIMARY KEY, mime TEXT NOT NULL, data ${D.blob} NOT NULL, hash TEXT NOT NULL, updated ${D.big} NOT NULL, by TEXT NOT NULL);
   `);
+  await db.exec(`CREATE TABLE IF NOT EXISTS vip (uid INTEGER PRIMARY KEY, until ${D.big} NOT NULL);`);
+  // columns added after the first shop release (an existing database keeps its rows)
+  for (const q of ["ALTER TABLE shop_items ADD COLUMN mode TEXT NOT NULL DEFAULT 'coins'", "ALTER TABLE packs ADD COLUMN vip_days INTEGER NOT NULL DEFAULT 0", "ALTER TABLE orders ADD COLUMN vip_days INTEGER NOT NULL DEFAULT 0"]) { try { await db.exec(q); } catch (e) {} }
   const uid = id => Number(String(id).slice(1));
   const wrap = r => r ? { id: 'u' + r.id, name: r.name, created: r.created } : null;
 
@@ -135,11 +138,11 @@ async function makeStore(db) {
       try { if (!(await this.own(id, item.id))) { if (item.price > 0) await this.addCoins(id, item.price); return 'have'; } } catch (e) { if (item.price > 0) await this.addCoins(id, item.price); throw e; }
       return 'ok';
     },
-    async shopItems() { return (await db.all('SELECT id,kind,name,emoji,price,active,sort FROM shop_items ORDER BY sort,id')).map(r => ({ id: r.id, kind: r.kind, name: r.name, emoji: r.emoji, price: r.price, active: !!r.active, sort: r.sort })); },
-    async packList() { return (await db.all('SELECT id,name,descr,price_egp,coins,items,active,sort FROM packs ORDER BY sort,id')).map(r => ({ id: r.id, name: r.name, descr: r.descr, priceEgp: r.price_egp, coins: r.coins, items: JSON.parse(r.items || '[]'), active: !!r.active, sort: r.sort })); },
+    async shopItems() { return (await db.all('SELECT id,kind,name,emoji,price,mode,active,sort FROM shop_items ORDER BY sort,id')).map(r => ({ id: r.id, kind: r.kind, name: r.name, emoji: r.emoji, price: r.price, mode: r.mode || 'coins', active: !!r.active, sort: r.sort })); },
+    async packList() { return (await db.all('SELECT id,name,descr,price_egp,coins,vip_days,items,active,sort FROM packs ORDER BY sort,id')).map(r => ({ id: r.id, name: r.name, descr: r.descr, priceEgp: r.price_egp, coins: r.coins, vipDays: r.vip_days || 0, items: JSON.parse(r.items || '[]'), active: !!r.active, sort: r.sort })); },
     async orderCreate(u, uname, pack) {
       if ((await db.get("SELECT COUNT(*) c FROM orders WHERE uid=? AND status='pending'", [uid(u)])).c >= 3) return 0;
-      return db.insert('INSERT INTO orders(uid,uname,pack_id,pack_name,price_egp,coins,items,status,created) VALUES(?,?,?,?,?,?,?,?,?)', [uid(u), uname, pack.id, pack.name, pack.priceEgp, pack.coins, JSON.stringify(pack.items), 'pending', Date.now()]);
+      return db.insert('INSERT INTO orders(uid,uname,pack_id,pack_name,price_egp,coins,items,status,created,vip_days) VALUES(?,?,?,?,?,?,?,?,?,?)', [uid(u), uname, pack.id, pack.name, pack.priceEgp, pack.coins, JSON.stringify(pack.items), 'pending', Date.now(), pack.vipDays || 0]);
     },
     async ordersOf(u) { return db.all('SELECT id,pack_name,price_egp,status,created FROM orders WHERE uid=? ORDER BY id DESC LIMIT 20', [uid(u)]); },
     async ordersAll(status) { return db.all(status ? 'SELECT * FROM orders WHERE status=? ORDER BY id DESC LIMIT 200' : 'SELECT * FROM orders ORDER BY id DESC LIMIT 200', status ? [status] : []); },
@@ -147,6 +150,13 @@ async function makeStore(db) {
     async orderDecide(oid, status, by) {
       const r = await db.run("UPDATE orders SET status=?, decided=?, by=? WHERE id=? AND status='pending'", [status, Date.now(), by, oid]);
       return r.changes > 0 ? db.get('SELECT * FROM orders WHERE id=?', [oid]) : null;
+    },
+    /* VIP: no ads and more coins per win, for a number of days (stacked on what is left) */
+    async vipUntil(id) { const n = uid(id); if (!Number.isInteger(n)) return 0; const r = await db.get('SELECT until FROM vip WHERE uid=?', [n]); return r ? Number(r.until) : 0; },
+    async addVip(id, days) {
+      const n = uid(id); days = Math.floor(Number(days)); if (!Number.isInteger(n) || !Number.isFinite(days) || days <= 0) return 0;
+      const base = Math.max(Date.now(), await this.vipUntil(id)), until = base + days * 86400000;
+      await db.run('INSERT INTO vip(uid,until) VALUES(?,?) ON CONFLICT(uid) DO UPDATE SET until=excluded.until', [n, until]); return until;
     },
     async idByName(nameKey) { const r = await db.get('SELECT id FROM users WHERE name_key=?', [nameKey]); return r ? 'u' + r.id : null; },
 
